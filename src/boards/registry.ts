@@ -2,7 +2,7 @@ import type { BoardId } from "../game/model";
 import type { IconName } from "../ui/GameIcon";
 
 export interface BoardDefinition {
-  id: BoardId;
+  id: Exclude<BoardId, "setup">;
   label: string;
   shortLabel: string;
   icon: IconName;
@@ -12,9 +12,16 @@ export interface BoardDefinition {
 export const BOARD_REGISTRY: BoardDefinition[] = [
   {
     id: "dungeon",
-    label: "Dungeon board",
-    shortLabel: "Dungeon",
+    label: "First level",
+    shortLabel: "Explore",
     icon: "grid",
+    enabled: true,
+  },
+  {
+    id: "settlement",
+    label: "Main settlement",
+    shortLabel: "Settlement",
+    icon: "castle",
     enabled: true,
   },
   {

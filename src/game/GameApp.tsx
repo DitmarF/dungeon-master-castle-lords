@@ -1,6 +1,7 @@
 "use client";
 
 import { DungeonBoard } from "../boards/DungeonBoard";
+import { SettlementBoard } from "../boards/SettlementBoard";
 import { SetupBoard } from "../boards/SetupBoard";
 import { StartBoard } from "../boards/StartBoard";
 import { GameIcon } from "../ui/GameIcon";
@@ -20,5 +21,6 @@ export function GameApp() {
 
   if (view !== "game") return <StartBoard />;
   if (!activeGame?.setupComplete || !activeGame.hero) return <SetupBoard />;
+  if (activeGame.activeBoardId === "settlement") return <SettlementBoard />;
   return <DungeonBoard />;
 }
