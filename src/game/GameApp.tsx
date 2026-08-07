@@ -1,12 +1,13 @@
 "use client";
 
 import { DungeonBoard } from "../boards/DungeonBoard";
+import { SetupBoard } from "../boards/SetupBoard";
 import { StartBoard } from "../boards/StartBoard";
 import { GameIcon } from "../ui/GameIcon";
 import { useGame } from "./GameProvider";
 
 export function GameApp() {
-  const { hydrated, view } = useGame();
+  const { activeGame, hydrated, view } = useGame();
 
   if (!hydrated) {
     return (
@@ -17,5 +18,7 @@ export function GameApp() {
     );
   }
 
-  return view === "game" ? <DungeonBoard /> : <StartBoard />;
+  if (view !== "game") return <StartBoard />;
+  if (!activeGame?.setupComplete || !activeGame.hero) return <SetupBoard />;
+  return <DungeonBoard />;
 }

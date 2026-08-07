@@ -1,4 +1,5 @@
 import { EMPTY_REGISTRY, type GameRegistry } from "./model";
+import { migrateLegacyGame } from "./createGame";
 
 const STORAGE_KEY = "dmcl.prototype.registry.v1";
 
@@ -23,7 +24,17 @@ export const gameStorage = {
       if (!raw) return EMPTY_REGISTRY;
 
       const parsed: unknown = JSON.parse(raw);
-      return isRegistry(parsed) ? parsed : EMPTY_REGISTRY;
+      if (!isRegistry(parsed)) return EMPTY_REGISTRY;
+
+      return {
+        ...parsed,
+        games: Object.fromEntries(
+          Object.entries(parsed.games).map(([playerId, game]) => [
+            playerId,
+            migrateLegacyGame(game, playerId),
+          ]),
+        ),
+      };
     } catch {
       return EMPTY_REGISTRY;
     }

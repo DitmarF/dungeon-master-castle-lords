@@ -26,6 +26,7 @@ type Action =
   | { type: "deletePlayer"; playerId: string }
   | { type: "openGame"; playerId: string; game: GameSave }
   | { type: "saveGame"; game: GameSave }
+  | { type: "updateGame"; updater: (game: GameSave) => GameSave }
   | { type: "returnToPlayers"; game: GameSave | null };
 
 const INITIAL_STATE: RuntimeState = {
@@ -141,6 +142,23 @@ function reducer(state: RuntimeState, action: Action): RuntimeState {
         },
       };
 
+    case "updateGame": {
+      if (!state.activeGame) return state;
+      const game = {
+        ...action.updater(state.activeGame),
+        updatedAt: new Date().toISOString(),
+      };
+
+      return {
+        ...state,
+        activeGame: game,
+        registry: {
+          ...state.registry,
+          games: { ...state.registry.games, [game.playerId]: game },
+        },
+      };
+    }
+
     case "returnToPlayers": {
       const games = action.game
         ? { ...state.registry.games, [action.game.playerId]: action.game }
@@ -174,6 +192,7 @@ interface GameContextValue {
   startNewGame: (playerId: string) => void;
   loadGame: (playerId: string) => void;
   saveGame: () => void;
+  updateGame: (updater: (game: GameSave) => GameSave) => void;
   returnToPlayers: () => void;
 }
 
@@ -248,6 +267,10 @@ export function GameProvider({ children }: { children: ReactNode }) {
     });
   }, [state.activeGame]);
 
+  const updateGame = useCallback((updater: (game: GameSave) => GameSave) => {
+    dispatch({ type: "updateGame", updater });
+  }, []);
+
   const returnToPlayers = useCallback(() => {
     const game = state.activeGame
       ? { ...state.activeGame, updatedAt: new Date().toISOString() }
@@ -277,6 +300,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       startNewGame,
       loadGame,
       saveGame,
+      updateGame,
       returnToPlayers,
     }),
     [
@@ -292,6 +316,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       startNewGame,
       loadGame,
       saveGame,
+      updateGame,
       returnToPlayers,
     ],
   );

@@ -13,7 +13,13 @@ export type IconName =
   | "layers"
   | "user"
   | "shield"
-  | "lock";
+  | "lock"
+  | "target"
+  | "spark"
+  | "flag"
+  | "eye"
+  | "message"
+  | "heart";
 
 interface GameIconProps {
   name: IconName;
@@ -135,6 +141,45 @@ export function GameIcon({ name, size = 20, className }: GameIconProps) {
         <svg {...common}>
           <rect x="5" y="10" width="14" height="11" rx="2" />
           <path d="M8 10V7a4 4 0 0 1 8 0v3" />
+        </svg>
+      );
+    case "target":
+      return (
+        <svg {...common}>
+          <circle cx="12" cy="12" r="8" /><circle cx="12" cy="12" r="3" />
+          <path d="M12 2v3M12 19v3M2 12h3M19 12h3" />
+        </svg>
+      );
+    case "spark":
+      return (
+        <svg {...common}>
+          <path d="m12 2 1.8 6.2L20 10l-6.2 1.8L12 18l-1.8-6.2L4 10l6.2-1.8L12 2Z" />
+          <path d="m18.5 16 .7 2.3 2.3.7-2.3.7-.7 2.3-.7-2.3-2.3-.7 2.3-.7.7-2.3Z" />
+        </svg>
+      );
+    case "flag":
+      return (
+        <svg {...common}>
+          <path d="M5 22V3M5 4h11l-2 4 2 4H5" />
+        </svg>
+      );
+    case "eye":
+      return (
+        <svg {...common}>
+          <path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z" />
+          <circle cx="12" cy="12" r="2.5" />
+        </svg>
+      );
+    case "message":
+      return (
+        <svg {...common}>
+          <path d="M4 5h16v11H9l-5 4V5Z" /><path d="M8 9h8M8 12h5" />
+        </svg>
+      );
+    case "heart":
+      return (
+        <svg {...common}>
+          <path d="M12 20S4 15.5 4 9.5A4.5 4.5 0 0 1 12 7a4.5 4.5 0 0 1 8 2.5C20 15.5 12 20 12 20Z" />
         </svg>
       );
   }
