@@ -1,11 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import {
-  CLASS_SKILL,
-  VOCATION_SKILL,
-  completeGameSetup,
-} from "../game/createGame";
+import { completeGameSetup } from "../game/createGame";
 import { useGame } from "../game/GameProvider";
 import {
   EMPTY_ATTRIBUTES,
@@ -16,8 +12,10 @@ import {
   type HeroVocation,
   type SkillId,
 } from "../game/model";
+import { skillBelongsToTree } from "../game/skillTrees";
 import { Crest } from "../ui/Crest";
 import { GameIcon, type IconName } from "../ui/GameIcon";
+import { SkillTreePicker } from "../ui/SkillTreePicker";
 
 const FACTIONS: {
   id: FactionType;
@@ -108,15 +106,6 @@ const ATTRIBUTES: { id: AttributeKey; name: string }[] = [
   { id: "lead", name: "Leadership" },
 ];
 
-const SKILLS: { id: SkillId; name: string; branch: string }[] = [
-  { id: "close-combat", name: "Close Combat", branch: "Fighter" },
-  { id: "ranged-combat", name: "Ranged Combat", branch: "Ranger" },
-  { id: "mage-combat", name: "Mage Combat", branch: "Mage" },
-  { id: "tactics", name: "Tactics", branch: "General" },
-  { id: "deception", name: "Deception", branch: "Spy" },
-  { id: "diplomacy", name: "Diplomacy", branch: "Diplomat" },
-];
-
 function automaticBonus(
   heroClass: HeroClass | null,
   vocation: HeroVocation | null,
@@ -167,6 +156,26 @@ export function SetupBoard() {
     });
   }
 
+  function chooseClass(nextClass: HeroClass) {
+    setHeroClass(nextClass);
+    setBonusSkill((current) => {
+      if (!current) return current;
+      if (skillBelongsToTree(current, nextClass)) return current;
+      if (vocation && skillBelongsToTree(current, vocation)) return current;
+      return null;
+    });
+  }
+
+  function chooseVocation(nextVocation: HeroVocation) {
+    setVocation(nextVocation);
+    setBonusSkill((current) => {
+      if (!current) return current;
+      if (skillBelongsToTree(current, nextVocation)) return current;
+      if (heroClass && skillBelongsToTree(current, heroClass)) return current;
+      return null;
+    });
+  }
+
   function beginCampaign() {
     if (
       !faction ||
@@ -187,10 +196,6 @@ export function SetupBoard() {
       }),
     );
   }
-
-  const initialSkills = new Set<SkillId>();
-  if (heroClass) initialSkills.add(CLASS_SKILL[heroClass]);
-  if (vocation) initialSkills.add(VOCATION_SKILL[vocation]);
 
   return (
     <main className="setup-view">
@@ -218,7 +223,7 @@ export function SetupBoard() {
           <div>
             <span className="section-kicker">Campaign foundation</span>
             <h1>Build your founding hero.</h1>
-            <p>Choose a faction, two paths, two attributes, and one skill.</p>
+            <p>Choose a faction, two paths, two attributes, and one skill-tree advance.</p>
           </div>
           <span className={`readiness-chip${ready ? " readiness-chip--ready" : ""}`}>
             <span className="status-dot" />
@@ -278,7 +283,7 @@ export function SetupBoard() {
                     className={`choice-card choice-card--path${
                       heroClass === item.id ? " choice-card--selected" : ""
                     }`}
-                    onClick={() => setHeroClass(item.id)}
+                    onClick={() => chooseClass(item.id)}
                     aria-pressed={heroClass === item.id}
                   >
                     <GameIcon name={item.icon} size={20} />
@@ -300,7 +305,7 @@ export function SetupBoard() {
                     className={`choice-card choice-card--path${
                       vocation === item.id ? " choice-card--selected" : ""
                     }`}
-                    onClick={() => setVocation(item.id)}
+                    onClick={() => chooseVocation(item.id)}
                     aria-pressed={vocation === item.id}
                   >
                     <GameIcon name={item.icon} size={20} />
@@ -361,38 +366,18 @@ export function SetupBoard() {
               <span>04</span>
               <div>
                 <h2>Free skill point</h2>
-                <p>A granted skill rises to rank 2.</p>
+                <p>Upgrade a root skill or open the first skill of any branch.</p>
               </div>
+              <strong className={`skill-point-pool${bonusSkill ? " skill-point-pool--spent" : ""}`}>
+                {bonusSkill ? "Spent" : "1 point"}
+              </strong>
             </header>
-            <div className="skill-options">
-              {SKILLS.map((skill) => {
-                const granted = initialSkills.has(skill.id);
-                const selected = bonusSkill === skill.id;
-                return (
-                  <button
-                    key={skill.id}
-                    type="button"
-                    className={`skill-choice${
-                      selected ? " skill-choice--selected" : ""
-                    }`}
-                    onClick={() => setBonusSkill(skill.id)}
-                    aria-pressed={selected}
-                  >
-                    <span>
-                      <strong>{skill.name}</strong>
-                      <small>{skill.branch} path</small>
-                    </span>
-                    <i>
-                      {granted
-                        ? `Granted · rank ${selected ? 2 : 1}`
-                        : selected
-                          ? "Rank 1"
-                          : "Untrained"}
-                    </i>
-                  </button>
-                );
-              })}
-            </div>
+            <SkillTreePicker
+              classTreeId={heroClass}
+              vocationTreeId={vocation}
+              selectedSkill={bonusSkill}
+              onSelect={setBonusSkill}
+            />
           </section>
         </div>
       </div>

@@ -1,16 +1,13 @@
+import type { SkillId } from "./skillTrees";
+
+export type { SkillId } from "./skillTrees";
+
 export type BoardId = "setup" | "dungeon" | "settlement" | "world" | "combat";
 
 export type FactionType = "dungeon" | "castle";
 export type HeroClass = "fighter" | "ranger" | "mage";
 export type HeroVocation = "general" | "spy" | "diplomat";
 export type AttributeKey = "str" | "agy" | "per" | "int" | "cha" | "lead";
-export type SkillId =
-  | "close-combat"
-  | "ranged-combat"
-  | "mage-combat"
-  | "tactics"
-  | "deception"
-  | "diplomacy";
 
 export interface HeroAttributes {
   str: number;
@@ -76,7 +73,7 @@ export interface DungeonState {
 }
 
 export interface GameSave {
-  version: 2;
+  version: 3;
   id: string;
   playerId: string;
   createdAt: string;

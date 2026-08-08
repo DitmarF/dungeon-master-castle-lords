@@ -9,6 +9,11 @@ import {
   type PlayerProfile,
   type SkillId,
 } from "./model";
+import {
+  SKILL_BY_ID,
+  createEmptySkillRanks,
+  normalizeSkillRanks,
+} from "./skillTrees";
 
 export const CLASS_SKILL: Record<HeroClass, SkillId> = {
   fighter: "close-combat",
@@ -48,7 +53,7 @@ export function createNewGame(playerId: string): GameSave {
   const now = new Date().toISOString();
 
   return {
-    version: 2,
+    version: 3,
     id: createId("game"),
     playerId,
     createdAt: now,
@@ -89,14 +94,7 @@ function vocationBonus(vocation: HeroVocation): HeroAttributes {
 }
 
 export function completeGameSetup(game: GameSave, selection: HeroSetupSelection): GameSave {
-  const skills: Record<SkillId, number> = {
-    "close-combat": 0,
-    "ranged-combat": 0,
-    "mage-combat": 0,
-    tactics: 0,
-    deception: 0,
-    diplomacy: 0,
-  };
+  const skills = createEmptySkillRanks();
   skills[CLASS_SKILL[selection.heroClass]] += 1;
   skills[VOCATION_SKILL[selection.vocation]] += 1;
   skills[selection.bonusSkill] += 1;
@@ -130,22 +128,35 @@ export function completeGameSetup(game: GameSave, selection: HeroSetupSelection)
 
 export function migrateLegacyGame(value: unknown, playerId: string): GameSave {
   if (value && typeof value === "object") {
-    const candidate = value as Partial<GameSave>;
-    if (candidate.version === 2 && candidate.dungeon && "tiles" in candidate.dungeon) {
-      const current = candidate as GameSave;
-      if (!current.hero) return current;
+    const candidate = value as { version?: unknown; dungeon?: unknown };
+    if (
+      (candidate.version === 2 || candidate.version === 3) &&
+      candidate.dungeon &&
+      typeof candidate.dungeon === "object" &&
+      "tiles" in candidate.dungeon
+    ) {
+      const current = value as GameSave & { version: number };
+      if (!current.hero) return { ...current, version: 3 };
+
+      const bonusSkill = SKILL_BY_ID[current.hero.bonusSkill]
+        ? current.hero.bonusSkill
+        : CLASS_SKILL[current.hero.heroClass];
 
       // Rebuild derived attributes from the saved choices so rules fixes also
-      // repair existing campaigns without changing their allocated free points.
+      // repair existing campaigns, while the skill normalizer adds the new
+      // branch nodes without changing already learned ranks.
       return {
         ...current,
+        version: 3,
         hero: {
           ...current.hero,
+          bonusSkill,
           attributes: addAttributes(
             current.hero.freeAttributes,
             classBonus(current.hero.heroClass),
             vocationBonus(current.hero.vocation),
           ),
+          skills: normalizeSkillRanks(current.hero.skills),
         },
       };
     }

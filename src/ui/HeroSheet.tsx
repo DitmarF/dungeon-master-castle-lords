@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import type { HeroState, SkillId } from "../game/model";
+import { SKILL_BY_ID } from "../game/skillTrees";
 import { GameIcon } from "./GameIcon";
 
 const CLASS_NAMES = { fighter: "Fighter", ranger: "Ranger", mage: "Mage" } as const;
@@ -15,15 +16,6 @@ const ATTRIBUTE_NAMES = {
   cha: "Charisma",
   lead: "Leadership",
 } as const;
-const SKILL_NAMES: Record<SkillId, string> = {
-  "close-combat": "Close Combat",
-  "ranged-combat": "Ranged Combat",
-  "mage-combat": "Mage Combat",
-  tactics: "Tactics",
-  deception: "Deception",
-  diplomacy: "Diplomacy",
-};
-
 interface HeroSheetProps {
   hero: HeroState;
   playerName: string;
@@ -65,10 +57,10 @@ export function HeroSheet({ hero, playerName, onClose }: HeroSheetProps) {
         </section>
 
         <section className="hero-sheet__section">
-          <div className="hero-sheet__section-title"><h3>Known skills</h3><span>Three-branch trees arrive later</span></div>
+          <div className="hero-sheet__section-title"><h3>Known skills</h3><span>Class and vocation trees</span></div>
           <div className="hero-skills">
             {(Object.entries(hero.skills) as [SkillId, number][]).filter(([, rank]) => rank > 0).map(([skill, rank]) => (
-              <div key={skill}><span><GameIcon name="spark" size={16} />{SKILL_NAMES[skill]}</span><strong>Rank {rank}</strong></div>
+              <div key={skill}><span><GameIcon name="spark" size={16} />{SKILL_BY_ID[skill].name}</span><strong>Rank {rank}</strong></div>
             ))}
           </div>
         </section>
