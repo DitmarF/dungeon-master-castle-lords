@@ -7,6 +7,7 @@ import { BoardNavigation } from "./BoardNavigation";
 import { Crest } from "./Crest";
 import { GameIcon, type IconName } from "./GameIcon";
 import { HeroSheet } from "./HeroSheet";
+import { SettingsSheet } from "./SettingsSheet";
 
 export interface GameShellStat {
   label: string;
@@ -39,6 +40,7 @@ export function GameShell({
     updateGame,
   } = useGame();
   const [heroSheetOpen, setHeroSheetOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const [saved, setSaved] = useState(false);
 
   useEffect(() => {
@@ -100,6 +102,15 @@ export function GameShell({
             <GameIcon name="save" size={20} />
             <span>Save</span>
           </button>
+          <button
+            type="button"
+            className="appbar-button"
+            onClick={() => setSettingsOpen(true)}
+            aria-label="Open game settings"
+          >
+            <GameIcon name="settings" size={20} />
+            <span>Settings</span>
+          </button>
         </div>
       </header>
 
@@ -136,6 +147,10 @@ export function GameShell({
           playerName={selectedPlayer.name}
           onClose={() => setHeroSheetOpen(false)}
         />
+      ) : null}
+
+      {settingsOpen ? (
+        <SettingsSheet onClose={() => setSettingsOpen(false)} />
       ) : null}
 
       {saved ? (

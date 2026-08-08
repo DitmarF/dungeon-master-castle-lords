@@ -7,6 +7,7 @@ import {
   useEffect,
   useMemo,
   useReducer,
+  useState,
   type ReactNode,
 } from "react";
 import { createNewGame, createPlayerProfile } from "./createGame";
@@ -18,6 +19,26 @@ import {
   type RuntimeState,
 } from "./model";
 import { gameStorage } from "./storage";
+
+type ThemePreference = "system" | "light" | "dark";
+
+const THEME_STORAGE_KEY = "dmcl.prototype.theme.v1";
+
+function readThemePreference(): ThemePreference {
+  if (typeof window === "undefined") return "system";
+
+  try {
+    const stored = window.localStorage.getItem(THEME_STORAGE_KEY);
+    return stored === "light" || stored === "dark" ? stored : "system";
+  } catch {
+    return "system";
+  }
+}
+
+function systemUsesDarkMode(): boolean {
+  return typeof window !== "undefined" &&
+    window.matchMedia("(prefers-color-scheme: dark)").matches;
+}
 
 type Action =
   | { type: "hydrate"; registry: GameRegistry }
@@ -186,6 +207,10 @@ interface GameContextValue {
   selectedGame: GameSave | null;
   activeGame: GameSave | null;
   view: RuntimeState["view"];
+  darkMode: boolean;
+  themePreference: ThemePreference;
+  setDarkMode: (enabled: boolean) => void;
+  useSystemTheme: () => void;
   createPlayer: (name: string, bannerColor: string) => CreatePlayerResult;
   selectPlayer: (playerId: string) => void;
   deletePlayer: (playerId: string) => void;
@@ -200,6 +225,30 @@ const GameContext = createContext<GameContextValue | null>(null);
 
 export function GameProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(reducer, INITIAL_STATE);
+  const [themePreference, setThemePreference] = useState<ThemePreference>(
+    readThemePreference,
+  );
+  const [systemDarkMode, setSystemDarkMode] = useState(systemUsesDarkMode);
+  const darkMode =
+    themePreference === "system"
+      ? systemDarkMode
+      : themePreference === "dark";
+
+  useEffect(() => {
+    const media = window.matchMedia("(prefers-color-scheme: dark)");
+    const handleChange = (event: MediaQueryListEvent) => {
+      setSystemDarkMode(event.matches);
+    };
+
+    media.addEventListener("change", handleChange);
+    return () => media.removeEventListener("change", handleChange);
+  }, []);
+
+  useEffect(() => {
+    const theme = darkMode ? "dark" : "light";
+    document.documentElement.dataset.theme = theme;
+    document.documentElement.style.colorScheme = theme;
+  }, [darkMode]);
 
   useEffect(() => {
     dispatch({ type: "hydrate", registry: gameStorage.read() });
@@ -278,6 +327,27 @@ export function GameProvider({ children }: { children: ReactNode }) {
     dispatch({ type: "returnToPlayers", game });
   }, [state.activeGame]);
 
+  const setDarkMode = useCallback((enabled: boolean) => {
+    const preference: ThemePreference = enabled ? "dark" : "light";
+    setThemePreference(preference);
+
+    try {
+      window.localStorage.setItem(THEME_STORAGE_KEY, preference);
+    } catch {
+      // The setting still applies for this session if storage is unavailable.
+    }
+  }, []);
+
+  const useSystemTheme = useCallback(() => {
+    setThemePreference("system");
+
+    try {
+      window.localStorage.removeItem(THEME_STORAGE_KEY);
+    } catch {
+      // The setting still applies for this session if storage is unavailable.
+    }
+  }, []);
+
   const selectedPlayer =
     state.registry.players.find(
       (player) => player.id === state.selectedPlayerId,
@@ -294,6 +364,10 @@ export function GameProvider({ children }: { children: ReactNode }) {
       selectedGame,
       activeGame: state.activeGame,
       view: state.view,
+      darkMode,
+      themePreference,
+      setDarkMode,
+      useSystemTheme,
       createPlayer,
       selectPlayer,
       deletePlayer,
@@ -308,6 +382,8 @@ export function GameProvider({ children }: { children: ReactNode }) {
       state.registry.players,
       state.activeGame,
       state.view,
+      darkMode,
+      themePreference,
       selectedPlayer,
       selectedGame,
       createPlayer,
@@ -318,6 +394,8 @@ export function GameProvider({ children }: { children: ReactNode }) {
       saveGame,
       updateGame,
       returnToPlayers,
+      setDarkMode,
+      useSystemTheme,
     ],
   );
 

@@ -1,6 +1,17 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
+const themeBootScript = `
+  try {
+    var storedTheme = localStorage.getItem("dmcl.prototype.theme.v1");
+    var dark = storedTheme === "dark" ||
+      (storedTheme !== "light" && matchMedia("(prefers-color-scheme: dark)").matches);
+    var theme = dark ? "dark" : "light";
+    document.documentElement.dataset.theme = theme;
+    document.documentElement.style.colorScheme = theme;
+  } catch (_) {}
+`;
+
 export const metadata: Metadata = {
   title: "Dungeon Master & Castle Lords",
   description:
@@ -28,6 +39,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeBootScript }} />
+      </head>
       <body>{children}</body>
     </html>
   );

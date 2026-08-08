@@ -15,6 +15,7 @@ import {
 import { skillBelongsToTree } from "../game/skillTrees";
 import { Crest } from "../ui/Crest";
 import { GameIcon, type IconName } from "../ui/GameIcon";
+import { SettingsSheet } from "../ui/SettingsSheet";
 import { SkillTreePicker } from "../ui/SkillTreePicker";
 
 const FACTIONS: {
@@ -129,6 +130,7 @@ export function SetupBoard() {
     ...EMPTY_ATTRIBUTES,
   });
   const [bonusSkill, setBonusSkill] = useState<SkillId | null>(null);
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   const spentPoints = Object.values(freeAttributes).reduce(
     (total, value) => total + value,
@@ -212,9 +214,20 @@ export function SetupBoard() {
           <strong>Hero setup</strong>
           <small>New campaign</small>
         </div>
-        <div className="setup-player">
-          <Crest color={selectedPlayer.bannerColor} size="sm" />
-          <span>{selectedPlayer.name}</span>
+        <div className="setup-appbar__actions">
+          <button
+            type="button"
+            className="appbar-button"
+            onClick={() => setSettingsOpen(true)}
+            aria-label="Open game settings"
+          >
+            <GameIcon name="settings" size={20} />
+            <span>Settings</span>
+          </button>
+          <div className="setup-player">
+            <Crest color={selectedPlayer.bannerColor} size="sm" />
+            <span>{selectedPlayer.name}</span>
+          </div>
         </div>
       </header>
 
@@ -232,7 +245,8 @@ export function SetupBoard() {
         </header>
 
         <div className="setup-sections">
-          <section className="setup-card setup-card--faction">
+          <div className="setup-column setup-column--primary">
+            <section className="setup-card setup-card--faction">
             <header className="setup-card__heading">
               <span>01</span>
               <div>
@@ -262,9 +276,54 @@ export function SetupBoard() {
                 </button>
               ))}
             </div>
-          </section>
+            </section>
 
-          <section className="setup-card setup-card--paths">
+            <section className="setup-card setup-card--attributes">
+              <header className="setup-card__heading">
+                <span>03</span>
+                <div>
+                  <h2>Attributes</h2>
+                  <p>Spend exactly two free points.</p>
+                </div>
+                <strong className="point-pool">{remainingPoints} left</strong>
+              </header>
+              <div className="attribute-list">
+                {ATTRIBUTES.map((attribute) => (
+                  <div className="attribute-row" key={attribute.id}>
+                    <span className="attribute-row__name">
+                      <b>{attribute.id}</b>
+                      <small>{attribute.name}</small>
+                    </span>
+                    <i>
+                      {bonus[attribute.id] ? `+${bonus[attribute.id]} path` : "base"}
+                    </i>
+                    <span className="attribute-stepper">
+                      <button
+                        type="button"
+                        onClick={() => changeAttribute(attribute.id, -1)}
+                        disabled={freeAttributes[attribute.id] === 0}
+                        aria-label={`Remove one ${attribute.name} point`}
+                      >
+                        −
+                      </button>
+                      <strong>{freeAttributes[attribute.id] + bonus[attribute.id]}</strong>
+                      <button
+                        type="button"
+                        onClick={() => changeAttribute(attribute.id, 1)}
+                        disabled={remainingPoints === 0}
+                        aria-label={`Add one ${attribute.name} point`}
+                      >
+                        +
+                      </button>
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </section>
+          </div>
+
+          <div className="setup-column setup-column--secondary">
+            <section className="setup-card setup-card--paths">
             <header className="setup-card__heading">
               <span>02</span>
               <div>
@@ -316,52 +375,9 @@ export function SetupBoard() {
                 ))}
               </div>
             </div>
-          </section>
+            </section>
 
-          <section className="setup-card setup-card--attributes">
-            <header className="setup-card__heading">
-              <span>03</span>
-              <div>
-                <h2>Attributes</h2>
-                <p>Spend exactly two free points.</p>
-              </div>
-              <strong className="point-pool">{remainingPoints} left</strong>
-            </header>
-            <div className="attribute-list">
-              {ATTRIBUTES.map((attribute) => (
-                <div className="attribute-row" key={attribute.id}>
-                  <span className="attribute-row__name">
-                    <b>{attribute.id}</b>
-                    <small>{attribute.name}</small>
-                  </span>
-                  <i>
-                    {bonus[attribute.id] ? `+${bonus[attribute.id]} path` : "base"}
-                  </i>
-                  <span className="attribute-stepper">
-                    <button
-                      type="button"
-                      onClick={() => changeAttribute(attribute.id, -1)}
-                      disabled={freeAttributes[attribute.id] === 0}
-                      aria-label={`Remove one ${attribute.name} point`}
-                    >
-                      −
-                    </button>
-                    <strong>{freeAttributes[attribute.id] + bonus[attribute.id]}</strong>
-                    <button
-                      type="button"
-                      onClick={() => changeAttribute(attribute.id, 1)}
-                      disabled={remainingPoints === 0}
-                      aria-label={`Add one ${attribute.name} point`}
-                    >
-                      +
-                    </button>
-                  </span>
-                </div>
-              ))}
-            </div>
-          </section>
-
-          <section className="setup-card setup-card--skill">
+            <section className="setup-card setup-card--skill">
             <header className="setup-card__heading">
               <span>04</span>
               <div>
@@ -378,7 +394,8 @@ export function SetupBoard() {
               selectedSkill={bonusSkill}
               onSelect={setBonusSkill}
             />
-          </section>
+            </section>
+          </div>
         </div>
       </div>
 
@@ -400,6 +417,10 @@ export function SetupBoard() {
           Enter level <GameIcon name="arrow" size={17} />
         </button>
       </footer>
+
+      {settingsOpen ? (
+        <SettingsSheet onClose={() => setSettingsOpen(false)} />
+      ) : null}
     </main>
   );
 }
