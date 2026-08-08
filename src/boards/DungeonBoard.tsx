@@ -1,76 +1,418 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type PointerEvent as ReactPointerEvent,
+  type WheelEvent as ReactWheelEvent,
+} from "react";
 import { cellKey, discoverAround, isWalkable } from "../game/generateDungeon";
 import { useGame } from "../game/GameProvider";
-import type { BoardId, CellPosition } from "../game/model";
-import { BoardNavigation } from "../ui/BoardNavigation";
-import { Crest } from "../ui/Crest";
+import type { CellPosition } from "../game/model";
 import { GameIcon } from "../ui/GameIcon";
-import { HeroSheet } from "../ui/HeroSheet";
+import { GameShell } from "../ui/GameShell";
 
 const CELL_SIZE = 48;
+const MAX_ZOOM = 3.5;
+
 const DIRECTIONS = {
-  w: { x: 0, y: -1, label: "north" },
-  a: { x: -1, y: 0, label: "west" },
-  s: { x: 0, y: 1, label: "south" },
-  d: { x: 1, y: 0, label: "east" },
+  w: { x: 0, y: -1, label: "north", arrow: "↑" },
+  a: { x: -1, y: 0, label: "west", arrow: "←" },
+  s: { x: 0, y: 1, label: "south", arrow: "↓" },
+  d: { x: 1, y: 0, label: "east", arrow: "→" },
 } as const;
 
+interface ScreenPoint {
+  x: number;
+  y: number;
+}
+
+interface MapView {
+  zoom: number;
+  x: number;
+  y: number;
+}
+
+interface PinchStart {
+  distance: number;
+  midpoint: ScreenPoint;
+  view: MapView;
+}
+
+function midpoint(first: ScreenPoint, second: ScreenPoint): ScreenPoint {
+  return {
+    x: (first.x + second.x) / 2,
+    y: (first.y + second.y) / 2,
+  };
+}
+
+function pointDistance(first: ScreenPoint, second: ScreenPoint): number {
+  return Math.hypot(second.x - first.x, second.y - first.y);
+}
+
+function clamp(value: number, minimum: number, maximum: number): number {
+  return Math.min(maximum, Math.max(minimum, value));
+}
+
 export function DungeonBoard() {
-  const { activeGame, selectedPlayer, saveGame, returnToPlayers, updateGame } = useGame();
-  const [saved, setSaved] = useState(false);
-  const [heroSheetOpen, setHeroSheetOpen] = useState(false);
+  const { activeGame, selectedPlayer, updateGame } = useGame();
   const [heartPromptOpen, setHeartPromptOpen] = useState(false);
-  const [moveNote, setMoveNote] = useState("Use WASD or the movement pad to explore.");
+  const [moveNote, setMoveNote] = useState("Use the arrows or WASD to explore.");
+  const [mapView, setMapView] = useState<MapView>({ zoom: 1, x: 0, y: 0 });
+  const [baseScale, setBaseScale] = useState(1);
+  const [minimumZoom, setMinimumZoom] = useState(1);
+  const mapViewportRef = useRef<HTMLDivElement>(null);
+  const mapViewRef = useRef(mapView);
+  const baseScaleRef = useRef(baseScale);
+  const minimumZoomRef = useRef(minimumZoom);
+  const worldSizeRef = useRef({
+    width: (activeGame?.dungeon.grid.columns ?? 20) * CELL_SIZE,
+    height: (activeGame?.dungeon.grid.rows ?? 12) * CELL_SIZE,
+  });
+  const positionedMapRef = useRef(false);
+  const pointersRef = useRef(new Map<number, ScreenPoint>());
+  const dragRef = useRef<{
+    pointerId: number;
+    point: ScreenPoint;
+    view: MapView;
+  } | null>(null);
+  const pinchRef = useRef<PinchStart | null>(null);
+
+  const clampMapView = useCallback((candidate: MapView): MapView => {
+    const viewport = mapViewportRef.current;
+    const zoom = clamp(candidate.zoom, minimumZoomRef.current, MAX_ZOOM);
+    if (!viewport) return { ...candidate, zoom };
+
+    const rect = viewport.getBoundingClientRect();
+    const scaledWidth = worldSizeRef.current.width * baseScaleRef.current * zoom;
+    const scaledHeight = worldSizeRef.current.height * baseScaleRef.current * zoom;
+    const maxX = Math.max(0, (scaledWidth - rect.width) / 2);
+    const maxY = Math.max(0, (scaledHeight - rect.height) / 2);
+
+    return {
+      zoom,
+      x: clamp(candidate.x, -maxX, maxX),
+      y: clamp(candidate.y, -maxY, maxY),
+    };
+  }, []);
+
+  const commitMapView = useCallback(
+    (candidate: MapView) => {
+      const next = clampMapView(candidate);
+      mapViewRef.current = next;
+      setMapView(next);
+    },
+    [clampMapView],
+  );
 
   useEffect(() => {
-    if (!saved) return;
-    const timer = window.setTimeout(() => setSaved(false), 1800);
-    return () => window.clearTimeout(timer);
-  }, [saved]);
-
-  const moveHero = useCallback((delta: CellPosition, direction: string) => {
-    if (!activeGame?.hero) return;
-    const next = {
-      x: activeGame.hero.position.x + delta.x,
-      y: activeGame.hero.position.y + delta.y,
+    worldSizeRef.current = {
+      width: (activeGame?.dungeon.grid.columns ?? 20) * CELL_SIZE,
+      height: (activeGame?.dungeon.grid.rows ?? 12) * CELL_SIZE,
     };
+    positionedMapRef.current = false;
+  }, [
+    activeGame?.dungeon.grid.columns,
+    activeGame?.dungeon.grid.rows,
+  ]);
 
-    if (!isWalkable(activeGame.dungeon, next)) {
-      setMoveNote(`Stone blocks the way ${direction}.`);
+  useEffect(() => {
+    const viewport = mapViewportRef.current;
+    if (!viewport || typeof ResizeObserver === "undefined") return;
+
+    const observer = new ResizeObserver(() => {
+      const rect = viewport.getBoundingClientRect();
+      if (!rect.width || !rect.height) return;
+
+      const { width, height } = worldSizeRef.current;
+      const fitScale = Math.min(rect.width / width, rect.height / height);
+      const portraitMap = rect.height > rect.width * 1.15;
+      const nextBaseScale = portraitMap
+        ? Math.max(rect.width / width, rect.height / height)
+        : fitScale;
+      const nextMinimumZoom = Math.min(1, fitScale / nextBaseScale);
+
+      baseScaleRef.current = nextBaseScale;
+      minimumZoomRef.current = nextMinimumZoom;
+      setBaseScale(nextBaseScale);
+      setMinimumZoom(nextMinimumZoom);
+
+      if (!positionedMapRef.current && activeGame?.hero) {
+        positionedMapRef.current = true;
+        const heroCenterX = (activeGame.hero.position.x + 0.5) * CELL_SIZE;
+        const heroCenterY = (activeGame.hero.position.y + 0.5) * CELL_SIZE;
+        commitMapView({
+          zoom: 1,
+          x: -(heroCenterX - width / 2) * nextBaseScale,
+          y: -(heroCenterY - height / 2) * nextBaseScale,
+        });
+        return;
+      }
+
+      commitMapView(mapViewRef.current);
+    });
+    observer.observe(viewport);
+    return () => observer.disconnect();
+  }, [activeGame?.hero, commitMapView]);
+
+  useEffect(() => {
+    const viewport = mapViewportRef.current;
+    const hero = activeGame?.hero;
+    if (!viewport || !hero || !positionedMapRef.current) return;
+
+    const rect = viewport.getBoundingClientRect();
+    const { width, height } = worldSizeRef.current;
+    const current = mapViewRef.current;
+    const effectiveScale = baseScaleRef.current * current.zoom;
+    const heroScreenX =
+      rect.width / 2 +
+      current.x +
+      ((hero.position.x + 0.5) * CELL_SIZE - width / 2) * effectiveScale;
+    const heroScreenY =
+      rect.height / 2 +
+      current.y +
+      ((hero.position.y + 0.5) * CELL_SIZE - height / 2) * effectiveScale;
+    const safeX = Math.min(96, rect.width * 0.22);
+    const safeY = Math.min(96, rect.height * 0.22);
+    let nextX = current.x;
+    let nextY = current.y;
+
+    if (heroScreenX < safeX) nextX += safeX - heroScreenX;
+    if (heroScreenX > rect.width - safeX) {
+      nextX -= heroScreenX - (rect.width - safeX);
+    }
+    if (heroScreenY < safeY) nextY += safeY - heroScreenY;
+    if (heroScreenY > rect.height - safeY) {
+      nextY -= heroScreenY - (rect.height - safeY);
+    }
+
+    if (Math.abs(nextX - current.x) > 0.5 || Math.abs(nextY - current.y) > 0.5) {
+      commitMapView({ ...current, x: nextX, y: nextY });
+    }
+  }, [activeGame?.hero, commitMapView]);
+
+  const zoomAt = useCallback(
+    (clientPoint: ScreenPoint, requestedZoom: number) => {
+      const viewport = mapViewportRef.current;
+      if (!viewport) return;
+
+      const rect = viewport.getBoundingClientRect();
+      const current = mapViewRef.current;
+      const nextZoom = clamp(
+        requestedZoom,
+        minimumZoomRef.current,
+        MAX_ZOOM,
+      );
+      const localX = clientPoint.x - rect.left;
+      const localY = clientPoint.y - rect.top;
+      const centerX = rect.width / 2;
+      const centerY = rect.height / 2;
+      const ratio = nextZoom / current.zoom;
+
+      commitMapView({
+        zoom: nextZoom,
+        x: localX - centerX - ratio * (localX - centerX - current.x),
+        y: localY - centerY - ratio * (localY - centerY - current.y),
+      });
+    },
+    [commitMapView],
+  );
+
+  const changeZoom = useCallback(
+    (delta: number) => {
+      const viewport = mapViewportRef.current;
+      if (!viewport) return;
+      const rect = viewport.getBoundingClientRect();
+      zoomAt(
+        { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 },
+        mapViewRef.current.zoom + delta,
+      );
+    },
+    [zoomAt],
+  );
+
+  const resetMapView = useCallback(() => {
+    const hero = activeGame?.hero;
+    const { width, height } = worldSizeRef.current;
+    if (!hero) {
+      commitMapView({ zoom: 1, x: 0, y: 0 });
       return;
     }
 
-    const visible = discoverAround(
-      next,
-      activeGame.dungeon.grid.columns,
-      activeGame.dungeon.grid.rows,
-      activeGame.hero.visionRadius,
-    );
-    const discovered = Array.from(new Set([...activeGame.dungeon.discovered, ...visible]));
-    const reachedHeart = next.x === activeGame.dungeon.heart.x && next.y === activeGame.dungeon.heart.y;
+    const heroCenterX = (hero.position.x + 0.5) * CELL_SIZE;
+    const heroCenterY = (hero.position.y + 0.5) * CELL_SIZE;
+    commitMapView({
+      zoom: 1,
+      x: -(heroCenterX - width / 2) * baseScaleRef.current,
+      y: -(heroCenterY - height / 2) * baseScaleRef.current,
+    });
+  }, [activeGame?.hero, commitMapView]);
 
-    updateGame((game) => {
-      if (!game.hero) return game;
-      return {
-        ...game,
-        hero: { ...game.hero, position: next },
-        dungeon: {
-          ...game.dungeon,
-          discovered,
-          heartReached: game.dungeon.heartReached || reachedHeart,
-        },
+  const handleWheel = useCallback(
+    (event: ReactWheelEvent<HTMLDivElement>) => {
+      event.preventDefault();
+      const factor = Math.exp(-event.deltaY * 0.0016);
+      zoomAt(
+        { x: event.clientX, y: event.clientY },
+        mapViewRef.current.zoom * factor,
+      );
+    },
+    [zoomAt],
+  );
+
+  function beginPinch() {
+    const viewport = mapViewportRef.current;
+    const points = [...pointersRef.current.values()];
+    if (!viewport || points.length < 2) return;
+
+    const rect = viewport.getBoundingClientRect();
+    const center = midpoint(points[0], points[1]);
+    pinchRef.current = {
+      distance: Math.max(1, pointDistance(points[0], points[1])),
+      midpoint: { x: center.x - rect.left, y: center.y - rect.top },
+      view: mapViewRef.current,
+    };
+    dragRef.current = null;
+  }
+
+  function handlePointerDown(event: ReactPointerEvent<HTMLDivElement>) {
+    const target = event.target as Element;
+    if (target.closest("button")) return;
+
+    event.currentTarget.setPointerCapture(event.pointerId);
+    const point = { x: event.clientX, y: event.clientY };
+    pointersRef.current.set(event.pointerId, point);
+
+    if (pointersRef.current.size === 1) {
+      dragRef.current = {
+        pointerId: event.pointerId,
+        point,
+        view: mapViewRef.current,
       };
+    } else {
+      beginPinch();
+    }
+  }
+
+  function handlePointerMove(event: ReactPointerEvent<HTMLDivElement>) {
+    if (!pointersRef.current.has(event.pointerId)) return;
+    pointersRef.current.set(event.pointerId, {
+      x: event.clientX,
+      y: event.clientY,
     });
 
-    setMoveNote(reachedHeart ? "The Dungeon Heart answers your touch." : `Moved ${direction}. New ground revealed.`);
-    if (reachedHeart) setHeartPromptOpen(true);
-  }, [activeGame, updateGame]);
+    if (pointersRef.current.size >= 2 && pinchRef.current) {
+      const viewport = mapViewportRef.current;
+      const points = [...pointersRef.current.values()];
+      if (!viewport) return;
+
+      const rect = viewport.getBoundingClientRect();
+      const start = pinchRef.current;
+      const currentMidpoint = midpoint(points[0], points[1]);
+      const localMidpoint = {
+        x: currentMidpoint.x - rect.left,
+        y: currentMidpoint.y - rect.top,
+      };
+      const nextZoom = clamp(
+        start.view.zoom * (pointDistance(points[0], points[1]) / start.distance),
+        minimumZoomRef.current,
+        MAX_ZOOM,
+      );
+      const centerX = rect.width / 2;
+      const centerY = rect.height / 2;
+      const contentX =
+        (start.midpoint.x - centerX - start.view.x) / start.view.zoom;
+      const contentY =
+        (start.midpoint.y - centerY - start.view.y) / start.view.zoom;
+
+      commitMapView({
+        zoom: nextZoom,
+        x: localMidpoint.x - centerX - nextZoom * contentX,
+        y: localMidpoint.y - centerY - nextZoom * contentY,
+      });
+      return;
+    }
+
+    const drag = dragRef.current;
+    if (!drag || drag.pointerId !== event.pointerId) return;
+    commitMapView({
+      zoom: drag.view.zoom,
+      x: drag.view.x + event.clientX - drag.point.x,
+      y: drag.view.y + event.clientY - drag.point.y,
+    });
+  }
+
+  function endPointer(event: ReactPointerEvent<HTMLDivElement>) {
+    pointersRef.current.delete(event.pointerId);
+    pinchRef.current = null;
+
+    if (pointersRef.current.size === 1) {
+      const [remaining] = [...pointersRef.current.entries()];
+      dragRef.current = {
+        pointerId: remaining[0],
+        point: remaining[1],
+        view: mapViewRef.current,
+      };
+    } else {
+      dragRef.current = null;
+    }
+  }
+
+  const moveHero = useCallback(
+    (delta: CellPosition, direction: string) => {
+      if (!activeGame?.hero) return;
+      const next = {
+        x: activeGame.hero.position.x + delta.x,
+        y: activeGame.hero.position.y + delta.y,
+      };
+
+      if (!isWalkable(activeGame.dungeon, next)) {
+        setMoveNote(`Stone blocks the way ${direction}.`);
+        return;
+      }
+
+      const visible = discoverAround(
+        next,
+        activeGame.dungeon.grid.columns,
+        activeGame.dungeon.grid.rows,
+        activeGame.hero.visionRadius,
+      );
+      const discovered = Array.from(
+        new Set([...activeGame.dungeon.discovered, ...visible]),
+      );
+      const reachedHeart =
+        next.x === activeGame.dungeon.heart.x &&
+        next.y === activeGame.dungeon.heart.y;
+
+      updateGame((game) => {
+        if (!game.hero) return game;
+        return {
+          ...game,
+          hero: { ...game.hero, position: next },
+          dungeon: {
+            ...game.dungeon,
+            discovered,
+            heartReached: game.dungeon.heartReached || reachedHeart,
+          },
+        };
+      });
+
+      setMoveNote(
+        reachedHeart
+          ? "The Dungeon Heart answers your touch."
+          : `Moved ${direction}. New ground revealed.`,
+      );
+      if (reachedHeart) setHeartPromptOpen(true);
+    },
+    [activeGame, updateGame],
+  );
 
   useEffect(() => {
     const handleKey = (event: KeyboardEvent) => {
-      if (heroSheetOpen || heartPromptOpen) return;
+      if (heartPromptOpen) return;
       const target = event.target as HTMLElement | null;
       if (target?.matches("input, textarea, select, button")) return;
 
@@ -80,10 +422,12 @@ export function DungeonBoard() {
         arrowdown: "s",
         arrowright: "d",
       };
-      const key = (event.key.toLowerCase() in DIRECTIONS
-        ? event.key.toLowerCase()
-        : aliases[event.key.toLowerCase()]) as keyof typeof DIRECTIONS | undefined;
+      const pressedKey = event.key.toLowerCase();
+      const key = (pressedKey in DIRECTIONS
+        ? pressedKey
+        : aliases[pressedKey]) as keyof typeof DIRECTIONS | undefined;
       if (!key) return;
+
       event.preventDefault();
       const direction = DIRECTIONS[key];
       moveHero({ x: direction.x, y: direction.y }, direction.label);
@@ -91,7 +435,7 @@ export function DungeonBoard() {
 
     window.addEventListener("keydown", handleKey);
     return () => window.removeEventListener("keydown", handleKey);
-  }, [heartPromptOpen, heroSheetOpen, moveHero]);
+  }, [heartPromptOpen, moveHero]);
 
   const discovered = useMemo(
     () => new Set(activeGame?.dungeon.discovered ?? []),
@@ -102,22 +446,24 @@ export function DungeonBoard() {
 
   const { dungeon, hero } = activeGame;
   const discoveredFloorCount = dungeon.tiles.reduce(
-    (count, row, y) => count + [...row].filter((tile, x) => tile === "." && discovered.has(`${x},${y}`)).length,
+    (count, row, y) =>
+      count +
+      [...row].filter(
+        (tile, x) => tile === "." && discovered.has(`${x},${y}`),
+      ).length,
     0,
   );
-  const floorCount = dungeon.tiles.reduce((count, row) => count + [...row].filter((tile) => tile === ".").length, 0);
+  const floorCount = dungeon.tiles.reduce(
+    (count, row) => count + [...row].filter((tile) => tile === ".").length,
+    0,
+  );
   const heartVisible = discovered.has(cellKey(dungeon.heart));
-  const locationTitle = hero.faction === "dungeon" ? "Dungeon hollow" : "Abandoned castle hall";
-  const locationKicker = hero.faction === "dungeon" ? "Buried hollow" : "Ruined keep";
-
-  function handleSave() {
-    saveGame();
-    setSaved(true);
-  }
-
-  function selectBoard(boardId: BoardId) {
-    updateGame((game) => ({ ...game, activeBoardId: boardId }));
-  }
+  const worldWidth = dungeon.grid.columns * CELL_SIZE;
+  const worldHeight = dungeon.grid.rows * CELL_SIZE;
+  const locationTitle =
+    hero.faction === "dungeon" ? "Dungeon hollow" : "Abandoned castle hall";
+  const locationKicker =
+    hero.faction === "dungeon" ? "Buried hollow" : "Ruined keep";
 
   function claimSettlement() {
     updateGame((game) => ({
@@ -129,104 +475,249 @@ export function DungeonBoard() {
   }
 
   return (
-    <main className="game-board-shell exploration-shell">
-      <header className="game-toolbar">
-        <button type="button" className="toolbar-back" onClick={returnToPlayers}><GameIcon name="back" size={19} /><span>Players</span></button>
-        <div className="toolbar-title"><span className="toolbar-title__mark"><GameIcon name="grid" size={19} /></span><div><strong>{locationTitle}</strong><small>Campaign · {selectedPlayer.name}</small></div></div>
-        <div className="game-stats" aria-label="Campaign status">
-          <span><GameIcon name="calendar" size={16} /><small>Day</small><strong>{dungeon.day}</strong></span>
-          <span><GameIcon name="eye" size={16} /><small>Found</small><strong>{discoveredFloorCount}/{floorCount}</strong></span>
-          <span><GameIcon name="layers" size={16} /><small>Level</small><strong>{dungeon.level}</strong></span>
-        </div>
-        <button type="button" className="hero-button" onClick={() => setHeroSheetOpen(true)}><GameIcon name="user" size={17} /><span>Hero</span></button>
-        <div className="toolbar-player"><Crest color={selectedPlayer.bannerColor} size="sm" /><span>{selectedPlayer.name}</span></div>
-        <button type="button" className="save-button" onClick={handleSave}><GameIcon name="save" size={18} /> <span>Save</span></button>
-      </header>
+    <GameShell
+      className="exploration-view"
+      title={locationTitle}
+      subtitle={`Level ${dungeon.level} · ${locationKicker}`}
+      icon="grid"
+      stats={[
+        { label: "Day", value: dungeon.day, icon: "calendar" },
+        {
+          label: "Found",
+          value: `${discoveredFloorCount}/${floorCount}`,
+          icon: "eye",
+        },
+        { label: "Vision", value: hero.visionRadius, icon: "layers" },
+      ]}
+    >
+      <section className="dungeon-board" aria-labelledby="dungeon-heading">
+        <header className="board-summary">
+          <div>
+            <span className="section-kicker">Main objective</span>
+            <h1 id="dungeon-heading">
+              {dungeon.heartReached
+                ? "The Heart is waiting"
+                : "Find the Dungeon Heart"}
+            </h1>
+          </div>
+          <button
+            type="button"
+            className={`objective-chip${
+              dungeon.heartReached ? " objective-chip--ready" : ""
+            }`}
+            onClick={() => setHeartPromptOpen(true)}
+            disabled={!dungeon.heartReached}
+            aria-label={
+              dungeon.heartReached
+                ? "Open the Dungeon Heart decision"
+                : "The Dungeon Heart has not been reached"
+            }
+          >
+            <GameIcon name="heart" size={17} />
+            <span>{dungeon.heartReached ? "Decide" : "Unreached"}</span>
+          </button>
+        </header>
 
-      <BoardNavigation activeBoardId={activeGame.activeBoardId} settlementClaimed={dungeon.settlementClaimed} onSelect={selectBoard} />
-
-      <section className="dungeon-workspace" aria-labelledby="dungeon-heading">
-        <div className="board-heading">
-          <div><span className="section-kicker">{locationKicker} · Level {dungeon.level}</span><h1 id="dungeon-heading">{locationTitle}</h1></div>
-          <div className="explore-legend" aria-label="Map legend"><span><i className="legend-swatch legend-swatch--known" />Discovered</span><span><i className="legend-swatch legend-swatch--fog" />Unknown</span></div>
-          <div className="grid-readout"><span>{dungeon.grid.columns} × {dungeon.grid.rows}</span><small>Connected layout</small></div>
-        </div>
-
-        <div className="dungeon-canvas dungeon-canvas--explore">
-          <svg className="dungeon-grid dungeon-grid--explore" viewBox={`0 0 ${dungeon.grid.columns * CELL_SIZE} ${dungeon.grid.rows * CELL_SIZE}`} preserveAspectRatio="xMidYMid meet" role="img" aria-label={`${locationTitle}, ${discoveredFloorCount} of ${floorCount} traversable cells discovered`}>
+        <div
+          ref={mapViewportRef}
+          className="map-viewport"
+          onWheel={handleWheel}
+          onPointerDown={handlePointerDown}
+          onPointerMove={handlePointerMove}
+          onPointerUp={endPointer}
+          onPointerCancel={endPointer}
+          onDoubleClick={(event) =>
+            zoomAt(
+              { x: event.clientX, y: event.clientY },
+              mapViewRef.current.zoom > 1.4 ? 1 : 2,
+            )
+          }
+          aria-label="Interactive dungeon map. Drag to pan, use the mouse wheel or two fingers to zoom."
+        >
+          <svg
+            className="dungeon-map"
+            style={{
+              width: worldWidth,
+              height: worldHeight,
+              marginLeft: -worldWidth / 2,
+              marginTop: -worldHeight / 2,
+              transform: `translate3d(${mapView.x}px, ${mapView.y}px, 0) scale(${baseScale * mapView.zoom})`,
+            }}
+            viewBox={`0 0 ${worldWidth} ${worldHeight}`}
+            preserveAspectRatio="xMidYMid meet"
+            role="img"
+            aria-label={`${locationTitle}, ${discoveredFloorCount} of ${floorCount} traversable cells discovered`}
+          >
             <rect width="100%" height="100%" className="explore-ground" />
-            {dungeon.tiles.flatMap((row, y) => [...row].map((tile, x) => {
-              const known = discovered.has(`${x},${y}`);
-              const tileClass = known ? (tile === "." ? "map-cell map-cell--floor" : "map-cell map-cell--wall") : "map-cell map-cell--unknown";
-              return <rect key={`${x}-${y}`} x={x * CELL_SIZE} y={y * CELL_SIZE} width={CELL_SIZE} height={CELL_SIZE} className={tileClass} />;
-            }))}
+            {dungeon.tiles.flatMap((row, y) =>
+              [...row].map((tile, x) => {
+                const known = discovered.has(`${x},${y}`);
+                const tileClass = known
+                  ? tile === "."
+                    ? "map-cell map-cell--floor"
+                    : "map-cell map-cell--wall"
+                  : "map-cell map-cell--unknown";
+                return (
+                  <rect
+                    key={`${x}-${y}`}
+                    x={x * CELL_SIZE}
+                    y={y * CELL_SIZE}
+                    width={CELL_SIZE}
+                    height={CELL_SIZE}
+                    className={tileClass}
+                  />
+                );
+              }),
+            )}
 
             {heartVisible ? (
-              <g className="heart-token" transform={`translate(${dungeon.heart.x * CELL_SIZE + CELL_SIZE / 2} ${dungeon.heart.y * CELL_SIZE + CELL_SIZE / 2})`}>
+              <g
+                className="heart-token"
+                transform={`translate(${
+                  dungeon.heart.x * CELL_SIZE + CELL_SIZE / 2
+                } ${dungeon.heart.y * CELL_SIZE + CELL_SIZE / 2})`}
+              >
                 <circle r="17" className="heart-token__aura" />
                 <path d="M0-13 12 0 0 13-12 0Z" className="heart-token__core" />
                 <circle r="3.5" className="heart-token__center" />
               </g>
             ) : null}
 
-            <g className="hero-token" transform={`translate(${hero.position.x * CELL_SIZE + CELL_SIZE / 2} ${hero.position.y * CELL_SIZE + CELL_SIZE / 2})`}>
+            <g
+              className="hero-token"
+              transform={`translate(${
+                hero.position.x * CELL_SIZE + CELL_SIZE / 2
+              } ${hero.position.y * CELL_SIZE + CELL_SIZE / 2})`}
+            >
               <circle r="16" className="hero-token__ring" />
-              <path d="M0-12 11-4 8 11 0 15-8 11-11-4Z" fill={selectedPlayer.bannerColor} />
+              <path
+                d="M0-12 11-4 8 11 0 15-8 11-11-4Z"
+                fill={selectedPlayer.bannerColor}
+              />
               <circle cy="-3" r="3" className="hero-token__head" />
               <path d="M-5 8C-4 2 4 2 5 8" className="hero-token__body" />
             </g>
           </svg>
 
-          <button
-            type="button"
-            className="map-objective"
-            onClick={() => setHeartPromptOpen(true)}
-            disabled={!dungeon.heartReached}
-            aria-label={dungeon.heartReached ? "Open the Dungeon Heart decision" : "Find the Dungeon Heart"}
-          >
-            <span><GameIcon name="heart" size={17} /></span>
-            <div><small>Main objective</small><strong>{dungeon.heartReached ? "Choose the Heart's fate" : "Find the Dungeon Heart"}</strong></div>
-          </button>
-
-          <div className="movement-pad" aria-label="Hero movement controls">
-            <button type="button" className="move-key move-key--up" onClick={() => moveHero(DIRECTIONS.w, "north")} aria-label="Move north"><b>W</b><span>↑</span></button>
-            <button type="button" className="move-key move-key--left" onClick={() => moveHero(DIRECTIONS.a, "west")} aria-label="Move west"><b>A</b><span>←</span></button>
-            <button type="button" className="move-key move-key--down" onClick={() => moveHero(DIRECTIONS.s, "south")} aria-label="Move south"><b>S</b><span>↓</span></button>
-            <button type="button" className="move-key move-key--right" onClick={() => moveHero(DIRECTIONS.d, "east")} aria-label="Move east"><b>D</b><span>→</span></button>
+          <div className="map-zoom" aria-label="Map zoom controls">
+            <button
+              type="button"
+              onClick={() => changeZoom(-0.35)}
+              disabled={mapView.zoom <= minimumZoom + 0.001}
+              aria-label="Zoom out"
+            >
+              −
+            </button>
+            <button
+              type="button"
+              className="map-zoom__value"
+              onClick={resetMapView}
+              disabled={mapView.zoom === 1 && Math.abs(mapView.x) < 0.5 && Math.abs(mapView.y) < 0.5}
+              aria-label="Reset map view"
+            >
+              {Math.round(mapView.zoom * 100)}%
+            </button>
+            <button
+              type="button"
+              onClick={() => changeZoom(0.35)}
+              disabled={mapView.zoom >= MAX_ZOOM}
+              aria-label="Zoom in"
+            >
+              +
+            </button>
           </div>
 
-          <div className="canvas-corner canvas-corner--top" aria-hidden="true" />
-          <div className="canvas-corner canvas-corner--bottom" aria-hidden="true" />
+          <div className="map-gesture-hint" aria-hidden="true">
+            Drag · scroll or pinch to zoom
+          </div>
         </div>
 
-        <footer className="board-statusbar">
-          <span><i className="status-dot" /> Autosave active</span>
-          <span>Rooms: {dungeon.rooms.length}</span>
-          <span>Vision: {hero.visionRadius} cell</span>
-          <span className="board-statusbar__tip">{moveNote}</span>
+        <footer className="movement-dock">
+          <div className="movement-status" role="status">
+            <span className="status-dot" />
+            <span>{moveNote}</span>
+          </div>
+          <div className="movement-buttons" aria-label="Hero movement controls">
+            {(["a", "w", "s", "d"] as (keyof typeof DIRECTIONS)[]).map(
+              (key) => {
+                const direction = DIRECTIONS[key];
+                return (
+                  <button
+                    type="button"
+                    key={key}
+                    onClick={() =>
+                      moveHero(
+                        { x: direction.x, y: direction.y },
+                        direction.label,
+                      )
+                    }
+                    aria-label={`Move ${direction.label}`}
+                  >
+                    <span>{direction.arrow}</span>
+                    <small>{key.toUpperCase()}</small>
+                  </button>
+                );
+              },
+            )}
+          </div>
         </footer>
       </section>
 
-      {heroSheetOpen ? <HeroSheet hero={hero} playerName={selectedPlayer.name} onClose={() => setHeroSheetOpen(false)} /> : null}
-
       {heartPromptOpen ? (
-        <div className="modal-backdrop" role="presentation" onMouseDown={() => setHeartPromptOpen(false)}>
-          <section className="heart-dialog" role="dialog" aria-modal="true" aria-labelledby="heart-title" onMouseDown={(event) => event.stopPropagation()}>
-            <span className="heart-dialog__icon"><GameIcon name="heart" size={28} /></span>
+        <div
+          className="modal-backdrop"
+          role="presentation"
+          onMouseDown={() => setHeartPromptOpen(false)}
+        >
+          <section
+            className="decision-sheet"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="heart-title"
+            onMouseDown={(event) => event.stopPropagation()}
+          >
+            <span className="decision-sheet__icon">
+              <GameIcon name="heart" size={27} />
+            </span>
             <span className="section-kicker">Objective discovered</span>
             <h2 id="heart-title">The Dungeon Heart awakens.</h2>
-            <p>Its pulse binds this level to you. Claim it to establish your first settlement, or leave it untouched and continue exploring.</p>
-            <div className="heart-dialog__facts"><span><small>Level</small><strong>{dungeon.level}</strong></span><span><small>Rooms linked</small><strong>{dungeon.rooms.length}</strong></span><span><small>Path</small><strong>Clear</strong></span></div>
+            <p>
+              Its pulse binds this level to you. Claim it to establish your first
+              settlement, or continue exploring.
+            </p>
+            <div className="decision-facts">
+              <span>
+                <small>Level</small>
+                <strong>{dungeon.level}</strong>
+              </span>
+              <span>
+                <small>Rooms</small>
+                <strong>{dungeon.rooms.length}</strong>
+              </span>
+              <span>
+                <small>Path</small>
+                <strong>Clear</strong>
+              </span>
+            </div>
             <div className="dialog-actions">
-              <button type="button" className="button button--ghost" onClick={() => setHeartPromptOpen(false)}>Continue exploring</button>
-              <button type="button" className="button button--primary" onClick={claimSettlement}>Claim settlement <GameIcon name="arrow" size={17} /></button>
+              <button
+                type="button"
+                className="button button--ghost"
+                onClick={() => setHeartPromptOpen(false)}
+              >
+                Keep exploring
+              </button>
+              <button
+                type="button"
+                className="button button--primary"
+                onClick={claimSettlement}
+              >
+                Claim settlement <GameIcon name="arrow" size={17} />
+              </button>
             </div>
           </section>
         </div>
       ) : null}
-
-      {saved ? <div className="save-toast" role="status"><GameIcon name="save" size={18} /> Campaign saved</div> : null}
-      <div className="portrait-hint" role="status"><GameIcon name="layers" size={18} /> Rotate to landscape for the full game board.</div>
-    </main>
+    </GameShell>
   );
 }

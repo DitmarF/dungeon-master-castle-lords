@@ -73,7 +73,7 @@ function addAttributes(...sources: HeroAttributes[]): HeroAttributes {
 function classBonus(heroClass: HeroClass): HeroAttributes {
   return {
     ...EMPTY_ATTRIBUTES,
-    ...(heroClass === "fighter" ? { agy: 1 } : {}),
+    ...(heroClass === "fighter" ? { str: 1 } : {}),
     ...(heroClass === "ranger" ? { per: 1 } : {}),
     ...(heroClass === "mage" ? { int: 1 } : {}),
   };
@@ -132,7 +132,22 @@ export function migrateLegacyGame(value: unknown, playerId: string): GameSave {
   if (value && typeof value === "object") {
     const candidate = value as Partial<GameSave>;
     if (candidate.version === 2 && candidate.dungeon && "tiles" in candidate.dungeon) {
-      return candidate as GameSave;
+      const current = candidate as GameSave;
+      if (!current.hero) return current;
+
+      // Rebuild derived attributes from the saved choices so rules fixes also
+      // repair existing campaigns without changing their allocated free points.
+      return {
+        ...current,
+        hero: {
+          ...current.hero,
+          attributes: addAttributes(
+            current.hero.freeAttributes,
+            classBonus(current.hero.heroClass),
+            vocationBonus(current.hero.vocation),
+          ),
+        },
+      };
     }
 
     const legacy = value as {
