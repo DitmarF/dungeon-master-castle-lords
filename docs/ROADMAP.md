@@ -52,7 +52,7 @@ The sequence column records dependency position, not permission to begin an Epic
 
 | Epic / milestone | Status | High-level purpose | Sequence position |
 |---|---|---|---|
-| EPIC 00 — Project contract and development infrastructure | **Complete — checkpoint pending acceptance** | Establish the audit, product and technical contracts, decision log, roadmap, workflow, repository guidance, FS source, and project README. | Foundation |
+| EPIC 00 — Project contract and development infrastructure | **Complete** | Establish the audit, product and technical contracts, decision log, roadmap, workflow, repository guidance, FS source, and project README. | Foundation |
 | EPIC 01 — UI shell and board architecture | **Current** | Finish and generalize the existing mobile-first shell, FS integration, and modular board foundations. | After EPIC 00 |
 | EPIC 02 — Core game engine and state | Planned | Establish the shared game-engine and central campaign-state foundations needed by later boards and systems. | After EPIC 01 |
 | EPIC 03 — Campaign lifecycle and persistence | Planned | Define and implement the campaign lifecycle and its supported save/load persistence boundary. | After EPIC 02 |
@@ -91,7 +91,7 @@ E00-T05 reconciles the project contract by:
 - reducing mandatory reading to core plus task-relevant documents;
 - declaring EPIC 01 and exactly one next task.
 
-EPIC 00 becomes fully complete when this candidate is accepted and saved through the non-deployed checkpoint workflow in `WORKFLOW.md`.
+E00-T05 was accepted by the project owner on 2026-08-09, completing EPIC 00. Its accepted, non-deployed checkpoint leaves EPIC 01 current and E01-T01 as the exact next task.
 
 ## Roadmap operating rules
 
