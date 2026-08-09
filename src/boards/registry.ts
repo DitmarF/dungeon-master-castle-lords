@@ -106,18 +106,18 @@ export function getBoardAvailability(
   boardId: unknown,
   game: Readonly<GameSave>,
 ): BoardAvailability {
-  const module = getBoardModule(boardId);
-  const enabled = module?.enabled ?? false;
-  const unlocked = module?.isUnlocked(game) ?? false;
+  const boardModule = getBoardModule(boardId);
+  const enabled = boardModule?.enabled ?? false;
+  const unlocked = boardModule?.isUnlocked(game) ?? false;
   const active = game.activeBoardId === boardId;
 
   return {
-    registered: module !== null,
+    registered: boardModule !== null,
     enabled,
     unlocked,
     active,
     available: enabled && unlocked,
-    module,
+    module: boardModule,
   };
 }
 
