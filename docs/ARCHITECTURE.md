@@ -115,6 +115,10 @@ Styles may be organized per stable module as the project grows; no styling techn
 
 The E01-T02 implementation uses `scripts/generate-fs-token-adapter.mjs` to write `app/fs-tokens.generated.css` and `src/ui/fs-game-colors.generated.ts`. `app/globals.css` imports the generated CSS before its handwritten derived/application layer. `npm run tokens:generate` is the explicit write operation; `npm run tokens:check` is non-writing and runs before normal lint/build verification. The generator uses an explicit allowlist, so new FS modes or primitives do not silently become application API.
 
+The shared application-shell boundary is the existing `GameShell`. It owns the persistent app/status area, campaign-status area, one labelled board viewport, `BoardNavigation`, a local overlay layer, and a polite notification region. Boards supply viewport content, while shared controls invoke existing application-facing callbacks; boards do not recreate global shell/navigation or transfer campaign-rule authority into shared UI.
+
+Shared modal sheets use the small `ModalOverlay` presentation primitive for dialog semantics, title association, Escape/backdrop dismissal, initial focus, keyboard focus containment, opener-focus restoration, and background scroll locking. `HeroSheet` and `SettingsSheet` are the first consumers. This is a reusable interaction foundation, not a global modal state machine. `NotificationRegion` similarly provides only an always-mounted live region and presentation slot; campaign-saved feedback is its first consumer, with no queue or game-event ownership.
+
 ### 9. Mobile-first does not mean mobile-only
 
 **Established.**

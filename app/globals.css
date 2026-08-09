@@ -1722,6 +1722,14 @@ p {
   overflow: hidden;
 }
 
+.game-view__viewport {
+  position: relative;
+}
+
+.game-shell__overlay-layer {
+  display: contents;
+}
+
 .board-nav {
   z-index: 8;
   min-height: calc(58px + env(safe-area-inset-bottom));
@@ -2176,6 +2184,7 @@ p {
   display: grid;
   align-items: end;
   justify-items: stretch;
+  overflow: hidden;
   padding-top: env(safe-area-inset-top);
   background: rgba(0, 0, 0, 0.58);
   backdrop-filter: blur(4px);
@@ -2281,6 +2290,8 @@ p {
   border-radius: 20px 20px 0 0;
   background: var(--surface-raised);
   box-shadow: var(--shadow-sheet);
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
 }
 
 .settings-sheet::before {
@@ -2464,6 +2475,8 @@ p {
   border-radius: 20px 20px 0 0;
   background: var(--surface-raised);
   box-shadow: var(--shadow-sheet);
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
 }
 
 .hero-sheet::before {
@@ -2669,11 +2682,17 @@ p {
   white-space: nowrap;
 }
 
-.save-toast {
+.notification-region {
   position: fixed;
   z-index: 60;
   right: max(var(--space-sm), env(safe-area-inset-right));
   bottom: calc(66px + env(safe-area-inset-bottom));
+  display: grid;
+  justify-items: end;
+  pointer-events: none;
+}
+
+.notification-toast {
   min-height: 42px;
   display: inline-flex;
   align-items: center;

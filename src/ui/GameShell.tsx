@@ -7,6 +7,7 @@ import { BoardNavigation } from "./BoardNavigation";
 import { Crest } from "./Crest";
 import { GameIcon, type IconName } from "./GameIcon";
 import { HeroSheet } from "./HeroSheet";
+import { NotificationRegion } from "./NotificationRegion";
 import { SettingsSheet } from "./SettingsSheet";
 
 export interface GameShellStat {
@@ -39,8 +40,9 @@ export function GameShell({
     saveGame,
     updateGame,
   } = useGame();
-  const [heroSheetOpen, setHeroSheetOpen] = useState(false);
-  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [activeOverlay, setActiveOverlay] = useState<
+    "hero" | "settings" | null
+  >(null);
   const [saved, setSaved] = useState(false);
 
   useEffect(() => {
@@ -87,7 +89,7 @@ export function GameShell({
           <button
             type="button"
             className="appbar-button"
-            onClick={() => setHeroSheetOpen(true)}
+            onClick={() => setActiveOverlay("hero")}
             aria-label="Open hero information"
           >
             <GameIcon name="user" size={20} />
@@ -105,7 +107,7 @@ export function GameShell({
           <button
             type="button"
             className="appbar-button"
-            onClick={() => setSettingsOpen(true)}
+            onClick={() => setActiveOverlay("settings")}
             aria-label="Open game settings"
           >
             <GameIcon name="settings" size={20} />
@@ -133,7 +135,13 @@ export function GameShell({
         </div>
       </section>
 
-      <div className="game-view__content">{children}</div>
+      <div
+        className="game-view__content game-view__viewport"
+        role="region"
+        aria-label={`${title} board`}
+      >
+        {children}
+      </div>
 
       <BoardNavigation
         activeBoardId={activeGame.activeBoardId}
@@ -141,23 +149,27 @@ export function GameShell({
         onSelect={selectBoard}
       />
 
-      {heroSheetOpen ? (
-        <HeroSheet
-          hero={activeGame.hero}
-          playerName={selectedPlayer.name}
-          onClose={() => setHeroSheetOpen(false)}
-        />
-      ) : null}
+      <div className="game-shell__overlay-layer">
+        {activeOverlay === "hero" ? (
+          <HeroSheet
+            hero={activeGame.hero}
+            playerName={selectedPlayer.name}
+            onClose={() => setActiveOverlay(null)}
+          />
+        ) : null}
 
-      {settingsOpen ? (
-        <SettingsSheet onClose={() => setSettingsOpen(false)} />
-      ) : null}
+        {activeOverlay === "settings" ? (
+          <SettingsSheet onClose={() => setActiveOverlay(null)} />
+        ) : null}
+      </div>
 
-      {saved ? (
-        <div className="save-toast" role="status">
-          <GameIcon name="save" size={18} /> Campaign saved
-        </div>
-      ) : null}
+      <NotificationRegion>
+        {saved ? (
+          <>
+            <GameIcon name="save" size={18} /> Campaign saved
+          </>
+        ) : null}
+      </NotificationRegion>
     </main>
   );
 }

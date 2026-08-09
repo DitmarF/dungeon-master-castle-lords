@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect } from "react";
 import type { HeroState, SkillId } from "../game/model";
 import { SKILL_BY_ID } from "../game/skillTrees";
 import { GameIcon } from "./GameIcon";
+import { ModalOverlay } from "./ModalOverlay";
 
 const CLASS_NAMES = { fighter: "Fighter", ranger: "Ranger", mage: "Mage" } as const;
 const VOCATION_NAMES = { general: "General", spy: "Spy", diplomat: "Diplomat" } as const;
@@ -23,17 +23,13 @@ interface HeroSheetProps {
 }
 
 export function HeroSheet({ hero, playerName, onClose }: HeroSheetProps) {
-  useEffect(() => {
-    const handleKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") onClose();
-    };
-    window.addEventListener("keydown", handleKey);
-    return () => window.removeEventListener("keydown", handleKey);
-  }, [onClose]);
-
   return (
-    <div className="modal-backdrop hero-sheet-backdrop" role="presentation" onMouseDown={onClose}>
-      <section className="hero-sheet" role="dialog" aria-modal="true" aria-labelledby="hero-sheet-title" onMouseDown={(event) => event.stopPropagation()}>
+    <ModalOverlay
+      backdropClassName="hero-sheet-backdrop"
+      panelClassName="hero-sheet"
+      labelledBy="hero-sheet-title"
+      onClose={onClose}
+    >
         <header className="hero-sheet__header">
           <span className="hero-sheet__mark"><GameIcon name="user" size={25} /></span>
           <div><span className="section-kicker">Current hero</span><h2 id="hero-sheet-title">{playerName}</h2></div>
@@ -69,7 +65,6 @@ export function HeroSheet({ hero, playerName, onClose }: HeroSheetProps) {
           <span><GameIcon name="eye" size={15} /> Position {hero.position.x + 1}:{hero.position.y + 1}</span>
           <button type="button" className="button button--primary" onClick={onClose}>Return to map</button>
         </footer>
-      </section>
-    </div>
+    </ModalOverlay>
   );
 }

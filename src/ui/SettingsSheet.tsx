@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect } from "react";
 import { useGame } from "../game/GameProvider";
 import { GameIcon } from "./GameIcon";
+import { ModalOverlay } from "./ModalOverlay";
 
 interface SettingsSheetProps {
   onClose: () => void;
@@ -16,28 +16,13 @@ export function SettingsSheet({ onClose }: SettingsSheetProps) {
     useSystemTheme,
   } = useGame();
 
-  useEffect(() => {
-    function handleKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape") onClose();
-    }
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [onClose]);
-
   return (
-    <div
-      className="modal-backdrop settings-sheet-backdrop"
-      role="presentation"
-      onMouseDown={onClose}
+    <ModalOverlay
+      backdropClassName="settings-sheet-backdrop"
+      panelClassName="settings-sheet"
+      labelledBy="settings-sheet-title"
+      onClose={onClose}
     >
-      <section
-        className="settings-sheet"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="settings-sheet-title"
-        onMouseDown={(event) => event.stopPropagation()}
-      >
         <header className="settings-sheet__header">
           <span className="settings-sheet__mark">
             <GameIcon name="settings" size={23} />
@@ -92,7 +77,6 @@ export function SettingsSheet({ onClose }: SettingsSheetProps) {
             </button>
           ) : null}
         </footer>
-      </section>
-    </div>
+    </ModalOverlay>
   );
 }
