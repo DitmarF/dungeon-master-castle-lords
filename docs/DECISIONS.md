@@ -53,6 +53,7 @@ These decisions were consolidated into this log on 2026-08-09. Their original ap
 | DMCL-018 | Downed, Wounded, and Dead are distinct hero states; death of the actual sovereign is campaign defeat. | Consequence shape is approved; exact thresholds/recovery remain TBD. | `GAME_CONCEPT.md` |
 | DMCL-019 | Dominion, Conquest, and Ascension are the approved victory families. | Exact victory thresholds/resolution remain TBD. | `GAME_CONCEPT.md` |
 | DMCL-020 | The authoritative FS token source is `sources/fs.tokens.json`. | UI adapters derive/synchronize from this repository source; adapter details are EPIC 01 work. | `GAME_CONCEPT.md`, `ROADMAP.md` |
+| DMCL-P17 | Generate and commit the existing light/dark FS CSS adapter deterministically from `sources/fs.tokens.json`, keep derived/application CSS handwritten, and generate only the narrow default primitive-color TypeScript projection needed by existing persisted banners. | This removes manual FS-value drift without changing the CSS API, runtime theme bootstrap, visual behavior, dependencies, or stored banner values. | `ARCHITECTURE.md`, `E01-T01_FS_TOKEN_ADAPTER_AUDIT.md` |
 
 ## Observed/interim implementation choices
 
@@ -71,12 +72,6 @@ These entries explain the current code. They are not accepted long-term decision
 | DMCL-I09 | The dungeon stores both a seed and generated rooms/tiles. | Future seed/snapshot authority is TBD. | `GAME_STATE.md` |
 | DMCL-I10 | Unfinished hero setup and most view interaction state are component-local and disposable. | Draft persistence requires a product decision. | `CURRENT_STATE.md`, `GAME_STATE.md` |
 | DMCL-I11 | World strategy, conquest, supply, meaningful management, tactical combat, executable skill effects, cloud saves, and multiplayer are not implemented. | Do not report concept scope as shipped functionality. | `CURRENT_STATE.md` |
-
-## Active proposals
-
-| ID | Status | Decision | Source |
-|---|---|---|---|
-| DMCL-P17 | **Proposed** | Generate and commit the existing light/dark FS CSS adapter deterministically from `sources/fs.tokens.json`, keep derived/application CSS handwritten, and generate only the narrow default primitive-color TypeScript projection needed to remove the current banner-palette duplicate without changing persisted values. | `ARCHITECTURE.md`, `E01-T01_FS_TOKEN_ADAPTER_AUDIT.md` |
 
 ## Foundation proposals resolved by E00-T05
 
@@ -117,14 +112,13 @@ The responsible documents contain detailed questions. This index groups the deci
 | DMCL-Q11 | Multiplayer mode and authority model, or confirmation that it should not constrain current work. | Architecture and campaign transitions. | `ROADMAP.md` |
 | DMCL-Q12 | Content ID/version/deprecation strategy, localization, asset catalog, and mod/remote-content requirements. | Content infrastructure. | `CONTENT_MODEL.md` |
 | DMCL-Q13 | Required verification gates and supported development environment. | Milestone completion. | `ARCHITECTURE.md`, `ROADMAP.md` |
-| DMCL-Q15 | Owner approval or revision of proposed FS synchronization contract DMCL-P17. | E01-T02 and design-system maintenance. | `ARCHITECTURE.md`, `ROADMAP.md` |
-
 ### Deferred entries resolved during E00-T05
 
 | ID | Status | Resolution |
 |---|---|---|
 | DMCL-Q08 | **Accepted as DMCL-013** | World and tactical boards use hex grids; dungeon/building boards use square grids. |
 | DMCL-Q14 | **Resolved by accepted DMCL-P16** | Sites/Vinext/Cloudflare remains the delivery constraint unless an explicit later decision replaces it; platform services stay at the edges. |
+| DMCL-Q15 | **Resolved by accepted DMCL-P17** | Use deterministic committed generation for the existing FS adapter and the narrow persisted-banner projection; keep derived CSS handwritten and runtime theme handling unchanged. |
 | DMCL-Q16 | **Resolved** | Current Epic is EPIC 01; exact next task is E01-T01. |
 
 ## Decision record format
@@ -156,4 +150,4 @@ Use a full standalone ADR only when a decision needs alternatives, extensive evi
 
 The foundation no longer requires architectural re-approval before EPIC 01. DMCL-P01–P13 and DMCL-P16 are accepted; DMCL-P14/P15 are superseded by the Epic roadmap and E01-T01.
 
-Remaining DMCL-Q entries concern exact mechanics, persistence, tooling, or later-Epic details. DMCL-P17 is the E01-T01 recommendation and remains Proposed; DMCL-Q15 blocks E01-T02 until the project owner explicitly approves or revises it.
+Remaining DMCL-Q entries concern exact mechanics, persistence, tooling, or later-Epic details. DMCL-P17 was explicitly accepted through E01-T01, resolves DMCL-Q15, and authorizes bounded implementation in E01-T02.

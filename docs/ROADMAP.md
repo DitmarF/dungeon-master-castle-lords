@@ -36,15 +36,17 @@ Approved structural direction includes:
 
 ## Current Next Task
 
-### E01-T01 — Synchronize the FS token source and existing CSS token layer
+### E01-T02 — Implement the approved FS token synchronization
 
 Status: **Next — exactly one**
 
-Goal: use the restored authoritative [`sources/fs.tokens.json`](../sources/fs.tokens.json) to audit and synchronize the existing CSS token adapter without redesigning the UI or changing gameplay.
+Goal: make the restored authoritative [`sources/fs.tokens.json`](../sources/fs.tokens.json) the operational source for the existing FS CSS API through the deterministic, committed generation contract accepted as DMCL-P17.
 
-Expected scope must be defined with [TASK_TEMPLATE.md](./TASK_TEMPLATE.md) before implementation. It should determine the token mapping/synchronization approach, preserve semantic UI versus primitive game-color roles, verify light/dark behavior, and document any intentional adapter-only tokens.
+Expected scope must be defined with [TASK_TEMPLATE.md](./TASK_TEMPLATE.md) before implementation. It must preserve the existing light/dark selectors, system/manual theme behavior, semantic-versus-primitive roles, persisted banner-color values, and handwritten application-derived tokens.
 
-Non-goals include a Tailwind migration, general visual redesign, gameplay changes, unrelated stylesheet refactoring, dependency installation, and deployment.
+Non-goals include high-contrast UI, a styling migration, general visual redesign, gameplay/save changes, unrelated stylesheet refactoring, dependency installation, and deployment.
+
+E01-T01 was accepted by the project owner on 2026-08-09. It found no current mapped-value mismatch and accepted DMCL-P17: dependency-free deterministic generation of a committed FS CSS adapter plus the narrow default primitive-color projection needed for existing persisted banners.
 
 ## Epic registry
 

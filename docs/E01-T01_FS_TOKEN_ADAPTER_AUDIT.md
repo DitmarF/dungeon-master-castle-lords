@@ -1,6 +1,6 @@
 # E01-T01 — Audit FS token adapter and define synchronization contract
 
-Status: **Candidate — awaiting project-owner acceptance and decision approval**
+Status: **Accepted — non-deployed checkpoint**
 Audit date: 2026-08-09
 
 ## Task ID and name
@@ -244,7 +244,7 @@ The source mode named `default` is therefore the light adapter block; “system�
 
 ## Recommended synchronization contract
 
-**Recommendation: DMCL-P17 — committed deterministic generation, currently Proposed.**
+**Recommendation: DMCL-P17 — committed deterministic generation, accepted on 2026-08-09.**
 
 The repository evidence validates the preferred direction, with one narrow addition for persisted primitive values:
 
@@ -326,12 +326,11 @@ No dependency or lockfile change is expected.
 - Verify semantic UI and primitive gameplay roles remain separate; perform no redesign.
 - Verify no profile/campaign schema or value migration occurs.
 
-## Decisions requiring project-owner approval
+## Decision resolution
 
-1. Approve, revise, or reject DMCL-P17: committed deterministic generated CSS plus handwritten derived CSS and the narrow generated TypeScript banner projection.
-2. If approved, confirm E01-T02 may add the generator/check scripts and generated artifacts while preserving the exact exposure allowlist above.
+The project owner accepted the E01-T01 Candidate and DMCL-P17 by directing implementation of the approved synchronization contract in E01-T02 on 2026-08-09.
 
-Until both are explicit, DMCL-P17 remains **Proposed**, DMCL-Q15 remains open, and E01-T02 must not begin.
+DMCL-P17 is **Accepted**, DMCL-Q15 is resolved, and E01-T02 is authorized as the next bounded task.
 
 ## Completion report
 
@@ -342,20 +341,20 @@ Until both are explicit, DMCL-P17 remains **Proposed**, DMCL-Q15 remains open, a
 - Acceptance evidence: all criteria above are checked with source, CSS, consumer, theme, Git, and Sites evidence.
 - Automated verification: read-only comparison found zero mismatches across all 85 exposed declarations; documentation reference/status/whitespace checks passed.
 - Behavior verification: theme and usage behavior reviewed in code; no UI behavior changed and no browser test was required.
-- Documentation/decision updates: DMCL-P17 added as Proposed; DMCL-Q15 narrowed to owner approval/revision; no Accepted decision.
-- Limitations/risks/open approvals: DMCL-P17 and E01-T02 authorization pending; browser/build behavior unchanged and not re-run.
+- Documentation/decision updates: DMCL-P17 was proposed at Candidate and accepted by the project owner; DMCL-Q15 is resolved.
+- Limitations/risks/open approvals: implementation and behavior verification belong to E01-T02; browser/build behavior was unchanged and not re-run by E01-T01.
 - Deployment: **Not performed**
 
 ### User acceptance
 
-- Status: awaiting acceptance and explicit DMCL-P17 decision
-- Accepted by/date: not yet recorded
+- Status: accepted
+- Accepted by/date: project owner, 2026-08-09
 
 ### Accepted checkpoint
 
-- Final commit SHA: pending acceptance
-- Pushed source branch: pending acceptance
-- Saved Sites version: pending acceptance; version 7 remains stable base
-- Roadmap status: E01-T01 remains Candidate; roadmap not advanced
-- Next task: proposed `E01-T02 — Implement the approved FS token synchronization contract`; not started
+- Final commit SHA: the acceptance-administration commit containing this update; reported with the saved Sites checkpoint because a commit cannot contain its own SHA
+- Pushed source branch: `main`
+- Saved Sites version: assigned from the pushed acceptance commit and reported with the checkpoint
+- Roadmap status: E01-T01 accepted; EPIC 01 remains Current
+- Next task: `E01-T02 — Implement the approved FS token synchronization contract`
 - Deployment: **Not performed**

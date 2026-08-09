@@ -111,7 +111,7 @@ Boards reuse semantic FS design tokens, system-dark behavior, responsive/safe-ar
 
 Styles may be organized per stable module as the project grows; no styling technology migration is approved here.
 
-**Proposed — DMCL-P17; owner approval required.** Synchronize the existing FS adapter through a deterministic, dependency-free generation step. `sources/fs.tokens.json` remains the only authority for directly mapped FS values; a committed generated CSS file preserves the current custom-property names and the current `:root`/`:root[data-theme="dark"]` mode boundary. Handwritten CSS continues to own derived surfaces, borders, shadows, radii, and component-local variables. A narrowly generated TypeScript projection may expose the existing default primitive banner values without changing their persisted representation. Generation must have a non-writing drift check used by normal verification. Muted and dark-high-contrast source modes remain intentionally unexposed until separately approved.
+**Accepted — DMCL-P17.** Synchronize the existing FS adapter through a deterministic, dependency-free generation step. `sources/fs.tokens.json` remains the only authority for directly mapped FS values; a committed generated CSS file preserves the current custom-property names and the current `:root`/`:root[data-theme="dark"]` mode boundary. Handwritten CSS continues to own derived surfaces, borders, shadows, radii, and component-local variables. A narrowly generated TypeScript projection exposes the existing default primitive banner values without changing their persisted representation. Generation has a non-writing drift check used by normal verification. Muted and dark-high-contrast source modes remain intentionally unexposed until separately approved.
 
 ### 9. Mobile-first does not mean mobile-only
 
@@ -235,5 +235,4 @@ This document does not approve:
 2. What is the authoritative player/campaign/persistence model: campaign count, identity, cloud sync, offline behavior, and save semantics?
 3. Should future multiplayer constrain architecture now; if yes, what authority and synchronization model is required?
 4. What verification gates and supported local development environment are required?
-5. Will the project owner approve proposed synchronization contract DMCL-P17 from E01-T01, or request a different adapter strategy?
-6. Should styling remain handcrafted CSS, use Tailwind intentionally, or defer that choice?
+5. Should styling remain handcrafted CSS, use Tailwind intentionally, or defer that choice?
