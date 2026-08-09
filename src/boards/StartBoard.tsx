@@ -4,15 +4,8 @@ import { useState, type FormEvent } from "react";
 import { useGame } from "../game/GameProvider";
 import type { PlayerProfile } from "../game/model";
 import { Crest } from "../ui/Crest";
+import { FS_BANNER_COLORS as BANNER_COLORS } from "../ui/fs-game-colors.generated";
 import { GameIcon } from "../ui/GameIcon";
-
-const BANNER_COLORS = [
-  { name: "Indigo", value: "rgba(59,71,204,1)" },
-  { name: "Vermilion", value: "rgba(204,103,59,1)" },
-  { name: "Amber", value: "rgba(204,173,59,1)" },
-  { name: "Green", value: "rgba(59,204,98,1)" },
-  { name: "Violet", value: "rgba(122,59,204,1)" },
-];
 
 function formatLastPlayed(player: PlayerProfile): string {
   if (!player.lastPlayedAt) return "No campaign yet";

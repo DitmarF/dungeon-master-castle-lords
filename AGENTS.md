@@ -95,6 +95,8 @@ Requires Node.js `>=22.13.0`. Use only commands present in `package.json`:
 - `npm run validate:artifact` — validate an existing build artifact.
 - `npm run start` — start an existing Vinext build.
 - `npm run install:ci` — locked install; use only when dependencies are absent and installation is authorized.
+- `npm run tokens:generate` — deterministically regenerate the committed FS CSS and TypeScript adapters from `sources/fs.tokens.json`.
+- `npm run tokens:check` — validate the FS source mapping and fail without writing when a committed generated adapter is stale.
 - `npm run db:generate` — generate Drizzle migrations only for explicitly approved schema work.
 
 There is no standalone `typecheck` script. Do not list or claim one. The build/test helper scripts target Linux and require GNU `timeout`; on unsupported macOS environments, report verification as not run/unknown rather than treating an environment limitation as a product failure or inventing alternate project commands.

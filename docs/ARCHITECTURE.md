@@ -113,6 +113,8 @@ Styles may be organized per stable module as the project grows; no styling techn
 
 **Accepted — DMCL-P17.** Synchronize the existing FS adapter through a deterministic, dependency-free generation step. `sources/fs.tokens.json` remains the only authority for directly mapped FS values; a committed generated CSS file preserves the current custom-property names and the current `:root`/`:root[data-theme="dark"]` mode boundary. Handwritten CSS continues to own derived surfaces, borders, shadows, radii, and component-local variables. A narrowly generated TypeScript projection exposes the existing default primitive banner values without changing their persisted representation. Generation has a non-writing drift check used by normal verification. Muted and dark-high-contrast source modes remain intentionally unexposed until separately approved.
 
+The E01-T02 implementation uses `scripts/generate-fs-token-adapter.mjs` to write `app/fs-tokens.generated.css` and `src/ui/fs-game-colors.generated.ts`. `app/globals.css` imports the generated CSS before its handwritten derived/application layer. `npm run tokens:generate` is the explicit write operation; `npm run tokens:check` is non-writing and runs before normal lint/build verification. The generator uses an explicit allowlist, so new FS modes or primitives do not silently become application API.
+
 ### 9. Mobile-first does not mean mobile-only
 
 **Established.**

@@ -53,7 +53,7 @@ These decisions were consolidated into this log on 2026-08-09. Their original ap
 | DMCL-018 | Downed, Wounded, and Dead are distinct hero states; death of the actual sovereign is campaign defeat. | Consequence shape is approved; exact thresholds/recovery remain TBD. | `GAME_CONCEPT.md` |
 | DMCL-019 | Dominion, Conquest, and Ascension are the approved victory families. | Exact victory thresholds/resolution remain TBD. | `GAME_CONCEPT.md` |
 | DMCL-020 | The authoritative FS token source is `sources/fs.tokens.json`. | UI adapters derive/synchronize from this repository source; adapter details are EPIC 01 work. | `GAME_CONCEPT.md`, `ROADMAP.md` |
-| DMCL-P17 | Generate and commit the existing light/dark FS CSS adapter deterministically from `sources/fs.tokens.json`, keep derived/application CSS handwritten, and generate only the narrow default primitive-color TypeScript projection needed by existing persisted banners. | This removes manual FS-value drift without changing the CSS API, runtime theme bootstrap, visual behavior, dependencies, or stored banner values. | `ARCHITECTURE.md`, `E01-T01_FS_TOKEN_ADAPTER_AUDIT.md` |
+| DMCL-P17 | Generate and commit the existing light/dark FS CSS adapter deterministically from `sources/fs.tokens.json`, keep derived/application CSS handwritten, and generate only the narrow default primitive-color TypeScript projection needed by existing persisted banners. | This removes manual FS-value drift without changing the CSS API, runtime theme bootstrap, visual behavior, dependencies, or stored banner values. | `ARCHITECTURE.md`, `E01-T01_FS_TOKEN_ADAPTER_AUDIT.md`, `E01-T02_FS_TOKEN_SYNCHRONIZATION.md` |
 
 ## Observed/interim implementation choices
 

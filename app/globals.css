@@ -1,68 +1,10 @@
 @import "tailwindcss";
+@import "./fs-tokens.generated.css";
 
 :root {
   color-scheme: light dark;
 
-  /* FS semantic colors */
-  --fs-surface-background: rgba(230, 230, 230, 1);
-  --fs-surface-elevation-1: rgba(179, 179, 179, 1);
-  --fs-surface-elevation-2: rgba(77, 77, 77, 1);
-  --fs-surface-overlay: rgba(26, 26, 26, 1);
-  --fs-content-inverse: rgba(230, 230, 230, 1);
-  --fs-content-elevation-2: rgba(179, 179, 179, 1);
-  --fs-content-elevation-1: rgba(77, 77, 77, 1);
-  --fs-content-primary: rgba(26, 26, 26, 1);
-  --fs-content-disabled: rgba(128, 128, 128, 1);
-  --fs-action-primary: rgba(59, 71, 204, 1);
-  --fs-action-hover: rgba(204, 103, 59, 1);
-  --fs-action-link: rgba(122, 59, 204, 1);
-  --fs-action-disabled: rgba(128, 128, 128, 1);
-  --fs-feedback-success: rgba(59, 204, 98, 1);
-  --fs-feedback-warning: rgba(204, 202, 59, 1);
-  --fs-feedback-error: rgba(204, 59, 62, 1);
-  --fs-feedback-info: rgba(59, 71, 204, 1);
-  --fs-border-subtle: rgba(128, 128, 128, 1);
-  --fs-border-strong: rgba(51, 51, 51, 1);
-  --fs-border-focus: rgba(59, 71, 204, 1);
-
-  /* FS primitive colors for game objects */
-  --fs-red: rgba(204, 59, 62, 1);
-  --fs-vermilion: rgba(204, 103, 59, 1);
-  --fs-orange: rgba(204, 144, 59, 1);
-  --fs-amber: rgba(204, 173, 59, 1);
-  --fs-yellow: rgba(204, 202, 59, 1);
-  --fs-green: rgba(59, 204, 98, 1);
-  --fs-cyan: rgba(59, 204, 180, 1);
-  --fs-blue: rgba(59, 148, 204, 1);
-  --fs-indigo: rgba(59, 71, 204, 1);
-  --fs-violet: rgba(122, 59, 204, 1);
-  --fs-magenta: rgba(202, 59, 204, 1);
-
-  /* FS spacing and typography */
-  --space-3xs: 0.125rem;
-  --space-2xs: 0.25rem;
-  --space-xs: 0.5rem;
-  --space-sm: 0.75rem;
-  --space-md: 1rem;
-  --space-lg: 1.5rem;
-  --space-xl: 2rem;
-  --space-2xl: 3rem;
-  --space-3xl: 4rem;
-  --font-base: "Inter", "Helvetica Neue", Arial, sans-serif;
-  --font-mono: "JetBrains Mono", "SFMono-Regular", monospace;
-  --font-size-xs: 0.75rem;
-  --font-size-sm: 0.875rem;
-  --font-size-md: 1rem;
-  --font-size-lg: 1.25rem;
-  --font-size-xl: 1.5rem;
-  --font-weight-regular: 400;
-  --font-weight-medium: 500;
-  --font-weight-semibold: 600;
-  --font-weight-bold: 700;
-  --line-height-tight: 1.2;
-  --line-height-normal: 1.5;
-  --line-height-relaxed: 1.75;
-
+  /* Handwritten application-specific tokens derived from the FS adapter. */
   --surface-card: color-mix(in srgb, white 78%, var(--fs-surface-background));
   --surface-raised: color-mix(in srgb, white 92%, var(--fs-surface-background));
   --surface-muted: color-mix(in srgb, white 42%, var(--fs-surface-background));
@@ -77,39 +19,7 @@
 }
 
 :root[data-theme="dark"] {
-    --fs-surface-background: rgba(26, 26, 26, 1);
-    --fs-surface-elevation-1: rgba(77, 77, 77, 1);
-    --fs-surface-elevation-2: rgba(179, 179, 179, 1);
-    --fs-surface-overlay: rgba(230, 230, 230, 1);
-    --fs-content-inverse: rgba(26, 26, 26, 1);
-    --fs-content-elevation-2: rgba(77, 77, 77, 1);
-    --fs-content-elevation-1: rgba(179, 179, 179, 1);
-    --fs-content-primary: rgba(230, 230, 230, 1);
-    --fs-content-disabled: rgba(128, 128, 128, 1);
-    --fs-action-primary: rgba(59, 148, 204, 1);
-    --fs-action-hover: rgba(204, 134, 104, 1);
-    --fs-action-link: rgba(147, 104, 204, 1);
-    --fs-action-disabled: rgba(128, 128, 128, 1);
-    --fs-feedback-success: rgba(59, 204, 98, 1);
-    --fs-feedback-warning: rgba(204, 202, 104, 1);
-    --fs-feedback-error: rgba(204, 104, 106, 1);
-    --fs-feedback-info: rgba(104, 204, 187, 1);
-    --fs-border-subtle: rgba(128, 128, 128, 1);
-    --fs-border-strong: rgba(204, 204, 204, 1);
-    --fs-border-focus: rgba(59, 148, 204, 1);
-
-    --fs-red: rgba(204, 104, 106, 1);
-    --fs-vermilion: rgba(204, 134, 104, 1);
-    --fs-orange: rgba(204, 162, 104, 1);
-    --fs-amber: rgba(204, 182, 104, 1);
-    --fs-yellow: rgba(204, 202, 104, 1);
-    --fs-green: rgba(59, 204, 98, 1);
-    --fs-cyan: rgba(104, 204, 187, 1);
-    --fs-blue: rgba(59, 148, 204, 1);
-    --fs-indigo: rgba(104, 112, 204, 1);
-    --fs-violet: rgba(147, 104, 204, 1);
-    --fs-magenta: rgba(202, 104, 204, 1);
-
+    /* Handwritten dark-mode recipes over the generated FS adapter. */
     --surface-card: color-mix(
       in srgb,
       var(--fs-surface-elevation-1) 32%,
