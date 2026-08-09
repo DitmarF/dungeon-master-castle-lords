@@ -114,7 +114,18 @@ Exact day/turn conversion, action costs, injury thresholds, sovereign succession
 
 ## Boards and information flow
 
-The approved board family is:
+The approved top-level in-campaign board family is:
+
+- **Hero** — future full character-management and progression surface;
+- **Settlement** — holding development and management;
+- **World** — strategic map and campaign geography;
+- **Dungeon** — square-grid exploration and location interaction;
+- **Combat** — tactical encounter resolution;
+- **Diplomacy** — future campaign relationship and diplomatic interaction surface.
+
+Player/campaign selection and hero setup remain pre-campaign surfaces rather than entries in the in-campaign board catalog. The full Hero board is distinct from `HeroSheet`, which remains a quick-information overlay available from the shared shell.
+
+These surfaces preserve the previously approved responsibilities:
 
 - **Player/campaign and hero setup:** create or recognize a player, start/load a campaign, and establish the hero/faction.
 - **Dungeon/building-level board:** square-grid exploration and location-level interaction.

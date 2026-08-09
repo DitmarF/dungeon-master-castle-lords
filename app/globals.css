@@ -1736,13 +1736,20 @@ p {
   z-index: 8;
   min-height: calc(58px + env(safe-area-inset-bottom));
   display: grid;
-  grid-template-columns: repeat(var(--board-count), minmax(0, 1fr));
+  grid-template-columns: repeat(var(--board-count), minmax(44px, 1fr));
   align-items: stretch;
+  overflow-x: auto;
   padding: 0 max(var(--space-xs), env(safe-area-inset-right))
     env(safe-area-inset-bottom) max(var(--space-xs), env(safe-area-inset-left));
   border-top: 1px solid var(--border-soft);
   background: var(--surface-appbar);
   backdrop-filter: blur(18px);
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+}
+
+.board-nav::-webkit-scrollbar {
+  display: none;
 }
 
 .board-nav__item {
@@ -1784,6 +1791,70 @@ p {
   display: grid;
   place-items: center;
   font-style: normal;
+}
+
+/* Empty EPIC 01 board foundations */
+.scaffold-board {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  display: grid;
+  place-items: center;
+  overflow: auto;
+  padding: var(--space-md);
+}
+
+.scaffold-board__card {
+  width: min(100%, 520px);
+  display: grid;
+  justify-items: center;
+  padding: clamp(var(--space-lg), 8vw, var(--space-2xl));
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-lg);
+  background: var(--surface-raised);
+  box-shadow: var(--shadow-soft);
+  text-align: center;
+}
+
+.scaffold-board__mark {
+  width: 68px;
+  height: 68px;
+  display: grid;
+  place-items: center;
+  margin-bottom: var(--space-md);
+  border: 1px solid
+    color-mix(in srgb, var(--fs-action-primary) 42%, var(--border-soft));
+  border-radius: 50%;
+  color: var(--fs-action-primary);
+  background: color-mix(
+    in srgb,
+    var(--fs-action-primary) 9%,
+    var(--surface-raised)
+  );
+}
+
+.scaffold-board h1 {
+  margin: var(--space-xs) 0 0;
+  font-size: clamp(1.55rem, 8vw, 2.25rem);
+  letter-spacing: -0.045em;
+}
+
+.scaffold-board p {
+  max-width: 410px;
+  margin: var(--space-sm) 0 var(--space-md);
+  color: var(--fs-content-elevation-1);
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-normal);
+}
+
+.scaffold-board__future {
+  padding: 6px var(--space-sm);
+  border: 1px solid var(--border-soft);
+  border-radius: 999px;
+  color: var(--fs-content-elevation-1);
+  background: var(--surface-muted);
+  font: var(--font-weight-semibold) 0.58rem/1.2 var(--font-mono);
+  text-transform: uppercase;
 }
 
 /* Dungeon board */
@@ -2935,6 +3006,8 @@ p {
     grid-template-columns: 1fr;
     grid-template-rows: repeat(var(--board-count), minmax(64px, auto));
     align-content: start;
+    overflow-x: visible;
+    overflow-y: auto;
     gap: 4px;
     padding: var(--space-xs);
     border-top: 0;

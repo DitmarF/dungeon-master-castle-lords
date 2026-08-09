@@ -1,8 +1,12 @@
 import type { ComponentType } from "react";
 import type { BoardId, GameSave } from "../game/model";
 import type { IconName } from "../ui/GameIcon";
+import { CombatBoard } from "./CombatBoard";
+import { DiplomacyBoard } from "./DiplomacyBoard";
 import { DungeonBoard } from "./DungeonBoard";
+import { HeroBoard } from "./HeroBoard";
 import { SettlementBoard } from "./SettlementBoard";
+import { WorldBoard } from "./WorldBoard";
 
 export interface BoardModule {
   id: Exclude<BoardId, "setup">;
@@ -14,7 +18,39 @@ export interface BoardModule {
   isUnlocked: (game: Readonly<GameSave>) => boolean;
 }
 
+// E01-T05 scaffolds are navigable only to verify the board architecture.
+// This is not a future gameplay unlock rule.
+const isArchitectureScaffoldUnlocked = () => true;
+
 export const BOARD_CATALOG = [
+  {
+    id: "hero",
+    label: "Hero board",
+    shortLabel: "Hero",
+    icon: "user",
+    component: HeroBoard,
+    enabled: true,
+    isUnlocked: isArchitectureScaffoldUnlocked,
+  },
+  {
+    id: "settlement",
+    label: "Main settlement",
+    shortLabel: "Settle",
+    icon: "castle",
+    component: SettlementBoard,
+    enabled: true,
+    isUnlocked: (game: Readonly<GameSave>) =>
+      game.dungeon.settlementClaimed,
+  },
+  {
+    id: "world",
+    label: "World map",
+    shortLabel: "World",
+    icon: "world",
+    component: WorldBoard,
+    enabled: true,
+    isUnlocked: isArchitectureScaffoldUnlocked,
+  },
   {
     id: "dungeon",
     label: "First level",
@@ -25,14 +61,22 @@ export const BOARD_CATALOG = [
     isUnlocked: () => true,
   },
   {
-    id: "settlement",
-    label: "Main settlement",
-    shortLabel: "Settlement",
-    icon: "castle",
-    component: SettlementBoard,
+    id: "combat",
+    label: "Tactical combat",
+    shortLabel: "Combat",
+    icon: "swords",
+    component: CombatBoard,
     enabled: true,
-    isUnlocked: (game: Readonly<GameSave>) =>
-      game.dungeon.settlementClaimed,
+    isUnlocked: isArchitectureScaffoldUnlocked,
+  },
+  {
+    id: "diplomacy",
+    label: "Diplomacy board",
+    shortLabel: "Diplom.",
+    icon: "message",
+    component: DiplomacyBoard,
+    enabled: true,
+    isUnlocked: isArchitectureScaffoldUnlocked,
   },
 ] as const satisfies readonly BoardModule[];
 

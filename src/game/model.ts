@@ -2,7 +2,14 @@ import type { SkillId } from "./skillTrees";
 
 export type { SkillId } from "./skillTrees";
 
-export type BoardId = "setup" | "dungeon" | "settlement" | "world" | "combat";
+export type BoardId =
+  | "setup"
+  | "hero"
+  | "settlement"
+  | "world"
+  | "dungeon"
+  | "combat"
+  | "diplomacy";
 
 export type FactionType = "dungeon" | "castle";
 export type HeroClass = "fighter" | "ranger" | "mage";
