@@ -1,0 +1,265 @@
+# Dungeon Master & Castle Lords — Content Model
+
+Status: source of truth for game-content ownership and extension principles  
+Scope: how authored definitions relate to rules, presentation, and campaign instances  
+Last updated: 2026-08-09
+
+## Purpose and authority
+
+This document answers: **How do we add more game content without adding another bespoke subsystem?** It defines content boundaries and extension principles without choosing unapproved gameplay rules or implementing a schema.
+
+- Product systems and gameplay status: [GAME_CONCEPT.md](./GAME_CONCEPT.md)
+- Structural boundaries and proposals: [ARCHITECTURE.md](./ARCHITECTURE.md)
+- Runtime and campaign-state ownership: [GAME_STATE.md](./GAME_STATE.md)
+- Observed implementation: [CURRENT_STATE.md](./CURRENT_STATE.md)
+
+Status labels:
+
+- **Established** — required by the approved concept or established project direction.
+- **Observed** — true in the current repository, but not automatically permanent.
+- **Proposed — approval required** — recommended content policy not yet approved.
+- **TBD/Open Question** — unresolved; implementation must not silently decide it.
+
+## Core distinction
+
+**Established at principle level:** Content describes the reusable things the game offers; campaign state records particular choices, instances, and outcomes; rules decide what those things do; views decide how they are presented.
+
+Examples:
+
+- “Fighter” is a reusable content definition; a hero choosing Fighter is campaign state.
+- “Heavy Blow” is a skill definition; its learned rank is campaign state; its legal effect is a rule.
+- A dungeon-room type can be content; a generated room at coordinates in one campaign is state; placement is generator/rule behavior.
+- “World” can be board metadata; whether a campaign may enter it is runtime availability/unlock state.
+
+Adding another Fighter, skill, room type, building, unit, or terrain should extend an existing content family. A new subsystem is justified only when the new content introduces genuinely new lifecycle, state, or rule behavior.
+
+## Current content inventory
+
+### Centralized content
+
+**Observed:** `src/game/skillTrees.ts` is the strongest current content pattern. It defines six typed trees and 60 skills with stable IDs, names, sigils, descriptions, hierarchy metadata, and derived indexes. Campaign saves reference skills by ID and store ranks separately.
+
+Skill descriptions are currently presentation text; most described effects are not executable mechanics. Their wording must not be treated as approved rules.
+
+**Observed:** `src/boards/registry.ts` centralizes basic board metadata—stable ID, labels, icon, and enabled flag—for dungeon, settlement, world, and combat. Component resolution and unlock rules are not part of this catalog today.
+
+### Distributed or duplicated content
+
+**Observed:** Faction, class, vocation, and attribute display definitions are embedded in `SetupBoard`. Class/vocation bonus logic also exists separately in setup preview code and `createGame.ts`. Labels, icons, presentation copy, initial skills, and mechanical bonuses therefore do not have one authoritative definition.
+
+**Observed:** Faction-related presentation and banner colors appear in board/UI components. `GameIcon` contains a typed hand-authored icon mapping. Most UI copy and board-specific labels are component-local.
+
+### Rules or generated data—not reusable content today
+
+**Observed:** Dungeon dimensions, room counts/ranges, corridors, start/heart placement, and initial counters are hard-coded in the generator. The generated rooms and tiles are campaign state, not content definitions.
+
+**Observed:** Hero creation calculations, movement validity, discovery, persistence migration, and board transitions are rule/application behavior rather than authored content.
+
+No external game-content files, runtime content loader, localization catalog, validation schema, editor, mod system, or server-delivered content exists.
+
+## Content families
+
+The approved concept implies these **content families**, but only currently implemented entries are established content. Future entries and mechanics remain TBD.
+
+| Family | Reusable definitions may eventually include | Campaign stores |
+|---|---|---|
+| Hero foundations | factions, classes, vocations, attributes | selected IDs and durable progression |
+| Progression | skills, skill trees, prerequisites, approved effects | learned ranks/unlocks and choices |
+| World and locations | region, dungeon, castle, settlement, building, level, room or site definitions | generated/authored instances, discovery, control, changes |
+| Management | buildings, projects, resources, production or population types | owned instances, quantities, queues, outcomes |
+| Supply and strategy | supply types, routes, strategic actions, region states | campaign network/relationships and consequences |
+| Tactical play | units, abilities, terrain, hazards, encounter templates | participants, placement, conditions, results; in-progress state only if approved |
+| Presentation | labels, descriptions, sigils, icon/asset references, tags | normally nothing beyond stable references |
+| Boards | navigation/display metadata and supported capabilities | active board and approved board-specific state |
+
+This table is a classification aid, not approval of any listed mechanic.
+
+## Proposed common definition contract
+
+**Proposed — approval required:** Every reusable game-content definition should share a small identity/presentation envelope, then add fields specific to its family:
+
+```text
+ContentDefinition
+  id            stable machine ID
+  kind          content family/type
+  name          player-facing name or text key
+  description   optional player-facing description or text key
+  presentation  optional sigil/icon/asset/color-role references
+  tags          optional descriptive/query metadata
+  version       optional content revision when compatibility requires it
+  family fields fields validated for this specific kind
+```
+
+This is a conceptual contract, not an approved TypeScript or file schema. Do not require irrelevant fields merely to force every family into one large record.
+
+### Identity rules
+
+**Proposed — approval required:**
+
+- IDs are stable, unique within an explicitly defined namespace, and independent of display labels.
+- Campaign state references definitions by ID rather than embedding full definitions.
+- Renaming display text does not change identity.
+- Removing or changing persisted references requires compatibility/migration handling.
+- Definition IDs, campaign-instance IDs, and player/campaign IDs are distinct concepts.
+
+The namespace strategy, ID syntax, aliases/deprecation, and content-version policy are TBD.
+
+## Composition instead of bespoke types
+
+**Proposed — approval required:** Model variation through small reusable capabilities where families share real behavior. A definition may compose approved capabilities such as:
+
+- grants or modifies an attribute;
+- unlocks or grants a skill;
+- has a grid footprint or placement constraints;
+- has costs, requirements, production, or upkeep;
+- participates in exploration, supply, control, or tactical behavior;
+- references presentation assets and descriptive tags.
+
+These are examples of structural capability categories, not approved gameplay effects.
+
+Do not create a new capability merely because two items share a word. A capability must have one rule meaning, one validation contract, and one execution path. Content data selects/configures approved behavior; it must not contain arbitrary executable code.
+
+When behavior is genuinely unique, add a named rule extension behind the same content contract rather than implementing it directly in one view.
+
+## Definition, rule, instance, and view boundaries
+
+**Proposed — approval required:** Use this ownership test for any new field:
+
+| Question | Owner |
+|---|---|
+| What reusable thing exists? | Content definition |
+| What does that kind of thing legally do? | Domain rule/capability handler |
+| What happened to this particular thing in this campaign? | Campaign instance/state |
+| How is it displayed or interacted with here? | Board/shared UI |
+| How is it loaded, validated, or delivered? | Content infrastructure |
+
+Do not store campaign quantities, damage, ownership, discovery, learned ranks, construction progress, or tactical position in reusable definitions. Do not encode rule calculations in display copy. Do not duplicate names, bonuses, or relationships across a view and rule file when one authoritative definition can serve both.
+
+## Relationships and references
+
+**Proposed — approval required:** Content relationships should use stable references and be validated as a whole catalog. Examples include a class referencing its root skill, a skill referencing prerequisites, or an encounter template referencing unit and terrain definitions.
+
+Relationships may be one-to-one, lists, hierarchy, or tagged queries only when the relevant system requires them. Circular dependencies, missing references, invalid hierarchy, and incompatible capabilities should fail validation before play.
+
+Exact prerequisite, inheritance, override, tagging, and cross-pack semantics are TBD.
+
+## Content catalogs
+
+**Proposed — approval required:** Each family should expose one authoritative typed catalog plus derived indexes/selectors. Consumers query that catalog instead of maintaining local parallel arrays.
+
+A catalog should provide, as relevant:
+
+- validated definitions keyed by stable ID;
+- deterministic ordering where presentation needs it;
+- derived indexes for kind, hierarchy, tags, or relationships;
+- explicit availability/version information when required;
+- selectors that return definitions without exposing campaign mutation.
+
+One catalog API does not require one physical file. Content may be split into maintainable modules and assembled at a controlled boundary.
+
+## Rules and effects
+
+**Observed:** Current skill descriptions imply mechanics, but there is no general effect-execution system. Hero path bonuses are handwritten conditionals.
+
+**Proposed — approval required:** Approved repeatable mechanics should be represented through typed effect/requirement definitions interpreted by domain rule handlers. Complex behavior may use a named handler with validated parameters. Views may preview the same authoritative definition but must not independently implement the effect.
+
+TBD/Open Question:
+
+- which effects and requirements are generic enough to model declaratively;
+- ordering, stacking, duration, targeting, and conflict rules;
+- whether descriptions are authored separately or generated from mechanics;
+- how rule/content versions interact with old campaigns.
+
+No generic effect engine should be built before at least one approved mechanic requires it.
+
+## Generated and authored locations
+
+**Established:** Campaign-specific generated maps and discoveries belong to campaign state as described in `GAME_STATE.md`.
+
+**Proposed — approval required:** Separate reusable generation inputs from generated instances:
+
+- content can describe approved tiles, room/site types, encounter pools, themes, or generation profiles;
+- generator rules consume those definitions and an explicit random source;
+- campaign state stores the authoritative seed/version, result, or both according to the approved state policy.
+
+The dungeon hierarchy, generation profiles, authored-versus-procedural balance, and compatibility rules are TBD.
+
+## Presentation and assets
+
+**Established:** Use simple geometric SVG visuals, the FS color system, semantic UI colors, primitive game-object colors, and externally supplied static images when appropriate. See `GAME_CONCEPT.md`.
+
+**Proposed — approval required:** Content definitions reference presentation roles or asset IDs rather than embedding board-specific markup or CSS classes. Shared presentation metadata may include a sigil, icon name, asset reference, and descriptive tags; layout and interaction remain owned by views.
+
+TBD/Open Question:
+
+- authoritative asset catalog and path conventions;
+- whether an icon reference is semantic or tied to the current `GameIcon` union;
+- image metadata, variants, licensing/provenance, and fallbacks;
+- FS token synchronization method.
+
+## Authoring format and delivery
+
+**Observed:** Game content is currently authored as TypeScript. This provides compile-time types and simple derived indexes, but much content is still embedded in components.
+
+**Proposed — approval required:** Keep TypeScript as the default prototype authoring format until non-developer authoring, localization, downloadable content, modding, or independent content releases justify a validated external format. Centralize definitions before changing formats.
+
+TBD/Open Question:
+
+- TypeScript versus JSON/YAML/database or generated artifacts;
+- runtime validation library and schema ownership;
+- content packs, load order, override policy, and compatibility;
+- localization keys and translation workflow;
+- hot reload/editor tooling;
+- remote delivery, modding, and trust/security model.
+
+Externalization alone does not make content modular; stable contracts, validation, rule separation, and campaign references do.
+
+## Adding content versus adding a subsystem
+
+**Proposed — approval required:** Use this decision sequence:
+
+1. Identify the existing content family and approved gameplay rule.
+2. Add a definition using the family schema and existing capabilities.
+3. Reference existing definitions by stable ID and reuse catalog selectors.
+4. Add presentation through shared metadata and existing views.
+5. Add campaign fields only for new durable instance facts.
+6. Add or extend a rule handler only when approved behavior cannot be expressed by existing capabilities.
+7. Create a new subsystem only when the content has a genuinely distinct lifecycle, state ownership, or interaction model.
+
+Examples:
+
+- Another class using approved attribute/skill grants: new content, not a new setup flow.
+- Another skill using an approved effect: new content, not a new skill component.
+- Another room type using an approved generation profile: new content, not another dungeon generator.
+- A new strategic system with unique state transitions and board interactions: possibly a subsystem, requiring concept and architecture approval first.
+
+These examples explain classification only; they do not approve new classes, skills, room types, or strategic mechanics.
+
+## Validation and compatibility
+
+**Proposed — approval required:** Content validation should cover:
+
+- unique and well-formed IDs;
+- required family fields and valid capability parameters;
+- reference integrity and hierarchy constraints;
+- compatibility with campaign persistence and migrations;
+- presentation references/fallbacks;
+- deterministic catalog assembly/order where required.
+
+Content changes that alter the meaning of persisted IDs or outcomes need an explicit compatibility decision: preserve old meaning, migrate campaign state, version the definition/rules, or declare incompatibility. The project currently has no formal content-versioning policy.
+
+## Open questions requiring approval
+
+1. Approve the common identity/presentation envelope with family-specific schemas?
+2. Approve stable content IDs and ID-based campaign references as formal policy?
+3. Approve composition through validated reusable capabilities rather than bespoke per-item logic?
+4. Approve the definition/rule/instance/view/infrastructure ownership test?
+5. Approve one authoritative catalog per family with derived indexes/selectors?
+6. When should typed declarative effects be introduced, and which first approved mechanics should define that vocabulary?
+7. Should TypeScript remain the prototype content-authoring format?
+8. What ID namespace, deprecation, alias, and content/rule-version strategy is required?
+9. Which future content family should be formalized first: hero foundations, skills, locations, management, strategy/supply, tactical play, or boards?
+10. What is the localization strategy, and should player-facing text be direct strings or text keys?
+11. What asset catalog, provenance, fallback, and FS-token synchronization rules apply?
+12. Are remote content, content packs, user mods, or independent content releases actual requirements; if yes, what load-order and trust model applies?
+
