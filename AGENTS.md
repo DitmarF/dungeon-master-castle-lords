@@ -92,21 +92,30 @@ Requires Node.js `>=22.13.0`. Use only commands present in `package.json`:
 - `npm run lint` — ESLint for the repository.
 - `npm run build` — bounded Sites build plus artifact validation.
 - `npm test` — runs the build, then the current rendered-HTML test.
+- `npm run verify` — normal automated quality gate: FS token drift check, lint, one bounded build/artifact validation, and the rendered-HTML test.
 - `npm run validate:artifact` — validate an existing build artifact.
 - `npm run start` — start an existing Vinext build.
-- `npm run install:ci` — locked install; use only when dependencies are absent and installation is authorized.
+- `npm run install:ci` — protected locked install for the ChatGPT Sites/Linux environment; use only when dependencies are absent and installation is authorized.
 - `npm run tokens:generate` — deterministically regenerate the committed FS CSS and TypeScript adapters from `sources/fs.tokens.json`.
 - `npm run tokens:check` — validate the FS source mapping and fail without writing when a committed generated adapter is stale.
 - `npm run db:generate` — generate Drizzle migrations only for explicitly approved schema work.
 
-There is no standalone `typecheck` script. Do not list or claim one. The build/test helper scripts target Linux and require GNU `timeout`; on unsupported macOS environments, report verification as not run/unknown rather than treating an environment limitation as a product failure or inventing alternate project commands.
+There is no standalone `typecheck` script. Do not list or claim one.
+
+The accepted DMCL-P18 verification responsibility contract is:
+
+- ChatGPT Sites/Linux installs with `npm run install:ci` and verifies with `npm run verify`.
+- Local macOS installs from the lockfile with `npm ci` and verifies with `npm run verify`.
+- GitHub Actions installs with `npm ci` and verifies with `npm run verify`.
+
+The Sites installer intentionally retains its Linux-specific integrity, cache, timeout, and concurrency safeguards. Ordinary build/test verification is portable across Linux and macOS and does not require GNU `timeout`, `flock`, `/proc`, or `sha256sum`.
 
 ## Verification
 
 Match verification to risk and task scope:
 
 - Documentation-only: inspect links/references, status labels, spelling, and `git diff`; no dependency install or application build is required.
-- Code changes with dependencies available in a supported environment: run `npm run lint` and the most relevant verification. `npm test` already runs `npm run build`; do not repeat the build without a reason.
+- Code changes with dependencies available in a supported environment: run `npm run verify`. Its command graph already runs lint, one build/artifact validation, and the rendered-HTML test; do not repeat the expensive build without a reason.
 - Build-only/platform changes: run `npm run build`; use `npm run validate:artifact` only when validating an already-produced artifact separately.
 - Database schema changes: inspect generated migrations and use `npm run db:generate` only when the task authorizes schema work.
 - Interaction or visual changes: test the affected mobile portrait/touch flow and relevant keyboard/accessibility behavior. Browser QA is task-dependent; state what was and was not checked.

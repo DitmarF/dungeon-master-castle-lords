@@ -55,6 +55,7 @@ These decisions were consolidated into this log on 2026-08-09. Their original ap
 | DMCL-020 | The authoritative FS token source is `sources/fs.tokens.json`. | UI adapters derive/synchronize from this repository source; adapter details are EPIC 01 work. | `GAME_CONCEPT.md`, `ROADMAP.md` |
 | DMCL-021 | The top-level in-campaign board family is Hero, Settlement, World, Dungeon, Combat, and Diplomacy; player/setup remains pre-campaign, and the full Hero board remains distinct from the quick-information `HeroSheet`. | Establish the complete modular family without conflating board surfaces, setup flow, or overlays. | `GAME_CONCEPT.md`, `ARCHITECTURE.md`, `E01-T05_EMPTY_BOARD_SCAFFOLD.md` |
 | DMCL-P17 | Generate and commit the existing light/dark FS CSS adapter deterministically from `sources/fs.tokens.json`, keep derived/application CSS handwritten, and generate only the narrow default primitive-color TypeScript projection needed by existing persisted banners. | This removes manual FS-value drift without changing the CSS API, runtime theme bootstrap, visual behavior, dependencies, or stored banner values. | `ARCHITECTURE.md`, `E01-T01_FS_TOKEN_ADAPTER_AUDIT.md`, `E01-T02_FS_TOKEN_SYNCHRONIZATION.md` |
+| DMCL-P18 | Retain `npm run install:ci` as the protected ChatGPT Sites/Linux install path; use `npm ci` for local macOS and GitHub Actions; use `npm run verify` as the shared automated quality gate; and treat GitHub Actions Linux as the canonical independent automated checkpoint while keeping rendered/mobile browser acceptance and owner physical-smartphone QA separate. | This makes token, lint, bounded build, artifact, and rendered-HTML checks reproducible across Linux and macOS without weakening the specialized Sites installer; CI remains verification-only. | `ARCHITECTURE.md`, `WORKFLOW.md`, `E01-T07_EPIC_01_EXIT_GATE.md` |
 
 ## Observed/interim implementation choices
 
@@ -112,12 +113,13 @@ The responsible documents contain detailed questions. This index groups the deci
 | DMCL-Q10 | Save semantics, draft persistence, cloud/offline sync, conflict handling, and compatibility guarantee. | Persistence and migrations. | `GAME_STATE.md`, `ROADMAP.md` |
 | DMCL-Q11 | Multiplayer mode and authority model, or confirmation that it should not constrain current work. | Architecture and campaign transitions. | `ROADMAP.md` |
 | DMCL-Q12 | Content ID/version/deprecation strategy, localization, asset catalog, and mod/remote-content requirements. | Content infrastructure. | `CONTENT_MODEL.md` |
-| DMCL-Q13 | Required verification gates and supported development environment. | Milestone completion. | `ARCHITECTURE.md`, `ROADMAP.md` |
-### Deferred entries resolved during E00-T05
+
+### Resolved deferred entries
 
 | ID | Status | Resolution |
 |---|---|---|
 | DMCL-Q08 | **Accepted as DMCL-013** | World and tactical boards use hex grids; dungeon/building boards use square grids. |
+| DMCL-Q13 | **Resolved by accepted DMCL-P18** | Sites/Linux retains its protected installer; macOS and GitHub Actions use lockfile `npm ci`; all share `npm run verify`; independent CI does not replace rendered/mobile or physical-device acceptance. |
 | DMCL-Q14 | **Resolved by accepted DMCL-P16** | Sites/Vinext/Cloudflare remains the delivery constraint unless an explicit later decision replaces it; platform services stay at the edges. |
 | DMCL-Q15 | **Resolved by accepted DMCL-P17** | Use deterministic committed generation for the existing FS adapter and the narrow persisted-banner projection; keep derived CSS handwritten and runtime theme handling unchanged. |
 | DMCL-Q16 | **Resolved** | Current Epic is EPIC 01; exact next task is E01-T01. |

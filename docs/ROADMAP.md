@@ -19,34 +19,29 @@ World strategy, region conquest, supply, meaningful management, tactical combat,
 
 ## Current Epic
 
-### EPIC 01 — UI shell and board architecture
+### EPIC 02 — Core game engine and state
 
 Status: **Current**
 
-Purpose: finish and generalize the existing mobile-first shell, FS design-system integration, and modular board foundations. `GameShell`, navigation, shared UI, board metadata, dark mode, and responsive styles already exist; EPIC 01 evolves them rather than replacing them.
+Purpose: establish the shared game-engine and central campaign-state foundations needed by later boards and systems, building on the completed EPIC 01 shell/catalog architecture without introducing unapproved gameplay rules.
 
-Approved structural direction includes:
+The first bounded task is an audit and contract-definition task. It must reconcile the existing model/provider/rule/storage boundaries before any broad state refactor or new engine implementation.
 
-- typed board modules through one authoritative catalog;
-- registered, enabled, unlocked, and active board states;
-- domain/application/view/infrastructure boundaries;
-- central campaign state with named, validated transitions introduced gradually;
-- data-driven content and stable IDs;
-- mobile portrait/touch-first behavior, SVG visuals, FS tokens, and accessible shared primitives.
+Accepted constraints carried forward include one authoritative campaign state, versioned save compatibility, named validated transitions introduced gradually, stable IDs, domain/application/view/infrastructure boundaries, and no silent gameplay-rule decisions.
 
 ## Current Next Task
 
-### E01-T07 — Portrait mobile QA and EPIC 01 exit gate
+### E02-T01 — Audit central game-state boundaries and define the core engine contract
 
 Status: **Next — exactly one**
 
-Goal: verify the complete EPIC 01 foundation as one coherent mobile-first application architecture and fix only defects required to meet the Epic exit criteria.
+Goal: audit the current central game-state, provider, rules, board-operation, and storage boundaries, then define the smallest approved core-engine contract for subsequent EPIC 02 implementation tasks.
 
-Expected scope must be defined with [TASK_TEMPLATE.md](./TASK_TEMPLATE.md) before implementation. Test representative portrait widths and a larger desktop viewport across the six-board catalog, themes, shared shell, overlays, navigation/accessibility, and existing campaign flow; apply only bounded stabilization fixes supported by observed defects.
+Expected scope must be defined with [TASK_TEMPLATE.md](./TASK_TEMPLATE.md) before implementation. It should identify current authoritative state, derived values, mutation paths, validation ownership, persistence boundaries, save-compatibility risks, and the named operations needed next without implementing gameplay or broadly rewriting `GameProvider`.
 
-Non-goals include redesign, new gameplay, dependency or styling migration, future-Epic architecture, physical-device claims without actual testing, and deployment.
+Non-goals include new gameplay, balance decisions, save-schema changes without an approved migration, cloud/multiplayer authority, broad provider refactoring, UI redesign, and deployment.
 
-E01-T06 was accepted by the project owner on 2026-08-09 by directing continuation to E01-T07. It established the typed domain-neutral presentation vocabulary, reused the existing FS/button/modal/SVG foundations, and proved incremental adoption through shell, setup, scaffold, Settlement, and Dungeon integrations without adding rules.
+E01-T07 and EPIC 01 were accepted by the project owner on 2026-08-09 after the automated gate passed and every owner browser/physical-smartphone checklist item was reported PASS. E02-T01 is identified as Next only; it has not begun.
 
 ## Epic registry
 
@@ -55,8 +50,8 @@ The sequence column records dependency position, not permission to begin an Epic
 | Epic / milestone | Status | High-level purpose | Sequence position |
 |---|---|---|---|
 | EPIC 00 — Project contract and development infrastructure | **Complete** | Establish the audit, product and technical contracts, decision log, roadmap, workflow, repository guidance, FS source, and project README. | Foundation |
-| EPIC 01 — UI shell and board architecture | **Current** | Finish and generalize the existing mobile-first shell, FS integration, and modular board foundations. | After EPIC 00 |
-| EPIC 02 — Core game engine and state | Planned | Establish the shared game-engine and central campaign-state foundations needed by later boards and systems. | After EPIC 01 |
+| EPIC 01 — UI shell and board architecture | **Complete** | Finish and generalize the existing mobile-first shell, FS integration, and modular board foundations. | After EPIC 00 |
+| EPIC 02 — Core game engine and state | **Current** | Establish the shared game-engine and central campaign-state foundations needed by later boards and systems. | After EPIC 01 |
 | EPIC 03 — Campaign lifecycle and persistence | Planned | Define and implement the campaign lifecycle and its supported save/load persistence boundary. | After EPIC 02 |
 | EPIC 04 — Hero foundation | Planned | Establish the approved hero identity, attributes, and foundational campaign representation. | After EPIC 03 |
 | EPIC 05 — Minimal progression framework | Planned | Add the smallest progression framework needed for the first playable loop. | After EPIC 04 |
@@ -80,6 +75,19 @@ The sequence column records dependency position, not permission to begin an Epic
 | EPIC 22 — Rival sovereign AI | Planned | Introduce AI-controlled rival sovereign behavior within approved campaign rules. | After EPIC 21 |
 | EPIC 23 — Victory and campaign ending | Planned | Implement approved victory families, defeat conditions, and campaign resolution. | After EPIC 22 |
 | EPIC 24 — Balancing, UX and production hardening | Planned | Balance approved systems, improve usability, and harden the integrated prototype. | After EPIC 23 |
+
+## EPIC 01 closure
+
+E01-T01 through E01-T07 established and verified:
+
+- deterministic FS-token synchronization with semantic UI and primitive game-color separation;
+- one shared shell, status structure, board viewport, navigation, overlay, and notification foundation;
+- one typed authoritative catalog resolving Hero, Settlement, World, Dungeon, Combat, and Diplomacy;
+- the initial domain-neutral shared game UI primitive library;
+- portable bounded verification through accepted DMCL-P18 and a verification-only GitHub Actions workflow;
+- owner-reported PASS results for all required desktop, portrait, interaction, accessibility, campaign-regression, and physical-smartphone exit checks.
+
+The project owner accepted E01-T07 and EPIC 01 on 2026-08-09. The matching pushed/Sites checkpoint is completed through the normal workflow without deployment. EPIC 02 is Current and E02-T01 is the exact next task.
 
 ## EPIC 00 closure
 
@@ -105,7 +113,7 @@ E00-T05 was accepted by the project owner on 2026-08-09, completing EPIC 00. Its
 - Every accepted task updates this file with the current Epic status and exactly one next task.
 - Normal tasks save an accepted Sites version but do not deploy. Deployment requires separate explicit user instruction.
 
-## Deferred decisions that do not block E01-T01
+## Deferred decisions that do not block E02-T01
 
 - exact gameplay formulas, balance, thresholds, costs, and progression values;
 - final player/account/cloud/offline/multiplayer authority model;

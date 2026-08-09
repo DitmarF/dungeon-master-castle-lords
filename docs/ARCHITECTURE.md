@@ -147,7 +147,7 @@ Unapproved mechanics may be implemented only as clearly labeled experiments. Imp
 
 Deterministic rules, state transitions, migrations, and generation should be testable without rendering the full application. Board integration and important player flows need focused interaction coverage. Platform output needs its existing artifact validation.
 
-The precise test tools and required quality gates are not yet approved.
+**Accepted — DMCL-P18.** Use `npm run verify` as the shared normal quality gate on ChatGPT Sites/Linux, local macOS, and GitHub Actions Linux. It checks generated FS-token synchronization, lint, one bounded Vinext build plus artifact validation, and the rendered-HTML test. The normal bounded build uses Node standard-library process control so it is portable across Linux and macOS. The protected `npm run install:ci` path remains specific to ChatGPT Sites/Linux; macOS and GitHub Actions use `npm ci`. GitHub Actions is the independent automated checkpoint, but it does not replace rendered interaction/mobile checks or owner physical-smartphone acceptance.
 
 ## Target module contract
 
