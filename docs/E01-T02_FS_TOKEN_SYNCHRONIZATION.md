@@ -1,6 +1,6 @@
 # E01-T02 — Implement FS token synchronization
 
-Status: **Candidate — awaiting acceptance**
+Status: **Accepted — checkpoint pending**
 Implementation date: 2026-08-09
 
 ## Task ID and name
@@ -88,7 +88,7 @@ Make `sources/fs.tokens.json` the operational authority for the existing FS CSS 
 ## Checkpoint
 
 - Configured Sites source branch: `main`; Git `main`/`origin/main` is the accepted implementation base, while the latest saved Sites version remains older
-- Commit/push authorized: not before Candidate acceptance; follow `docs/WORKFLOW.md` after explicit acceptance
+- Commit/push authorized: yes; the project owner accepted the Candidate by directing continuation to E01-T03
 - Expected checkpoint contents: deterministic generator and committed adapters, consumer/build integration, verification, documentation, and later acceptance administration
 - Deployment authorized: **No**
 
@@ -102,19 +102,19 @@ Make `sources/fs.tokens.json` the operational authority for the existing FS CSS 
 - Automated verification: `npm run tokens:generate` passed; `npm run tokens:check` passed; repeat generation preserved SHA-256 `e6b64bf797855280828390779aa3c58af7fd071aa2c69d73e6ebb5c224ee55c5` for CSS and `13e8d4be9977449e08446ced66c7621196470aee0bce1c9929054cb7915d7325` for TypeScript; static comparison confirmed 54 default declarations plus 31 dark overrides (85 total) and the same five ordered banner literals; `node --check`, `package.json` parse, and `git diff --check` passed; `npm run lint` and `npm test` were invoked but unavailable as described above.
 - Behavior verification: `app/layout.tsx` and `src/game/GameProvider.tsx` are unchanged; the generated selectors reproduce the former default/dark declarations; the CSS import precedes the unchanged handwritten derived layer; `StartBoard` consumes the same five default primitive strings. Browser verification of System/Light/Dark, start/player, hero setup, Dungeon, Settlement, and Settings was not run due to the environment limitation.
 - Documentation/decision updates: documented both token commands in `AGENTS.md`; recorded concrete implementation files and boundaries in `docs/ARCHITECTURE.md`; added this task as implementation evidence for accepted DMCL-P17 without changing its status; left `ROADMAP.md` and `CURRENT_STATE.md` unchanged during Candidate.
-- Limitations/risks/open approvals: application lint/test/browser results remain unknown until run in an installed supported environment; Sites version 7 remains older than the pushed Git base and no matching Sites version was saved during Candidate. No architecture decision is awaiting approval; the E01-T02 Candidate itself awaits owner acceptance.
+- Limitations/risks/open approvals: application lint/test/browser results remain unknown until run in an installed supported environment; Sites version 7 remains older than the pushed Git base until the accepted checkpoint is saved. No architecture decision is awaiting approval.
 - Deployment: **Not performed**
 
 ### User acceptance
 
-- Status: awaiting explicit acceptance
-- Accepted by/date: pending explicit acceptance
+- Status: accepted
+- Accepted by/date: project owner, 2026-08-09; accepted by directing continuation to E01-T03
 
 ### Accepted checkpoint
 
-- Final commit SHA: pending acceptance
+- Final commit SHA: the acceptance-administration commit containing this update; reported with the saved Sites checkpoint because a commit cannot contain its own SHA
 - Pushed source branch: `main`
-- Saved Sites version: pending acceptance workflow; no version saved during Candidate
-- Roadmap status: unchanged during Candidate
-- Next task: not started
+- Saved Sites version: assigned from the pushed acceptance commit and reported with the checkpoint
+- Roadmap status: E01-T02 accepted; EPIC 01 remains Current
+- Next task: `E01-T03 — Harden the shared application shell`
 - Deployment: **Not performed**
