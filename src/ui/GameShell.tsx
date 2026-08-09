@@ -2,7 +2,6 @@
 
 import { useEffect, useState, type ReactNode } from "react";
 import { useGame } from "../game/GameProvider";
-import type { BoardId } from "../game/model";
 import { BoardNavigation } from "./BoardNavigation";
 import { Crest } from "./Crest";
 import { GameIcon, type IconName } from "./GameIcon";
@@ -38,7 +37,7 @@ export function GameShell({
     selectedPlayer,
     returnToPlayers,
     saveGame,
-    updateGame,
+    navigateToBoard,
   } = useGame();
   const [activeOverlay, setActiveOverlay] = useState<
     "hero" | "settings" | null
@@ -52,10 +51,6 @@ export function GameShell({
   }, [saved]);
 
   if (!activeGame?.hero || !selectedPlayer) return null;
-
-  function selectBoard(boardId: BoardId) {
-    updateGame((game) => ({ ...game, activeBoardId: boardId }));
-  }
 
   function handleSave() {
     saveGame();
@@ -144,9 +139,8 @@ export function GameShell({
       </div>
 
       <BoardNavigation
-        activeBoardId={activeGame.activeBoardId}
-        settlementClaimed={activeGame.dungeon.settlementClaimed}
-        onSelect={selectBoard}
+        game={activeGame}
+        onSelect={navigateToBoard}
       />
 
       <div className="game-shell__overlay-layer">

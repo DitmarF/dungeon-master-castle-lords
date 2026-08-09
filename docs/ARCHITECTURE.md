@@ -160,7 +160,11 @@ The precise test tools and required quality gates are not yet approved.
 
 The central application would resolve boards from this catalog rather than duplicating board knowledge in conditional rendering and navigation. This preserves the existing registry idea while making add/remove behavior genuinely modular.
 
-The exact TypeScript interface, routing approach, loading strategy, and whether setup is a registered board remain TBD.
+E01-T04 establishes the initial concrete contract in `src/boards/registry.ts`: each registered module provides its stable `BoardId`, labels, icon, React component, independent `enabled` flag, and campaign-aware `isUnlocked` rule. The catalog currently registers only the implemented Dungeon and Settlement boards. Setup remains the pre-campaign flow outside the board catalog, while the persisted `world` and `combat` IDs remain stable but unregistered until real modules are approved.
+
+`GameApp` is the in-campaign board router. It resolves the requested active ID through the catalog, renders that module's component, and repairs an unregistered, disabled, or locked active ID to the first enabled and unlocked module through the named `navigateToBoard` application operation. This is state-based in-shell resolution, not browser URL routing. `BoardNavigation` receives the identical catalog and availability selector through `BoardCatalogProvider`; the provider transports the authoritative definitions without creating a second authority or making shared UI import board implementations.
+
+The initial availability selector exposes `registered`, `enabled`, `unlocked`, `active`, and derived `available` independently. Settlement's existing `dungeon.settlementClaimed` rule owns only `unlocked`; it does not alter the module's enabled state. Board components continue reading their existing campaign state and invoking existing application-facing operations; richer declarative state-slice, operation, entry, or cleanup declarations remain deferred until a concrete board needs them.
 
 ## Dependency direction
 

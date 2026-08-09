@@ -1,36 +1,52 @@
-import { BOARD_REGISTRY } from "../boards/registry";
-import type { BoardId } from "../game/model";
+import type { CSSProperties } from "react";
+import { useBoardCatalog } from "../boards/BoardCatalogContext";
+import type { RegisteredBoardId } from "../boards/registry";
+import type { GameSave } from "../game/model";
 import { GameIcon } from "./GameIcon";
 
 interface BoardNavigationProps {
-  activeBoardId: BoardId;
-  settlementClaimed: boolean;
-  onSelect: (boardId: BoardId) => void;
+  game: GameSave;
+  onSelect: (boardId: RegisteredBoardId) => void;
 }
 
-export function BoardNavigation({
-  activeBoardId,
-  settlementClaimed,
-  onSelect,
-}: BoardNavigationProps) {
+export function BoardNavigation({ game, onSelect }: BoardNavigationProps) {
+  const { catalog, getAvailability } = useBoardCatalog();
+
   return (
-    <nav className="board-nav" aria-label="Game boards">
-      {BOARD_REGISTRY.map((board) => {
-        const enabled = board.enabled && (board.id !== "settlement" || settlementClaimed);
+    <nav
+      className="board-nav"
+      aria-label="Game boards"
+      style={{ "--board-count": catalog.length } as CSSProperties}
+    >
+      {catalog.map((board) => {
+        const availability = getAvailability(board.id, game);
+        const stateLabel = !availability.enabled
+          ? `${board.label} — unavailable`
+          : !availability.unlocked
+            ? `${board.label} — locked`
+            : board.label;
         return (
           <button
             type="button"
             key={board.id}
-            className={board.id === activeBoardId ? "board-nav__item board-nav__item--active" : "board-nav__item"}
-            disabled={!enabled}
-            onClick={() => enabled && onSelect(board.id)}
-            aria-label={enabled ? board.label : `${board.label} — locked`}
-            aria-current={board.id === activeBoardId ? "page" : undefined}
-            title={enabled ? board.label : `${board.label} — locked`}
+            className={
+              availability.active
+                ? "board-nav__item board-nav__item--active"
+                : "board-nav__item"
+            }
+            disabled={!availability.available}
+            onClick={() => availability.available && onSelect(board.id)}
+            aria-label={stateLabel}
+            aria-current={availability.active ? "page" : undefined}
+            data-board-enabled={availability.enabled}
+            data-board-unlocked={availability.unlocked}
+            title={stateLabel}
           >
             <GameIcon name={board.icon} size={21} />
             <span>{board.shortLabel}</span>
-            {!enabled ? <i><GameIcon name="lock" size={10} /></i> : null}
+            {!availability.available ? (
+              <i><GameIcon name="lock" size={10} /></i>
+            ) : null}
           </button>
         );
       })}

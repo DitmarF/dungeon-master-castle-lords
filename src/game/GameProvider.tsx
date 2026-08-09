@@ -19,6 +19,7 @@ import {
   type RuntimeState,
 } from "./model";
 import { gameStorage } from "./storage";
+import type { RegisteredBoardId } from "../boards/registry";
 
 type ThemePreference = "system" | "light" | "dark";
 
@@ -47,6 +48,7 @@ type Action =
   | { type: "deletePlayer"; playerId: string }
   | { type: "openGame"; playerId: string; game: GameSave }
   | { type: "saveGame"; game: GameSave }
+  | { type: "navigateToBoard"; boardId: RegisteredBoardId }
   | { type: "updateGame"; updater: (game: GameSave) => GameSave }
   | { type: "returnToPlayers"; game: GameSave | null };
 
@@ -163,6 +165,29 @@ function reducer(state: RuntimeState, action: Action): RuntimeState {
         },
       };
 
+    case "navigateToBoard": {
+      if (
+        !state.activeGame ||
+        state.activeGame.activeBoardId === action.boardId
+      ) {
+        return state;
+      }
+      const game = {
+        ...state.activeGame,
+        activeBoardId: action.boardId,
+        updatedAt: new Date().toISOString(),
+      };
+
+      return {
+        ...state,
+        activeGame: game,
+        registry: {
+          ...state.registry,
+          games: { ...state.registry.games, [game.playerId]: game },
+        },
+      };
+    }
+
     case "updateGame": {
       if (!state.activeGame) return state;
       const game = {
@@ -217,6 +242,7 @@ interface GameContextValue {
   startNewGame: (playerId: string) => void;
   loadGame: (playerId: string) => void;
   saveGame: () => void;
+  navigateToBoard: (boardId: RegisteredBoardId) => void;
   updateGame: (updater: (game: GameSave) => GameSave) => void;
   returnToPlayers: () => void;
 }
@@ -316,6 +342,13 @@ export function GameProvider({ children }: { children: ReactNode }) {
     });
   }, [state.activeGame]);
 
+  const navigateToBoard = useCallback(
+    (boardId: RegisteredBoardId) => {
+      dispatch({ type: "navigateToBoard", boardId });
+    },
+    [],
+  );
+
   const updateGame = useCallback((updater: (game: GameSave) => GameSave) => {
     dispatch({ type: "updateGame", updater });
   }, []);
@@ -374,6 +407,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       startNewGame,
       loadGame,
       saveGame,
+      navigateToBoard,
       updateGame,
       returnToPlayers,
     }),
@@ -392,6 +426,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       startNewGame,
       loadGame,
       saveGame,
+      navigateToBoard,
       updateGame,
       returnToPlayers,
       setDarkMode,

@@ -1731,10 +1731,12 @@ p {
 }
 
 .board-nav {
+  --board-count: 1;
+
   z-index: 8;
   min-height: calc(58px + env(safe-area-inset-bottom));
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(var(--board-count), minmax(0, 1fr));
   align-items: stretch;
   padding: 0 max(var(--space-xs), env(safe-area-inset-right))
     env(safe-area-inset-bottom) max(var(--space-xs), env(safe-area-inset-left));
@@ -2931,7 +2933,7 @@ p {
     grid-row: 3;
     min-height: 0;
     grid-template-columns: 1fr;
-    grid-template-rows: repeat(4, minmax(64px, auto));
+    grid-template-rows: repeat(var(--board-count), minmax(64px, auto));
     align-content: start;
     gap: 4px;
     padding: var(--space-xs);

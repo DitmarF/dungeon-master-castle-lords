@@ -5,7 +5,7 @@ import { GameIcon } from "../ui/GameIcon";
 import { GameShell } from "../ui/GameShell";
 
 export function SettlementBoard() {
-  const { activeGame, selectedPlayer, updateGame } = useGame();
+  const { activeGame, navigateToBoard, selectedPlayer } = useGame();
 
   if (!activeGame?.hero || !selectedPlayer) return null;
   const { dungeon, hero } = activeGame;
@@ -50,9 +50,7 @@ export function SettlementBoard() {
             <button
               type="button"
               className="button button--secondary"
-              onClick={() =>
-                updateGame((game) => ({ ...game, activeBoardId: "dungeon" }))
-              }
+              onClick={() => navigateToBoard("dungeon")}
             >
               <GameIcon name="back" size={17} /> Return to exploration
             </button>
