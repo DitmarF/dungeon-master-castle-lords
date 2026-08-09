@@ -72,6 +72,12 @@ These entries explain the current code. They are not accepted long-term decision
 | DMCL-I10 | Unfinished hero setup and most view interaction state are component-local and disposable. | Draft persistence requires a product decision. | `CURRENT_STATE.md`, `GAME_STATE.md` |
 | DMCL-I11 | World strategy, conquest, supply, meaningful management, tactical combat, executable skill effects, cloud saves, and multiplayer are not implemented. | Do not report concept scope as shipped functionality. | `CURRENT_STATE.md` |
 
+## Active proposals
+
+| ID | Status | Decision | Source |
+|---|---|---|---|
+| DMCL-P17 | **Proposed** | Generate and commit the existing light/dark FS CSS adapter deterministically from `sources/fs.tokens.json`, keep derived/application CSS handwritten, and generate only the narrow default primitive-color TypeScript projection needed to remove the current banner-palette duplicate without changing persisted values. | `ARCHITECTURE.md`, `E01-T01_FS_TOKEN_ADAPTER_AUDIT.md` |
+
 ## Foundation proposals resolved by E00-T05
 
 | ID | Status | Decision | Source |
@@ -111,7 +117,7 @@ The responsible documents contain detailed questions. This index groups the deci
 | DMCL-Q11 | Multiplayer mode and authority model, or confirmation that it should not constrain current work. | Architecture and campaign transitions. | `ROADMAP.md` |
 | DMCL-Q12 | Content ID/version/deprecation strategy, localization, asset catalog, and mod/remote-content requirements. | Content infrastructure. | `CONTENT_MODEL.md` |
 | DMCL-Q13 | Required verification gates and supported development environment. | Milestone completion. | `ARCHITECTURE.md`, `ROADMAP.md` |
-| DMCL-Q15 | Exact FS token-to-CSS synchronization/adapter and long-term styling approach. | E01-T01 and design-system maintenance. | `ARCHITECTURE.md`, `ROADMAP.md` |
+| DMCL-Q15 | Owner approval or revision of proposed FS synchronization contract DMCL-P17. | E01-T02 and design-system maintenance. | `ARCHITECTURE.md`, `ROADMAP.md` |
 
 ### Deferred entries resolved during E00-T05
 
@@ -150,4 +156,4 @@ Use a full standalone ADR only when a decision needs alternatives, extensive evi
 
 The foundation no longer requires architectural re-approval before EPIC 01. DMCL-P01–P13 and DMCL-P16 are accepted; DMCL-P14/P15 are superseded by the Epic roadmap and E01-T01.
 
-Remaining DMCL-Q entries concern exact mechanics, persistence, tooling, or later-Epic details. They do not block E01-T01 unless its task definition explicitly encounters them. The FS adapter choice in DMCL-Q15 is the bounded design decision for E01-T01.
+Remaining DMCL-Q entries concern exact mechanics, persistence, tooling, or later-Epic details. DMCL-P17 is the E01-T01 recommendation and remains Proposed; DMCL-Q15 blocks E01-T02 until the project owner explicitly approves or revises it.
