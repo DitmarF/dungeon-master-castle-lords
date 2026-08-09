@@ -36,17 +36,17 @@ Approved structural direction includes:
 
 ## Current Next Task
 
-### E01-T03 — Harden the shared application shell
+### E01-T04 — Typed board-module catalog and board router
 
 Status: **Next — exactly one**
 
-Goal: evolve the existing `GameShell` into stable shared application-shell infrastructure with one board viewport, reusable modal/sheet behavior, and a small shared notification region.
+Goal: replace duplicated board metadata and component-resolution knowledge with one authoritative typed board-module catalog consumed by both application rendering and board navigation.
 
-Expected scope must be defined with [TASK_TEMPLATE.md](./TASK_TEMPLATE.md) before implementation. It must preserve the existing shell appearance and controls, Dungeon and Settlement integration, campaign-status strip, board navigation, theme behavior, mobile portrait usability, gameplay ownership, and persisted state.
+Expected scope must be defined with [TASK_TEMPLATE.md](./TASK_TEMPLATE.md) before implementation. It must keep registered, enabled, unlocked, and active board states distinct; preserve Dungeon and Settlement IDs and Settlement unlock behavior; safely handle unavailable active boards; and add only the named application-facing navigation boundary required now.
 
-Non-goals include gameplay systems, a modal state machine, complex toast queues, routing or board-catalog work reserved for E01-T04, visual redesign, dependency migration, and deployment.
+Non-goals include browser URL routing, new scaffold boards, gameplay, lazy loading, external plugins, broad provider refactoring, save-schema changes, visual redesign, dependency work, and deployment.
 
-E01-T02 was accepted by the project owner on 2026-08-09 by directing continuation to E01-T03. It implemented DMCL-P17 through deterministic committed CSS and TypeScript adapters while preserving the existing CSS API, theme behavior, and stored banner values.
+E01-T03 was accepted by the project owner on 2026-08-09 by directing continuation to E01-T04. It hardened the existing `GameShell` with one board viewport, a shared accessible modal/sheet primitive, and a small notification region without changing gameplay or persisted state.
 
 ## Epic registry
 

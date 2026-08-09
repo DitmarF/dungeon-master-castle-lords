@@ -1,6 +1,6 @@
 # E01-T03 — Harden the shared application shell
 
-Status: **Candidate — awaiting acceptance**
+Status: **Accepted — non-deployed checkpoint**
 Implementation date: 2026-08-09
 
 ## Task ID and name
@@ -91,7 +91,7 @@ Evolve the existing `GameShell` into the stable shared shell used by current and
 ## Checkpoint
 
 - Configured Sites source branch: `main`
-- Commit/push authorized: not before Candidate acceptance; follow `docs/WORKFLOW.md` after explicit acceptance
+- Commit/push authorized: yes; the project owner accepted the Candidate by directing continuation to E01-T04
 - Expected checkpoint contents: shared viewport, modal/sheet primitive and migrated consumers, notification region, focused CSS, verification, documentation, and later acceptance administration
 - Deployment authorized: **No**
 
@@ -105,19 +105,19 @@ Evolve the existing `GameShell` into the stable shared shell used by current and
 - Automated verification: `npm run tokens:check` passed; the static shell contract check passed all seven assertions (one viewport, both boards using `GameShell`, both sheets using `ModalOverlay`, dialog semantics/title, Escape/Tab handling, scroll lock/focus restoration, and shared live region); `git diff --check` passed; a scoped diff check confirmed board, game-state, and lockfile sources are unchanged. `npm run lint` and `npm test` were invoked but unavailable as described above.
 - Behavior verification: source-level review confirms the first focus target is each sheet close control, Tab and Shift+Tab wrap at the dialog boundary, outside focus is redirected, every close path unmounts through the same cleanup, and focus restores only when the opener remains connected. Existing mobile safe-area and responsive sheet CSS, theme provider/bootstrap behavior, save callback, and 1600 ms feedback duration are unchanged. Browser verification was not run.
 - Documentation/decision updates: `docs/ARCHITECTURE.md` now records the shared shell, modal, notification, and authority boundaries; no decision status changed; `ROADMAP.md` and `CURRENT_STATE.md` remain unchanged during Candidate.
-- Limitations/risks/open approvals: application lint/build/test results and requested manual browser behavior remain unknown until run in an installed supported environment. The E01-T03 Candidate awaits owner acceptance; no additional architecture decision is pending.
+- Limitations/risks/open approvals: application lint/build/test results and requested manual browser behavior remain unknown until run in an installed supported environment. No additional architecture decision is pending.
 - Deployment: **Not performed**
 
 ### User acceptance
 
-- Status: awaiting explicit acceptance
-- Accepted by/date: pending explicit acceptance
+- Status: accepted
+- Accepted by/date: project owner, 2026-08-09; accepted by directing continuation to E01-T04
 
 ### Accepted checkpoint
 
-- Final commit SHA: pending acceptance
+- Final commit SHA: the acceptance-administration commit containing this update; reported with the saved Sites checkpoint because a commit cannot contain its own SHA
 - Pushed source branch: `main`
-- Saved Sites version: pending acceptance workflow; no version saved during Candidate
-- Roadmap status: unchanged during Candidate
-- Next task: not started
+- Saved Sites version: assigned from the pushed acceptance commit and reported with the checkpoint
+- Roadmap status: E01-T03 accepted; EPIC 01 remains Current
+- Next task: `E01-T04 — Typed board-module catalog and board router`
 - Deployment: **Not performed**
