@@ -36,17 +36,17 @@ Approved structural direction includes:
 
 ## Current Next Task
 
-### E01-T05 — Add complete empty-board scaffold
+### E01-T06 — Shared game UI primitives
 
 Status: **Next — exactly one**
 
-Goal: use the accepted board catalog and shared shell to register the complete top-level board family—Hero, Settlement, World, Dungeon, Combat, and Diplomacy—while preserving the real Dungeon and Settlement boards and adding only explicitly empty foundations for the other four.
+Goal: establish the initial typed presentation-primitive library for shared game UI: Panel, Stat, ResourceIndicator, ProgressBar, ActionButton, Slot, Tooltip/InfoSheet, GridCell, and GameToken.
 
-Expected scope must be defined with [TASK_TEMPLATE.md](./TASK_TEMPLATE.md) before implementation. All six boards must resolve through the authoritative catalog and existing `GameShell`; new scaffolds must remain gameplay-free and temporarily navigable for architecture verification. Portrait navigation must remain usable without inventing gameplay hierarchy or unlock rules.
+Expected scope must be defined with [TASK_TEMPLATE.md](./TASK_TEMPLATE.md) before implementation. Primitives must remain independent of concrete campaign rules, use existing FS/UI/SVG foundations, preserve mobile/touch and accessibility behavior, and receive only representative integrations rather than a broad application rewrite.
 
-Non-goals include world/combat/diplomacy mechanics, hero progression changes, settlement economy, new persistence, browser routing, shared primitive expansion, dependency work, and deployment.
+Non-goals include inventory, resources or XP systems, combat/world mechanics, broad redesign or migration, Storybook, dependency work, a generic design-system package, and deployment.
 
-E01-T04 was accepted by the project owner on 2026-08-09 by directing continuation to E01-T05. It established one typed authoritative board catalog and state-based board router, centralized Settlement availability, preserved stable IDs and gameplay, and introduced the named ordinary-navigation boundary.
+E01-T05 was accepted by the project owner on 2026-08-09 by directing continuation to E01-T06. It registered the approved six-board family through one authoritative catalog and shared shell, preserved the real Dungeon and Settlement boards and HeroSheet, and added four explicitly gameplay-free board foundations with portrait-safe navigation.
 
 ## Epic registry
 

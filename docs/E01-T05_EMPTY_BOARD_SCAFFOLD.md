@@ -1,6 +1,6 @@
 # E01-T05 — Add complete empty-board scaffold
 
-Status: **Candidate — awaiting project-owner acceptance**
+Status: **Accepted — non-deployed checkpoint pending**
 Implementation date: 2026-08-09
 
 ## Task ID and name
@@ -92,7 +92,7 @@ Use the accepted typed board catalog and shared application shell to establish t
 ## Checkpoint
 
 - Configured Sites source branch: `main`
-- Commit/push authorized: no; await explicit Candidate acceptance
+- Commit/push authorized: yes; the project owner accepted the Candidate by directing continuation to E01-T06
 - Expected checkpoint contents: six-board catalog, four empty shell-based foundations, focused navigation/scaffold styling, additive IDs, verification evidence, documentation, and later acceptance administration
 - Deployment authorized: **No**
 
@@ -111,14 +111,14 @@ Use the accepted typed board catalog and shared application shell to establish t
 
 ### User acceptance
 
-- Status: awaiting acceptance
-- Accepted by/date: pending
+- Status: accepted
+- Accepted by/date: project owner, 2026-08-09, by directing continuation to E01-T06
 
 ### Accepted checkpoint
 
-- Final commit SHA: pending acceptance
-- Pushed source branch: pending acceptance
-- Saved Sites version: pending acceptance
-- Roadmap status: unchanged during Candidate; EPIC 01 remains Current and E01-T05 remains the exact next task
-- Next task: none authorized until acceptance
+- Final commit SHA: pending acceptance-administration commit
+- Pushed source branch: `main` after acceptance administration
+- Saved Sites version: pending matching accepted source checkpoint
+- Roadmap status: EPIC 01 remains Current; E01-T05 accepted and E01-T06 is the exact next task
+- Next task: `E01-T06 — Shared game UI primitives`
 - Deployment: **Not performed**
