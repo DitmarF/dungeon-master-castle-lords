@@ -5,6 +5,8 @@ Audited checkout: `/Users/dimi/Projects/dungeon-master-castle-lords`
 Branch: `main`  
 Commit inspected: `0b83193` (`Initial commit`, 2026-08-09)
 
+> **Audit scope notice:** This document records the application implementation at the audited baseline commit. Later EPIC 00 documentation, README, workflow, decision-log, and `sources/fs.tokens.json` additions are intentionally not reflected here. Use Git and the current repository contents for those infrastructure artifacts.
+
 ## Purpose and evidence labels
 
 This document records the current technical and functional state of the existing browser-game prototype. It is an audit, not a target architecture.

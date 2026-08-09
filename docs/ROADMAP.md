@@ -7,9 +7,7 @@ Last updated: 2026-08-09
 
 This document answers: **Where are we, and what is next?** Product rules live in [GAME_CONCEPT.md](./GAME_CONCEPT.md), implementation evidence in [CURRENT_STATE.md](./CURRENT_STATE.md), and accepted decisions in [DECISIONS.md](./DECISIONS.md).
 
-The approved master roadmap uses **EPIC 00 through EPIC 24**. Work follows that Epic sequence and adapts each Epic to the implementation already present; an Epic must not recreate working systems from scratch.
-
-Only EPIC 00 and EPIC 01 detail is available in the repository material recovered during EPIC 00. EPIC 02–24 retain their approved sequence positions, but their original titles/scopes must be restored from the approved master plan before those Epics are activated. Do not invent replacements.
+The approved master roadmap uses **EPIC 00 through EPIC 24**, with Milestone A after EPIC 11. Work follows that sequence and adapts each Epic to the implementation already present; an Epic must not recreate working systems from scratch. The registry below preserves the approved long-range spine. Detailed tasks and exit criteria are added only when an Epic approaches activation.
 
 ## Current implementation boundary
 
@@ -50,11 +48,36 @@ Non-goals include a Tailwind migration, general visual redesign, gameplay change
 
 ## Epic registry
 
-| Epic | Status | Repository-known scope |
-|---|---|---|
-| EPIC 00 | **Complete — checkpoint pending acceptance** | Project contract: audit, concept, architecture, state, content, decisions, roadmap, workflow, task template, repository guidance, FS source restoration, and README. |
-| EPIC 01 | **Current** | UI shell and board architecture; finish/generalize the existing implementation. |
-| EPIC 02–24 | **Planned sequence; source detail not present** | Restore each original approved title/scope from the master roadmap before activation. Do not redesign the sequence locally. |
+The sequence column records dependency position, not permission to begin an Epic early. Each Epic receives scoped tasks and acceptance criteria before implementation.
+
+| Epic / milestone | Status | High-level purpose | Sequence position |
+|---|---|---|---|
+| EPIC 00 — Project contract and development infrastructure | **Complete — checkpoint pending acceptance** | Establish the audit, product and technical contracts, decision log, roadmap, workflow, repository guidance, FS source, and project README. | Foundation |
+| EPIC 01 — UI shell and board architecture | **Current** | Finish and generalize the existing mobile-first shell, FS integration, and modular board foundations. | After EPIC 00 |
+| EPIC 02 — Core game engine and state | Planned | Establish the shared game-engine and central campaign-state foundations needed by later boards and systems. | After EPIC 01 |
+| EPIC 03 — Campaign lifecycle and persistence | Planned | Define and implement the campaign lifecycle and its supported save/load persistence boundary. | After EPIC 02 |
+| EPIC 04 — Hero foundation | Planned | Establish the approved hero identity, attributes, and foundational campaign representation. | After EPIC 03 |
+| EPIC 05 — Minimal progression framework | Planned | Add the smallest progression framework needed for the first playable loop. | After EPIC 04 |
+| EPIC 06 — Calendar and global turn engine | Planned | Establish strategic Days and the global turn/movement structure. | After EPIC 05 |
+| EPIC 07 — Minimal settlement economy | Planned | Add the minimum settlement economy needed by the first playable loop. | After EPIC 06 |
+| EPIC 08 — Minimal world map | Planned | Introduce the minimum usable world-map board and its campaign integration. | After EPIC 07 |
+| EPIC 09 — Region conquest and supply | Planned | Add the approved region-conquest and supply system shapes to the strategic loop. | After EPIC 08 |
+| EPIC 10 — Dungeon exploration | Planned | Develop the dungeon exploration loop and its campaign consequences. | After EPIC 09 |
+| EPIC 11 — Tactical combat skeleton | Planned | Establish the minimum squad-based tactical combat loop on a hex board. | After EPIC 10 |
+| MILESTONE A — First complete playable loop | Planned checkpoint | Demonstrate the first integrated strategic, exploration, and tactical campaign loop. | After EPIC 11; before EPIC 12 |
+| EPIC 12 — Army and troop system | Planned | Develop campaign armies and troop content beyond the Milestone A minimum. | After Milestone A |
+| EPIC 13 — Items, equipment and spells | Planned | Add reusable item, equipment, and spell content within the established content model. | After EPIC 12 |
+| EPIC 14 — Full class/vocation system | Planned | Expand the minimal hero progression into the approved class and vocation structure. | After EPIC 13 |
+| EPIC 15 — Faction system and evolution | Planned | Develop the approved faction identities, domains, and evolution structure. | After EPIC 14 |
+| EPIC 16 — Prestige hero classes | Planned | Add prestige outcomes that build on class, vocation, and faction progression. | After EPIC 15 |
+| EPIC 17 — Dungeon depth | Planned | Expand dungeon content and exploration depth through existing system boundaries. | After EPIC 16 |
+| EPIC 18 — Tactical combat depth | Planned | Expand tactical choices and combat content beyond the skeleton. | After EPIC 17 |
+| EPIC 19 — Subjects and advanced settlement | Planned | Develop subjects and deeper settlement management. | After EPIC 18 |
+| EPIC 20 — Strategic interaction systems | Planned | Expand interactions within the strategic layer using established campaign systems. | After EPIC 19 |
+| EPIC 21 — Events and world simulation | Planned | Add campaign events and broader world-state simulation. | After EPIC 20 |
+| EPIC 22 — Rival sovereign AI | Planned | Introduce AI-controlled rival sovereign behavior within approved campaign rules. | After EPIC 21 |
+| EPIC 23 — Victory and campaign ending | Planned | Implement approved victory families, defeat conditions, and campaign resolution. | After EPIC 22 |
+| EPIC 24 — Balancing, UX and production hardening | Planned | Balance approved systems, improve usability, and harden the integrated prototype. | After EPIC 23 |
 
 ## EPIC 00 closure
 
@@ -87,4 +110,4 @@ EPIC 00 becomes fully complete when this candidate is accepted and saved through
 - unfinished setup and other draft persistence;
 - exact effect vocabulary until an approved mechanic needs it;
 - localization, mod/content-pack, and remote-content requirements;
-- EPIC 02–24 title/scope text, which must be restored from the original approved roadmap before use.
+- detailed tasks, formulas, readiness criteria, and exit criteria for future Epics; define these through bounded planning before each Epic is activated.
