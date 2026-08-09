@@ -36,17 +36,17 @@ Approved structural direction includes:
 
 ## Current Next Task
 
-### E01-T06 — Shared game UI primitives
+### E01-T07 — Portrait mobile QA and EPIC 01 exit gate
 
 Status: **Next — exactly one**
 
-Goal: establish the initial typed presentation-primitive library for shared game UI: Panel, Stat, ResourceIndicator, ProgressBar, ActionButton, Slot, Tooltip/InfoSheet, GridCell, and GameToken.
+Goal: verify the complete EPIC 01 foundation as one coherent mobile-first application architecture and fix only defects required to meet the Epic exit criteria.
 
-Expected scope must be defined with [TASK_TEMPLATE.md](./TASK_TEMPLATE.md) before implementation. Primitives must remain independent of concrete campaign rules, use existing FS/UI/SVG foundations, preserve mobile/touch and accessibility behavior, and receive only representative integrations rather than a broad application rewrite.
+Expected scope must be defined with [TASK_TEMPLATE.md](./TASK_TEMPLATE.md) before implementation. Test representative portrait widths and a larger desktop viewport across the six-board catalog, themes, shared shell, overlays, navigation/accessibility, and existing campaign flow; apply only bounded stabilization fixes supported by observed defects.
 
-Non-goals include inventory, resources or XP systems, combat/world mechanics, broad redesign or migration, Storybook, dependency work, a generic design-system package, and deployment.
+Non-goals include redesign, new gameplay, dependency or styling migration, future-Epic architecture, physical-device claims without actual testing, and deployment.
 
-E01-T05 was accepted by the project owner on 2026-08-09 by directing continuation to E01-T06. It registered the approved six-board family through one authoritative catalog and shared shell, preserved the real Dungeon and Settlement boards and HeroSheet, and added four explicitly gameplay-free board foundations with portrait-safe navigation.
+E01-T06 was accepted by the project owner on 2026-08-09 by directing continuation to E01-T07. It established the typed domain-neutral presentation vocabulary, reused the existing FS/button/modal/SVG foundations, and proved incremental adoption through shell, setup, scaffold, Settlement, and Dungeon integrations without adding rules.
 
 ## Epic registry
 

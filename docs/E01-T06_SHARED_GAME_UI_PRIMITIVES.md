@@ -1,6 +1,6 @@
 # E01-T06 — Shared game UI primitives
 
-Status: **Candidate — awaiting project-owner acceptance**
+Status: **Accepted — non-deployed checkpoint pending**
 Implementation date: 2026-08-09
 
 ## Task ID and name
@@ -88,7 +88,7 @@ Establish the first typed, FS-token-based presentation primitives needed across 
 ## Checkpoint
 
 - Configured Sites source branch: `main`
-- Commit/push authorized: no; await explicit Candidate acceptance
+- Commit/push authorized: yes; the project owner accepted the Candidate by directing continuation to E01-T07
 - Expected checkpoint contents: typed primitives, focused representative migrations, shared FS-token CSS, verification evidence, architecture/task documentation, and later acceptance administration
 - Deployment authorized: **No**
 
@@ -107,14 +107,14 @@ Establish the first typed, FS-token-based presentation primitives needed across 
 
 ### User acceptance
 
-- Status: awaiting acceptance
-- Accepted by/date: pending
+- Status: accepted
+- Accepted by/date: project owner, 2026-08-09, by directing continuation to E01-T07
 
 ### Accepted checkpoint
 
-- Final commit SHA: pending acceptance
-- Pushed source branch: pending acceptance
-- Saved Sites version: pending acceptance
-- Roadmap status: unchanged during Candidate; EPIC 01 remains Current and E01-T06 remains the exact next task
-- Next task: none authorized until acceptance
+- Final commit SHA: pending acceptance-administration commit
+- Pushed source branch: `main` after acceptance administration
+- Saved Sites version: pending matching accepted source checkpoint
+- Roadmap status: EPIC 01 remains Current; E01-T06 accepted and E01-T07 is the exact next task
+- Next task: `E01-T07 — Portrait mobile QA and EPIC 01 exit gate`
 - Deployment: **Not performed**
