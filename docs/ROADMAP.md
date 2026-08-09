@@ -36,17 +36,17 @@ Approved structural direction includes:
 
 ## Current Next Task
 
-### E01-T04 — Typed board-module catalog and board router
+### E01-T05 — Add complete empty-board scaffold
 
 Status: **Next — exactly one**
 
-Goal: replace duplicated board metadata and component-resolution knowledge with one authoritative typed board-module catalog consumed by both application rendering and board navigation.
+Goal: use the accepted board catalog and shared shell to register the complete top-level board family—Hero, Settlement, World, Dungeon, Combat, and Diplomacy—while preserving the real Dungeon and Settlement boards and adding only explicitly empty foundations for the other four.
 
-Expected scope must be defined with [TASK_TEMPLATE.md](./TASK_TEMPLATE.md) before implementation. It must keep registered, enabled, unlocked, and active board states distinct; preserve Dungeon and Settlement IDs and Settlement unlock behavior; safely handle unavailable active boards; and add only the named application-facing navigation boundary required now.
+Expected scope must be defined with [TASK_TEMPLATE.md](./TASK_TEMPLATE.md) before implementation. All six boards must resolve through the authoritative catalog and existing `GameShell`; new scaffolds must remain gameplay-free and temporarily navigable for architecture verification. Portrait navigation must remain usable without inventing gameplay hierarchy or unlock rules.
 
-Non-goals include browser URL routing, new scaffold boards, gameplay, lazy loading, external plugins, broad provider refactoring, save-schema changes, visual redesign, dependency work, and deployment.
+Non-goals include world/combat/diplomacy mechanics, hero progression changes, settlement economy, new persistence, browser routing, shared primitive expansion, dependency work, and deployment.
 
-E01-T03 was accepted by the project owner on 2026-08-09 by directing continuation to E01-T04. It hardened the existing `GameShell` with one board viewport, a shared accessible modal/sheet primitive, and a small notification region without changing gameplay or persisted state.
+E01-T04 was accepted by the project owner on 2026-08-09 by directing continuation to E01-T05. It established one typed authoritative board catalog and state-based board router, centralized Settlement availability, preserved stable IDs and gameplay, and introduced the named ordinary-navigation boundary.
 
 ## Epic registry
 

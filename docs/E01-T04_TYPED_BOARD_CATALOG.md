@@ -1,6 +1,6 @@
 # E01-T04 — Typed board-module catalog and board router
 
-Status: **Candidate — awaiting project-owner acceptance**
+Status: **Accepted — non-deployed checkpoint pending**
 Implementation date: 2026-08-09
 
 ## Task ID and name
@@ -90,7 +90,7 @@ Replace duplicated board metadata, component resolution, and campaign availabili
 ## Checkpoint
 
 - Configured Sites source branch: `main`
-- Commit/push authorized: no; await explicit Candidate acceptance
+- Commit/push authorized: yes; the project owner accepted the Candidate by directing continuation to E01-T05
 - Expected checkpoint contents: typed board catalog/router, named navigation boundary, focused responsive navigation adjustment, verification evidence, documentation, and later acceptance administration
 - Deployment authorized: **No**
 
@@ -109,14 +109,14 @@ Replace duplicated board metadata, component resolution, and campaign availabili
 
 ### User acceptance
 
-- Status: awaiting acceptance
-- Accepted by/date: pending
+- Status: accepted
+- Accepted by/date: project owner, 2026-08-09; accepted by directing continuation to E01-T05
 
 ### Accepted checkpoint
 
-- Final commit SHA: pending acceptance
-- Pushed source branch: pending acceptance
-- Saved Sites version: pending acceptance
-- Roadmap status: unchanged during Candidate; EPIC 01 remains Current and E01-T04 remains the exact next task
-- Next task: none authorized until acceptance
+- Final commit SHA: the acceptance-administration commit containing this update; reported with the saved Sites checkpoint because a commit cannot contain its own SHA
+- Pushed source branch: `main`
+- Saved Sites version: assigned from the pushed acceptance commit and reported with the checkpoint
+- Roadmap status: E01-T04 accepted; EPIC 01 remains Current
+- Next task: `E01-T05 — Add complete empty-board scaffold`
 - Deployment: **Not performed**
