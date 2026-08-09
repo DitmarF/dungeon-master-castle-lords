@@ -13,6 +13,9 @@ Read these in order:
 5. `docs/GAME_STATE.md` — campaign-state ownership.
 6. `docs/CONTENT_MODEL.md` — content/rule/instance/view boundaries.
 7. `docs/ROADMAP.md` — current stage and decision-gated sequence.
+8. `docs/WORKFLOW.md` — required candidate, acceptance, and checkpoint cycle.
+
+Define each task with `docs/TASK_TEMPLATE.md`. Do not begin the next task until the prior task has reached the workflow’s Complete state.
 
 Treat `CURRENT_STATE.md` as evidence, not target architecture. Treat entries marked Proposed/TBD as unapproved. Do not infer approval from code or from a recommendation.
 
@@ -74,6 +77,7 @@ Preserve the existing React/TypeScript, Vinext/Vite, Cloudflare Worker, npm, and
 - Do not refactor unrelated code, clean up starter residue, change metadata, deploy, or broaden a documentation-only task.
 - Preserve unrelated user changes in a dirty working tree. Review the diff before editing and before handoff.
 - Prefer the smallest coherent change that satisfies the task. Avoid speculative abstractions and future-proofing without a concrete approved need.
+- Normal tasks must not deploy. Deployment requires a separate explicit user instruction; an accepted saved Sites version is a non-deployed checkpoint.
 
 ## Supported commands
 
@@ -122,7 +126,8 @@ A task is done when:
 - required source-of-truth and decision documents are updated;
 - the final handoff lists changed files, verification performed, and remaining approval needs.
 
+For normal Sites development, this is the candidate definition of done. Final workflow completion additionally requires explicit user acceptance, the accepted source committed and pushed, a matching saved Sites version, an updated roadmap status, and an identified next task. Follow `docs/WORKFLOW.md`; never deploy as part of this checkpoint.
+
 ## Code review
 
 Prioritize correctness and regressions over style preference. Check campaign invariants, save/migration safety, duplicated rule authority, cross-board consequences, deterministic behavior, mobile/touch/accessibility regressions, and accidental scope expansion. Distinguish observed defects from architectural proposals and gameplay preferences. Cite concrete files/lines, explain impact, and do not request redesign or rebalance without an approved decision.
-
