@@ -17,7 +17,7 @@ Status labels:
 
 - **Established** — required by the approved concept or established project direction.
 - **Observed** — true in the current repository, but not automatically permanent.
-- **Proposed — approval required** — recommended content policy not yet approved.
+- **Accepted** — approved content policy.
 - **TBD/Open Question** — unresolved; implementation must not silently decide it.
 
 ## Core distinction
@@ -74,9 +74,9 @@ The approved concept implies these **content families**, but only currently impl
 
 This table is a classification aid, not approval of any listed mechanic.
 
-## Proposed common definition contract
+## Common definition contract
 
-**Proposed — approval required:** Every reusable game-content definition should share a small identity/presentation envelope, then add fields specific to its family:
+**Accepted:** Every reusable game-content definition shares a small identity/presentation envelope, then adds fields specific to its family:
 
 ```text
 ContentDefinition
@@ -90,11 +90,11 @@ ContentDefinition
   family fields fields validated for this specific kind
 ```
 
-This is a conceptual contract, not an approved TypeScript or file schema. Do not require irrelevant fields merely to force every family into one large record.
+This is the approved conceptual contract, not a prescribed concrete TypeScript or file schema. Do not require irrelevant fields merely to force every family into one large record.
 
 ### Identity rules
 
-**Proposed — approval required:**
+**Accepted:**
 
 - IDs are stable, unique within an explicitly defined namespace, and independent of display labels.
 - Campaign state references definitions by ID rather than embedding full definitions.
@@ -106,7 +106,7 @@ The namespace strategy, ID syntax, aliases/deprecation, and content-version poli
 
 ## Composition instead of bespoke types
 
-**Proposed — approval required:** Model variation through small reusable capabilities where families share real behavior. A definition may compose approved capabilities such as:
+**Accepted:** Model variation through small reusable capabilities where families share real behavior. A definition may compose approved capabilities such as:
 
 - grants or modifies an attribute;
 - unlocks or grants a skill;
@@ -123,7 +123,7 @@ When behavior is genuinely unique, add a named rule extension behind the same co
 
 ## Definition, rule, instance, and view boundaries
 
-**Proposed — approval required:** Use this ownership test for any new field:
+**Accepted:** Use this ownership test for any new field:
 
 | Question | Owner |
 |---|---|
@@ -137,7 +137,7 @@ Do not store campaign quantities, damage, ownership, discovery, learned ranks, c
 
 ## Relationships and references
 
-**Proposed — approval required:** Content relationships should use stable references and be validated as a whole catalog. Examples include a class referencing its root skill, a skill referencing prerequisites, or an encounter template referencing unit and terrain definitions.
+**Accepted:** Content relationships use stable references and are validated as a whole catalog. Examples include a class referencing its root skill, a skill referencing prerequisites, or an encounter template referencing unit and terrain definitions.
 
 Relationships may be one-to-one, lists, hierarchy, or tagged queries only when the relevant system requires them. Circular dependencies, missing references, invalid hierarchy, and incompatible capabilities should fail validation before play.
 
@@ -145,7 +145,7 @@ Exact prerequisite, inheritance, override, tagging, and cross-pack semantics are
 
 ## Content catalogs
 
-**Proposed — approval required:** Each family should expose one authoritative typed catalog plus derived indexes/selectors. Consumers query that catalog instead of maintaining local parallel arrays.
+**Accepted:** Each family exposes one authoritative typed catalog plus derived indexes/selectors. Consumers query that catalog instead of maintaining local parallel arrays.
 
 A catalog should provide, as relevant:
 
@@ -161,7 +161,7 @@ One catalog API does not require one physical file. Content may be split into ma
 
 **Observed:** Current skill descriptions imply mechanics, but there is no general effect-execution system. Hero path bonuses are handwritten conditionals.
 
-**Proposed — approval required:** Approved repeatable mechanics should be represented through typed effect/requirement definitions interpreted by domain rule handlers. Complex behavior may use a named handler with validated parameters. Views may preview the same authoritative definition but must not independently implement the effect.
+**Accepted:** When a concrete approved mechanic needs repeatable effects, represent them through typed effect/requirement definitions interpreted by domain rule handlers. Complex behavior may use a named handler with validated parameters. Views may preview the same authoritative definition but must not independently implement the effect.
 
 TBD/Open Question:
 
@@ -176,7 +176,7 @@ No generic effect engine should be built before at least one approved mechanic r
 
 **Established:** Campaign-specific generated maps and discoveries belong to campaign state as described in `GAME_STATE.md`.
 
-**Proposed — approval required:** Separate reusable generation inputs from generated instances:
+**Accepted:** Separate reusable generation inputs from generated instances:
 
 - content can describe approved tiles, room/site types, encounter pools, themes, or generation profiles;
 - generator rules consume those definitions and an explicit random source;
@@ -188,7 +188,7 @@ The dungeon hierarchy, generation profiles, authored-versus-procedural balance, 
 
 **Established:** Use simple geometric SVG visuals, the FS color system, semantic UI colors, primitive game-object colors, and externally supplied static images when appropriate. See `GAME_CONCEPT.md`.
 
-**Proposed — approval required:** Content definitions reference presentation roles or asset IDs rather than embedding board-specific markup or CSS classes. Shared presentation metadata may include a sigil, icon name, asset reference, and descriptive tags; layout and interaction remain owned by views.
+**Accepted:** Content definitions reference presentation roles or asset IDs rather than embedding board-specific markup or CSS classes. Shared presentation metadata may include a sigil, icon name, asset reference, and descriptive tags; layout and interaction remain owned by views.
 
 TBD/Open Question:
 
@@ -201,7 +201,7 @@ TBD/Open Question:
 
 **Observed:** Game content is currently authored as TypeScript. This provides compile-time types and simple derived indexes, but much content is still embedded in components.
 
-**Proposed — approval required:** Keep TypeScript as the default prototype authoring format until non-developer authoring, localization, downloadable content, modding, or independent content releases justify a validated external format. Centralize definitions before changing formats.
+**Accepted:** Keep TypeScript as the default prototype authoring format until non-developer authoring, localization, downloadable content, modding, or independent content releases justify a validated external format. Centralize definitions before changing formats.
 
 TBD/Open Question:
 
@@ -216,7 +216,7 @@ Externalization alone does not make content modular; stable contracts, validatio
 
 ## Adding content versus adding a subsystem
 
-**Proposed — approval required:** Use this decision sequence:
+**Accepted:** Use this decision sequence:
 
 1. Identify the existing content family and approved gameplay rule.
 2. Add a definition using the family schema and existing capabilities.
@@ -237,7 +237,7 @@ These examples explain classification only; they do not approve new classes, ski
 
 ## Validation and compatibility
 
-**Proposed — approval required:** Content validation should cover:
+**Accepted:** Content validation should cover:
 
 - unique and well-formed IDs;
 - required family fields and valid capability parameters;
@@ -250,16 +250,9 @@ Content changes that alter the meaning of persisted IDs or outcomes need an expl
 
 ## Open questions requiring approval
 
-1. Approve the common identity/presentation envelope with family-specific schemas?
-2. Approve stable content IDs and ID-based campaign references as formal policy?
-3. Approve composition through validated reusable capabilities rather than bespoke per-item logic?
-4. Approve the definition/rule/instance/view/infrastructure ownership test?
-5. Approve one authoritative catalog per family with derived indexes/selectors?
-6. When should typed declarative effects be introduced, and which first approved mechanics should define that vocabulary?
-7. Should TypeScript remain the prototype content-authoring format?
-8. What ID namespace, deprecation, alias, and content/rule-version strategy is required?
-9. Which future content family should be formalized first: hero foundations, skills, locations, management, strategy/supply, tactical play, or boards?
-10. What is the localization strategy, and should player-facing text be direct strings or text keys?
-11. What asset catalog, provenance, fallback, and FS-token synchronization rules apply?
-12. Are remote content, content packs, user mods, or independent content releases actual requirements; if yes, what load-order and trust model applies?
-
+1. Which first approved mechanics should define the initial typed effect/requirement vocabulary?
+2. What ID namespace, deprecation, alias, and content/rule-version strategy is required beyond the accepted stable-ID policy?
+3. Which future content family should be formalized first after hero foundations and skills?
+4. What is the localization strategy, and should player-facing text be direct strings or text keys?
+5. What asset catalog, provenance, and fallback rules apply?
+6. Are remote content, content packs, user mods, or independent content releases actual requirements; if yes, what load-order and trust model applies?

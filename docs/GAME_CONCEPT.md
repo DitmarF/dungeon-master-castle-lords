@@ -33,7 +33,7 @@ The player develops their dungeon, castle, settlement, or other holdings; manage
 
 Approved at concept level: holdings/settlement management, faction progression, region conquest, supply, and a world-level strategic board are major systems.
 
-TBD: economy formulas, construction rules, population or workforce systems, production chains, region-control rules, diplomacy, campaign time, and the exact costs and consequences of supply.
+The strategic campaign advances in **Days**. The hero has global Movement Points for strategic travel, while regions, holdings, and supply make geography consequential. Exact day advancement, movement costs, economy formulas, construction/production rules, diplomacy, conquest resolution, and supply calculations remain TBD.
 
 ### 2. Exploration loop
 
@@ -47,9 +47,9 @@ TBD: the full dungeon hierarchy, generation and persistence across multiple leve
 
 Encounters are intended to resolve on a dedicated grid-based tactical board. Combat must use the same campaign entities and feed outcomes back into hero/faction progression, territorial control, resources, supply, and the explored location.
 
-Approved at concept level: tactical combat is a major interconnected loop and board, not a detached minigame.
+Approved at concept level: tactical combat is a major interconnected loop and board, not a detached minigame. It uses a hex grid, squad-scale forces rather than individual soldiers, an initiative queue, and separate Movement Point (MP) and Action Point (AP) economies.
 
-TBD: turn structure, action economy, unit scale, party composition, movement and range rules, terrain, abilities, damage, defeat, recovery, rewards, and AI behavior.
+The hero can become **Downed**, **Wounded**, or **Dead**; these are distinct states. Death of the actual sovereign ends the campaign in defeat. Exact initiative, MP/AP values, squad composition, movement/range, terrain, abilities, damage thresholds, recovery, rewards, and AI behavior remain TBD.
 
 ## Campaign progression
 
@@ -63,13 +63,38 @@ The hero is a persistent campaign entity. The established prototype uses:
 - attributes: Strength, Agility, Perception, Intellect, Charisma, and Leadership;
 - class and vocation skill trees with initial choices and ranks.
 
-The exact implemented creation rules are recorded in `CURRENT_STATE.md` and enforced by the current code. Broader advancement, respecialization, equipment, injury/death, companions, and the mechanical meaning of most skills remain TBD.
+The prototype progression target is approximately **12 hero levels**. Class and Vocation combine toward a future prestige archetype. Each of the six class/vocation trees has an approved **root + three branches × three tiers** structure.
+
+The attributes have these broad responsibilities:
+
+- **Strength:** physical power and close-combat force;
+- **Agility:** speed, finesse, and evasive movement;
+- **Perception:** awareness and ranged accuracy;
+- **Intellect:** knowledge and magical capability;
+- **Charisma:** diplomacy and personal influence;
+- **Leadership:** command, morale, and squad direction.
+
+The exact implemented creation rules are recorded in `CURRENT_STATE.md` and enforced by the current code. Exact level thresholds, prestige archetypes, attribute formulas, skill effects, equipment, companions, respecialization, injury/recovery, and balance remain TBD.
 
 ### Faction
 
-Dungeon and Castle are the established faction identities. Faction choice is intended to participate in longer-term progression and campaign play. In the current prototype it is mainly presentational; no wider faction rule set has been approved or implemented.
+Dungeon and Castle are the established faction identities. Their approved development structure is:
 
-TBD: asymmetric faction mechanics, faction resources, unlocks, units, relationships, victory conditions, and whether additional faction or domain types will be supported.
+```text
+Castle
+→ Humanoid / Light Dominion
+→ Human | Dwarf | Elf
+→ Domain
+→ Ascension
+
+Dungeon
+→ Monster / Dark Dominion
+→ Goblinoid | Insectoid | Necronoid
+→ Domain
+→ Ascension
+```
+
+The current prototype represents only the top-level Dungeon/Castle choice and does not implement this progression. Exact faction bonuses, resources, units, unlock requirements, relationships, Domain mechanics, Ascension mechanics, and balance remain TBD.
 
 ### Territory, holdings, and supply
 
@@ -77,15 +102,25 @@ Region conquest and supply connect the world, holdings, exploration, and combat.
 
 No detailed conquest or supply rules are established by this document. In particular, it does not decide adjacency, occupation, influence, supply-line tracing, attrition, transport, upkeep, or loss/reclamation rules.
 
+## Time, defeat, and victory shape
+
+- Strategic play advances in Days and uses global hero Movement Points.
+- Dungeon/building exploration uses exploration turns on square grids.
+- Tactical combat uses a hex grid, initiative queue, and separate MP/AP economy.
+- Downed, Wounded, and Dead are distinct hero states; death of the actual sovereign is campaign defeat.
+- Approved victory families are **Dominion**, **Conquest**, and **Ascension**.
+
+Exact day/turn conversion, action costs, injury thresholds, sovereign succession rules (if any), and victory thresholds remain TBD.
+
 ## Boards and information flow
 
 The approved board family is:
 
 - **Player/campaign and hero setup:** create or recognize a player, start/load a campaign, and establish the hero/faction.
-- **Dungeon/building-level board:** exploration and location-level interaction.
+- **Dungeon/building-level board:** square-grid exploration and location-level interaction.
 - **Settlement/dungeon/castle management board:** development and management of a controlled holding.
-- **World map:** regions, expansion, strategic movement, conquest, and supply context.
-- **Tactical combat map:** encounter resolution.
+- **World map:** hex-grid regions, expansion, strategic movement, conquest, and supply context.
+- **Tactical combat map:** hex-grid squad encounter resolution.
 - **Additional focused boards:** may be added when a system benefits from its own clear interaction surface.
 
 The central state is authoritative across boards. A board is a view and interaction surface over campaign state, not an isolated save. Typical information flow is:
@@ -111,9 +146,9 @@ Authenticated identity, cloud synchronization, ownership, multiple campaigns, mi
 
 - Mobile-first, portrait-first browser experience suitable for smartphone testing.
 - Dark mode follows the system setting by default, with a user override.
-- Use the FS color system: semantic colors for UI and primitive colors for game objects/imagery. The authoritative token file is `sources/fs.tokens.json` in the synced project context; its repository synchronization strategy remains open.
+- Use the FS color system: semantic colors for UI and primitive colors for game objects/imagery. The authoritative repository source is `sources/fs.tokens.json`; the CSS synchronization/adapter is handled by the design-system work.
 - Prefer SVG and simple geometric forms for game visuals; static descriptive images may be supplied separately.
-- Boards may use square or hexagonal grids according to the needs of an approved mechanic. Grid choice is not globally finalized.
+- Grid assignments are approved: World Map → hex; Dungeon/Building Map → square; Tactical Combat → hex.
 - Accessibility, touch operation, keyboard support where applicable, safe areas, and reduced-motion behavior are part of the product quality bar.
 
 ## Current prototype boundary
@@ -134,16 +169,14 @@ Future work must preserve these rules:
 
 ## Open questions requiring approval
 
-1. What are the detailed win, loss, and campaign-end conditions?
-2. How do Dungeon and Castle differ mechanically, and when should faction progression begin affecting play?
+1. What are the exact thresholds and resolution rules for Dominion, Conquest, Ascension, and campaign defeat?
+2. What bonuses, costs, unlock requirements, units, and balance distinguish the approved faction branches and stages?
 3. What is the authoritative region-conquest model?
 4. What is the authoritative supply model, and which entities consume or transmit supply?
-5. What is the tactical combat ruleset and unit scale?
+5. What are the exact tactical initiative, MP/AP, squad, terrain, damage, recovery, reward, and AI rules?
 6. What is the persistent dungeon/building hierarchy, including multiple levels and reset/repopulation behavior?
-7. How do hero skills, attributes, equipment, companions, injury, defeat, and long-term advancement work?
+7. What are the exact hero level, prestige, skill, attribute, equipment, companion, injury, and recovery rules?
 8. What management/economy systems belong on the settlement/dungeon/castle board?
-9. Should the game use square grids, hex grids, or a board-specific mixture?
-10. Is one campaign per player intentional, and what is the future relationship between local profiles, authenticated users, and multiplayer participants?
-11. Which game-state changes autosave, and what are the required cloud/offline/migration guarantees?
-12. Is multiplayer merely a possible future extension or a design constraint that current systems must already accommodate?
-
+9. Is one campaign per player intentional, and what is the future relationship between local profiles, authenticated users, and multiplayer participants?
+10. Which game-state changes autosave, and what are the required cloud/offline/migration guarantees?
+11. Is multiplayer merely a possible future extension or a design constraint that current systems must already accommodate?

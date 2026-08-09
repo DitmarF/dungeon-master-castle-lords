@@ -4,20 +4,25 @@ This file governs work in this repository. Keep changes scoped, preserve approve
 
 ## Read before changing anything
 
-Read these in order:
+Always read:
 
-1. `docs/CURRENT_STATE.md` — observed implementation, limitations, and verification status.
-2. `docs/GAME_CONCEPT.md` — approved product direction and open gameplay questions.
-3. `docs/DECISIONS.md` — accepted decisions, interim implementation choices, pending proposals, and deferred decisions.
-4. `docs/ARCHITECTURE.md` — structural principles and proposals.
-5. `docs/GAME_STATE.md` — campaign-state ownership.
-6. `docs/CONTENT_MODEL.md` — content/rule/instance/view boundaries.
-7. `docs/ROADMAP.md` — current stage and decision-gated sequence.
-8. `docs/WORKFLOW.md` — required candidate, acceptance, and checkpoint cycle.
+1. `AGENTS.md` (this file).
+2. `docs/ROADMAP.md` — current Epic and exact next task.
+3. `docs/DECISIONS.md` — accepted, interim, superseded, and deferred decisions.
+4. The task definition created from `docs/TASK_TEMPLATE.md`.
 
-Define each task with `docs/TASK_TEMPLATE.md`. Do not begin the next task until the prior task has reached the workflow’s Complete state.
+Then read only the documents relevant to the task:
 
-Treat `CURRENT_STATE.md` as evidence, not target architecture. Treat entries marked Proposed/TBD as unapproved. Do not infer approval from code or from a recommendation.
+- gameplay/mechanics → `docs/GAME_CONCEPT.md`;
+- architecture/boards/platform boundaries → `docs/ARCHITECTURE.md`;
+- campaign state/save/persistence → `docs/GAME_STATE.md`;
+- reusable content/effects/assets → `docs/CONTENT_MODEL.md`;
+- existing implementation facts → `docs/CURRENT_STATE.md`;
+- workflow/checkpoint uncertainty → `docs/WORKFLOW.md`.
+
+The task definition must list its relevant documents/files. Do not begin the next task until the prior task has reached the workflow’s Complete state.
+
+Treat `CURRENT_STATE.md` as evidence, not target architecture. Treat entries marked TBD as unapproved detail. Do not infer approval from code or from a recommendation.
 
 ## Repository shape
 
@@ -40,7 +45,7 @@ Preserve the existing React/TypeScript, Vinext/Vite, Cloudflare Worker, npm, and
 - Durable choices and outcomes belong in the versioned campaign model. UI preferences, hydration, open sheets, pointer gestures, and other presentation state normally do not.
 - Before changing persisted data, identify ownership, authority, defaults, compatibility, and migration behavior. Preserve existing save IDs and meanings unless an approved migration changes them.
 - The current generic `updateGame` API, one-provider structure, hard-coded board rendering, one campaign per player, and local-only persistence are observed interim choices—not permanent decisions.
-- Do not implement proposals such as a new board-module contract, generic effect engine, cloud model, or multiplayer authority model without explicit approval recorded in `docs/DECISIONS.md`.
+- Implement accepted architecture only through scoped tasks. Do not build a generic effect engine until an approved mechanic supplies the concrete vocabulary; cloud and multiplayer authority remain deferred.
 
 ## Content and mechanics
 
@@ -66,7 +71,7 @@ Preserve the existing React/TypeScript, Vinext/Vite, Cloudflare Worker, npm, and
 - Game visuals are SVG-first and use simple geometric forms. Reuse the existing icon/crest system; use supplied static images only where the approved design calls for them.
 - Use FS semantic tokens for UI surfaces/content/actions/feedback and FS primitive colors for game objects. Do not mix these roles or invent replacement palette values.
 - System dark mode is the default, with the existing user override behavior preserved.
-- The authoritative `fs.tokens.json` is not present in this checkout. Do not guess missing tokens; use the established CSS token API or request the authoritative source/synchronization decision.
+- `sources/fs.tokens.json` is the authoritative FS token source. Use the established CSS token adapter until a scoped task changes its synchronization; do not invent replacement tokens.
 - Maintain accessible names, focus visibility, disabled/pressed states, Escape behavior for overlays, and touch target usability. Do not claim full accessibility without appropriate testing.
 
 ## Dependencies and scope

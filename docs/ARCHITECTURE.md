@@ -16,7 +16,7 @@ Status labels used here:
 
 - **Established** — already required by the approved project direction or platform.
 - **Observed** — true of the current repository, but not automatically a permanent decision.
-- **Proposed — approval required** — recommended structural direction that must not be treated as approved until the project owner accepts it.
+- **Accepted** — approved architectural policy.
 - **TBD/Open Question** — unresolved; do not decide implicitly through implementation.
 
 If documents appear to conflict, `GAME_CONCEPT.md` governs product intent, this document governs approved structure, and `CURRENT_STATE.md` governs claims about what is implemented today.
@@ -60,9 +60,9 @@ A board owns its presentation and board-specific interactions. It does not own a
 
 ### 3. Separate rules, state, views, and platform concerns
 
-**Established at principle level; exact boundaries proposed — approval required.**
+**Accepted.**
 
-The approved direction is broadly MVC-like, without requiring a particular framework-specific MVC library. The following boundary definition is proposed:
+The approved direction is broadly MVC-like, without requiring a particular framework-specific MVC library:
 
 - **Domain/model:** campaign entities, value types, invariants, deterministic rules, commands/events, and migrations.
 - **Application/state:** coordinates player/campaign lifecycle, board transitions, domain operations, and persistence boundaries.
@@ -73,7 +73,7 @@ Dependencies should point toward the domain. Game rules must not depend on React
 
 ### 4. Shared consequences use explicit state transitions
 
-**Proposed — approval required.**
+**Accepted.**
 
 Cross-board effects must pass through the central application/domain boundary. A tactical result, dungeon claim, world conquest, or supply change should be represented as an explicit campaign transition rather than an unrelated collection of view-level mutations.
 
@@ -81,7 +81,7 @@ The exact command/event model is not yet established. The principle is that rule
 
 ### 5. Persistent data is versioned and migratable
 
-**Observed foundation; proposed as continuing policy — approval required.**
+**Accepted, building on the observed foundation.**
 
 Campaign data must have explicit schema versions and controlled migrations. Persisted input is untrusted and should be validated before use. A storage implementation must not dictate the domain model.
 
@@ -89,7 +89,7 @@ The current versioned save and migration approach is a foundation to preserve. B
 
 ### 6. Deterministic rules where practical
 
-**Proposed — approval required.**
+**Accepted.**
 
 Procedural generation and rule calculations should accept explicit inputs, including seeds where randomness is involved, and produce reproducible results where practical. This supports reliable saves, debugging, tests, and possible future simulation or multiplayer.
 
@@ -97,11 +97,11 @@ This principle does not prescribe deterministic networking or a multiplayer prot
 
 ### 7. Shared content has one authoritative definition
 
-**Proposed — approval required.**
+**Accepted.**
 
 Rule-bearing content—such as hero paths, skill prerequisites/effects, units, terrain, buildings, or resources—should not be independently redefined in views and rule modules. Presentation may derive labels and previews from authoritative typed content.
 
-Content format and authoring tooling are TBD. TypeScript definitions remain acceptable for the prototype.
+TypeScript definitions are the accepted prototype content format. External schemas or authoring tooling remain TBD until a concrete need justifies them.
 
 ### 8. Design-system and interaction foundations are shared
 
@@ -119,7 +119,7 @@ Portrait smartphone interaction is the primary design and testing target. Board 
 
 ### 10. Platform code stays at the edges
 
-**Proposed — approval required.**
+**Accepted.**
 
 OpenAI Sites, Cloudflare Worker, Vinext/Vite, browser APIs, authentication, and future persistence services are delivery/infrastructure concerns. Their adapters may call application interfaces; domain rules should not import them.
 
@@ -133,15 +133,15 @@ Unapproved mechanics may be implemented only as clearly labeled experiments. Imp
 
 ### 12. Verification follows risk and boundaries
 
-**Proposed — approval required.**
+**Accepted at principle level.**
 
 Deterministic rules, state transitions, migrations, and generation should be testable without rendering the full application. Board integration and important player flows need focused interaction coverage. Platform output needs its existing artifact validation.
 
 The precise test tools and required quality gates are not yet approved.
 
-## Proposed target module contract
+## Target module contract
 
-**Proposed — approval required:** Evolve each playable board into a typed module registered through one authoritative board catalog. A board module would contain or reference:
+**Accepted:** Evolve each playable board into a typed module registered through one authoritative board catalog. A board module contains or references:
 
 - stable board ID and navigation metadata;
 - view/component resolution;
@@ -154,9 +154,9 @@ The central application would resolve boards from this catalog rather than dupli
 
 The exact TypeScript interface, routing approach, loading strategy, and whether setup is a registered board remain TBD.
 
-## Proposed dependency direction
+## Dependency direction
 
-**Proposed — approval required:** Use the following dependency direction as modules expand:
+**Accepted:** Use the following dependency direction as modules expand:
 
 ```text
 platform adapters ─┐
@@ -184,7 +184,7 @@ Folder names may evolve; dependency responsibilities matter more than a prescrib
 
 ### State transitions
 
-**Proposed — approval required:** Replace broad whole-save mutation gradually with named domain/application operations as each system gains rules. Validate invariants at those boundaries. Do not refactor everything pre-emptively; introduce operations alongside real mechanics.
+**Accepted:** Replace broad whole-save mutation gradually with named domain/application operations as each system gains rules. Validate invariants at those boundaries. Do not refactor everything pre-emptively; introduce operations alongside real mechanics.
 
 ### Persistence adapters
 
@@ -196,7 +196,7 @@ Folder names may evolve; dependency responsibilities matter more than a prescrib
 
 **Established:** Boards communicate through central campaign transitions, not direct component coupling. A board may request navigation, but navigation must respect campaign state and availability/unlock rules.
 
-**Proposed — approval required:** Distinguish these concepts in the board contract:
+**Accepted:** Distinguish these concepts in the board contract:
 
 - **registered:** the application knows the board exists;
 - **enabled:** the implementation is available in this release;
@@ -213,7 +213,7 @@ World, combat, and future systems must define their own state and transition con
 - Random generation that affects campaign truth must store enough information to reproduce or persist the result.
 - Persisted schemas require migration and validation plans before incompatible changes.
 
-**Proposed — approval required:** Adopt these as formal data rules. They align with the current typed/versioned/deterministic foundations but have not previously been recorded as approved policy.
+**Accepted:** These are formal data rules.
 
 ## Out of scope for this architecture decision
 
@@ -222,22 +222,16 @@ This document does not approve:
 - detailed gameplay, economy, conquest, supply, combat, or progression rules;
 - a specific state-management library;
 - a cloud database, authentication model, API style, or multiplayer protocol;
-- hex versus square grids;
+- detailed grid algorithms and board-specific interaction rules;
 - a CSS framework migration or design-system rewrite;
 - dynamic plugin loading, micro-frontends, event sourcing, ECS, or a server-authoritative simulation;
 - refactoring solely to match a preferred folder structure.
 
 ## Open questions requiring approval
 
-1. Approve the proposed typed board-module contract and single authoritative board catalog?
-2. Approve the proposed inward dependency direction and the domain/application/view/infrastructure boundaries?
-3. Approve gradual replacement of generic whole-save mutation with named, validated operations as systems are implemented?
-4. Approve the four distinct board states: registered, enabled, unlocked, and active?
-5. Approve the formal data rules for stable IDs, authoritative content, derived values, deterministic generation, and migration planning?
-6. What session or draft state must persist, beginning with unfinished hero setup?
-7. What is the authoritative player/campaign/persistence model: campaign count, identity, cloud sync, offline behavior, and save semantics?
-8. Should future multiplayer constrain architecture now; if yes, what authority and synchronization model is required?
-9. What verification gates and supported local development environment are required?
-10. Should TypeScript remain the authoritative content format for the prototype, and when would external schemas/content tooling become justified?
-11. Is the current Sites/Vinext/Cloudflare Worker platform an approved continuing constraint or only the present delivery mechanism?
-12. What is the authoritative FS token synchronization method, and should styling remain handcrafted CSS, use Tailwind intentionally, or defer that choice?
+1. What session or draft state must persist, beginning with unfinished hero setup?
+2. What is the authoritative player/campaign/persistence model: campaign count, identity, cloud sync, offline behavior, and save semantics?
+3. Should future multiplayer constrain architecture now; if yes, what authority and synchronization model is required?
+4. What verification gates and supported local development environment are required?
+5. What is the implementation strategy for synchronizing `sources/fs.tokens.json` with the CSS token adapter?
+6. Should styling remain handcrafted CSS, use Tailwind intentionally, or defer that choice?

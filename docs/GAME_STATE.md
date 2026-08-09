@@ -16,7 +16,7 @@ Status labels:
 
 - **Established** — required by the approved concept or already-established structure.
 - **Observed** — true in the current implementation, but not automatically a permanent product rule.
-- **Proposed — approval required** — recommended classification not yet approved.
+- **Accepted** — approved state policy.
 - **TBD/Open Question** — unresolved; implementation must not silently decide it.
 
 Gameplay rules belong in `GAME_CONCEPT.md` or a future responsible rules document. This document records state only after the corresponding concept is approved.
@@ -125,6 +125,8 @@ Campaign count, ownership, timestamps, save slots, branching, and lifecycle stat
 - faction identity and any approved faction progression;
 - acquired skills, capabilities, equipment, companions, conditions, or other progression only after their rules are approved.
 
+Approved shape includes an approximately 12-level hero target, Class + Vocation leading toward a prestige archetype, the faction branch/stage structure in `GAME_CONCEPT.md`, and distinct Downed/Wounded/Dead states. Exact schemas and balance remain TBD.
+
 No unapproved progression field should be added merely as a placeholder that implies a rule.
 
 ### World, regions, and holdings
@@ -151,7 +153,7 @@ What regenerates, what is stored, and what is reconstructed from a seed remain T
 - supply relationships and consequences once the supply model is approved;
 - campaign time, turns, days, or schedules only once their authority and advancement rules are defined.
 
-The existing treasury/day counters do not establish the future economy or time model.
+Strategic time is based on Days, strategic hero travel uses global Movement Points, and dungeon exploration uses exploration turns. The existing treasury/day counters do not establish their exact advancement, conversion, economy, or supply rules.
 
 ### Tactical encounters and consequences
 
@@ -160,7 +162,7 @@ The existing treasury/day counters do not establish the future economy or time m
 - resolved outcome and consequences returned to the campaign;
 - in-progress tactical state only if resumable encounters are approved.
 
-Combat turns, units, actions, damage, AI, retreat, recovery, and encounter-resume rules are TBD.
+Approved tactical state shape includes squad-scale participants, a hex grid, an initiative queue, and separate MP/AP values. Exact turn data, actions, damage, AI, retreat, recovery, and encounter-resume rules remain TBD.
 
 ## State that should remain outside the campaign
 
@@ -179,7 +181,7 @@ Future authenticated user IDs or server revision identifiers may be referenced b
 
 **Observed:** The prototype stores both source choices and some derived hero values, then repairs derived attributes during migration. It stores the complete generated dungeon map as well as its seed.
 
-**Proposed — approval required:** For each value, identify one authoritative source and classify the value as:
+**Accepted:** For each value, identify one authoritative source and classify the value as:
 
 1. **stored fact** — a choice or outcome that cannot be safely recreated;
 2. **stored snapshot** — persisted for resume/performance while remaining reproducible;
@@ -192,13 +194,13 @@ Do not persist the same fact in multiple forms without an explicit consistency a
 
 **Observed:** The dungeon uses a stored numeric seed and also persists the generated rooms and tiles.
 
-**Proposed — approval required:** Any randomness that changes campaign truth must preserve enough authoritative information to resume and migrate safely. Depending on the approved system, that may be a seed plus generator/rule version, the generated result, or both. The choice must be made per system rather than inferred from the current dungeon implementation.
+**Accepted:** Any randomness that changes campaign truth must preserve enough authoritative information to resume and migrate safely. Depending on the approved system, that may be a seed plus generator/rule version, the generated result, or both. The choice must be made per system rather than inferred from the current dungeon implementation.
 
 ## Change and migration discipline
 
 **Established:** Persisted campaign data is versioned and existing saves require deliberate migration handling.
 
-**Proposed — approval required:** Before adding or changing campaign state:
+**Accepted:** Before adding or changing campaign state:
 
 1. link the field to an approved gameplay concept;
 2. classify its ownership and authority;
@@ -218,9 +220,7 @@ Implementation must not convert an open gameplay question into a permanent save-
 5. Should camera/board position resume per campaign, per player, or not at all?
 6. Are tactical encounters resumable; if so, which in-progress combat state is durable?
 7. For generated locations, what is authoritative: seed/version, generated snapshot, or both?
-8. Approve the stored-fact/stored-snapshot/derived/static classification policy?
-9. What world, region, holding, conquest, and supply states exist once their rules are approved?
-10. What campaign time model exists, and which systems advance it?
-11. What are the cloud-save, offline, synchronization, conflict, export/import, and migration guarantees?
-12. Must multiplayer requirements constrain the campaign schema now; if yes, who is authoritative for state transitions?
-
+8. What world, region, holding, conquest, and supply fields implement their approved system shapes once exact rules are defined?
+9. How do Days, global hero Movement Points, exploration turns, and tactical initiative/MP/AP advance or convert between one another?
+10. What are the cloud-save, offline, synchronization, conflict, export/import, and migration guarantees?
+11. Must multiplayer requirements constrain the campaign schema now; if yes, who is authoritative for state transitions?
