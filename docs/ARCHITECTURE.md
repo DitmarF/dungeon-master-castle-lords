@@ -119,6 +119,8 @@ The shared application-shell boundary is the existing `GameShell`. It owns the p
 
 Shared modal sheets use the small `ModalOverlay` presentation primitive for dialog semantics, title association, Escape/backdrop dismissal, initial focus, keyboard focus containment, opener-focus restoration, and background scroll locking. `HeroSheet` and `SettingsSheet` are the first consumers. This is a reusable interaction foundation, not a global modal state machine. `NotificationRegion` similarly provides only an always-mounted live region and presentation slot; campaign-saved feedback is its first consumer, with no queue or game-event ownership.
 
+E01-T06 establishes the initial domain-neutral presentation vocabulary in `src/ui/GamePrimitives.tsx`: Panel, Stat, ResourceIndicator, ProgressBar, ActionButton, Slot, Tooltip/InfoSheet, SVG GridCell, and SVG-first GameToken. These components accept primitive display values, visual states, children, token colors, and callbacks; they do not import concrete board or campaign models or derive game rules. `ActionButton` is the typed entry to the existing `.button` variants rather than a second button system. `InfoSheet` pairs optional pointer/focus help with a click/tap `ModalOverlay`, so important information is never hover-only. `GameToken` uses FS primitive game colors or their persisted generated projections for game-world identity, while Panel and other interface primitives use semantic/derived UI tokens. Adoption is intentionally incremental through representative existing consumers.
+
 ### 9. Mobile-first does not mean mobile-only
 
 **Established.**

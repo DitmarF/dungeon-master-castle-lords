@@ -13,6 +13,11 @@ import { cellKey, discoverAround, isWalkable } from "../game/generateDungeon";
 import { useGame } from "../game/GameProvider";
 import type { CellPosition } from "../game/model";
 import { GameIcon } from "../ui/GameIcon";
+import {
+  ActionButton,
+  GameToken,
+  GridCell,
+} from "../ui/GamePrimitives";
 import { GameShell } from "../ui/GameShell";
 
 const CELL_SIZE = 48;
@@ -558,45 +563,39 @@ export function DungeonBoard() {
                     : "map-cell map-cell--wall"
                   : "map-cell map-cell--unknown";
                 return (
-                  <rect
+                  <GridCell
                     key={`${x}-${y}`}
                     x={x * CELL_SIZE}
                     y={y * CELL_SIZE}
                     width={CELL_SIZE}
                     height={CELL_SIZE}
                     className={tileClass}
+                    selected={x === hero.position.x && y === hero.position.y}
                   />
                 );
               }),
             )}
 
             {heartVisible ? (
-              <g
+              <GameToken
+                variant="objective"
+                color="var(--fs-red)"
                 className="heart-token"
                 transform={`translate(${
                   dungeon.heart.x * CELL_SIZE + CELL_SIZE / 2
                 } ${dungeon.heart.y * CELL_SIZE + CELL_SIZE / 2})`}
-              >
-                <circle r="17" className="heart-token__aura" />
-                <path d="M0-13 12 0 0 13-12 0Z" className="heart-token__core" />
-                <circle r="3.5" className="heart-token__center" />
-              </g>
+              />
             ) : null}
 
-            <g
+            <GameToken
+              variant="hero"
+              color={selectedPlayer.bannerColor}
+              selected
               className="hero-token"
               transform={`translate(${
                 hero.position.x * CELL_SIZE + CELL_SIZE / 2
               } ${hero.position.y * CELL_SIZE + CELL_SIZE / 2})`}
-            >
-              <circle r="16" className="hero-token__ring" />
-              <path
-                d="M0-12 11-4 8 11 0 15-8 11-11-4Z"
-                fill={selectedPlayer.bannerColor}
-              />
-              <circle cy="-3" r="3" className="hero-token__head" />
-              <path d="M-5 8C-4 2 4 2 5 8" className="hero-token__body" />
-            </g>
+            />
           </svg>
 
           <div className="map-zoom" aria-label="Map zoom controls">
@@ -700,20 +699,19 @@ export function DungeonBoard() {
               </span>
             </div>
             <div className="dialog-actions">
-              <button
-                type="button"
-                className="button button--ghost"
+              <ActionButton
+                variant="ghost"
                 onClick={() => setHeartPromptOpen(false)}
               >
                 Keep exploring
-              </button>
-              <button
-                type="button"
-                className="button button--primary"
+              </ActionButton>
+              <ActionButton
+                variant="primary"
                 onClick={claimSettlement}
+                endIcon={<GameIcon name="arrow" size={17} />}
               >
-                Claim settlement <GameIcon name="arrow" size={17} />
-              </button>
+                Claim settlement
+              </ActionButton>
             </div>
           </section>
         </div>

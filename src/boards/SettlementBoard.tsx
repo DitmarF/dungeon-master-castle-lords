@@ -2,6 +2,7 @@
 
 import { useGame } from "../game/GameProvider";
 import { GameIcon } from "../ui/GameIcon";
+import { ActionButton, Slot } from "../ui/GamePrimitives";
 import { GameShell } from "../ui/GameShell";
 
 export function SettlementBoard() {
@@ -20,7 +21,12 @@ export function SettlementBoard() {
       icon="castle"
       stats={[
         { label: "Day", value: dungeon.day, icon: "calendar" },
-        { label: "Gold", value: dungeon.treasury, icon: "coin" },
+        {
+          label: "Gold",
+          value: dungeon.treasury,
+          icon: "coin",
+          kind: "resource",
+        },
         { label: "Level", value: dungeon.level, icon: "layers" },
       ]}
     >
@@ -47,17 +53,17 @@ export function SettlementBoard() {
               This board is ready for the next prototype systems: rooms,
               resources, population, and construction.
             </p>
-            <button
-              type="button"
-              className="button button--secondary"
+            <ActionButton
+              variant="secondary"
+              startIcon={<GameIcon name="back" size={17} />}
               onClick={() => navigateToBoard("dungeon")}
             >
-              <GameIcon name="back" size={17} /> Return to exploration
-            </button>
+              Return to exploration
+            </ActionButton>
           </div>
-          <span className="future-slot future-slot--one">Future district 01</span>
-          <span className="future-slot future-slot--two">Future district 02</span>
-          <span className="future-slot future-slot--three">Future district 03</span>
+          <Slot label="Future district 01" className="future-slot future-slot--one" />
+          <Slot label="Future district 02" className="future-slot future-slot--two" />
+          <Slot label="Future district 03" className="future-slot future-slot--three" />
         </div>
       </section>
     </GameShell>

@@ -5,6 +5,7 @@ import { useGame } from "../game/GameProvider";
 import { BoardNavigation } from "./BoardNavigation";
 import { Crest } from "./Crest";
 import { GameIcon, type IconName } from "./GameIcon";
+import { ResourceIndicator, Stat } from "./GamePrimitives";
 import { HeroSheet } from "./HeroSheet";
 import { NotificationRegion } from "./NotificationRegion";
 import { SettingsSheet } from "./SettingsSheet";
@@ -13,6 +14,7 @@ export interface GameShellStat {
   label: string;
   value: string | number;
   icon: IconName;
+  kind?: "stat" | "resource";
 }
 
 interface GameShellProps {
@@ -120,13 +122,18 @@ export function GameShell({
           </span>
         </div>
         <div className="campaign-stats">
-          {stats.map((stat) => (
-            <span key={stat.label}>
-              <GameIcon name={stat.icon} size={15} />
-              <small>{stat.label}</small>
-              <strong>{stat.value}</strong>
-            </span>
-          ))}
+          {stats.map((stat) => {
+            const Primitive =
+              stat.kind === "resource" ? ResourceIndicator : Stat;
+            return (
+              <Primitive
+                key={stat.label}
+                label={stat.label}
+                value={stat.value}
+                icon={<GameIcon name={stat.icon} size={15} />}
+              />
+            );
+          })}
         </div>
       </section>
 

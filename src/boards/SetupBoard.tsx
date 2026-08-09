@@ -15,6 +15,7 @@ import {
 import { skillBelongsToTree } from "../game/skillTrees";
 import { Crest } from "../ui/Crest";
 import { GameIcon, type IconName } from "../ui/GameIcon";
+import { ActionButton, ProgressBar } from "../ui/GamePrimitives";
 import { SettingsSheet } from "../ui/SettingsSheet";
 import { SkillTreePicker } from "../ui/SkillTreePicker";
 
@@ -237,6 +238,13 @@ export function SetupBoard() {
             <span className="section-kicker">Campaign foundation</span>
             <h1>Build your founding hero.</h1>
             <p>Choose a faction, two paths, two attributes, and one skill-tree advance.</p>
+            <ProgressBar
+              className="setup-progress"
+              label="Hero setup choices completed"
+              value={completedChoices}
+              max={4}
+              valueText={`${completedChoices} of 4 choices completed`}
+            />
           </div>
           <span className={`readiness-chip${ready ? " readiness-chip--ready" : ""}`}>
             <span className="status-dot" />
@@ -408,14 +416,14 @@ export function SetupBoard() {
               : `${remainingPoints} attribute ${remainingPoints === 1 ? "point" : "points"} left`}
           </small>
         </span>
-        <button
-          type="button"
-          className="button button--primary"
+        <ActionButton
+          variant="primary"
           disabled={!ready}
           onClick={beginCampaign}
+          endIcon={<GameIcon name="arrow" size={17} />}
         >
-          Enter level <GameIcon name="arrow" size={17} />
-        </button>
+          Enter level
+        </ActionButton>
       </footer>
 
       {settingsOpen ? (
