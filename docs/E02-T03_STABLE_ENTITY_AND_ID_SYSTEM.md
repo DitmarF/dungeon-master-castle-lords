@@ -101,19 +101,20 @@ Establish one small, explicit identity policy and implementation for the current
 - Automated verification: `npm run test:engine` passed 12/12 directly; final `npm run verify` passed token drift, lint, 12/12 engine tests, the bounded build/artifact validation, and 1/1 rendered-HTML test
 - Behavior verification: focused creation/setup/load regression covers player creation, campaign ownership/identity, Hero Setup completion, dungeon seed/result/discovery retention, and version-3 loading; source review confirms persisted players/content use stable IDs as React keys while dungeon grid keys remain coordinate-derived
 - Documentation/decision updates: accepted current identity policy recorded as `DMCL-P23` in architecture, state, content, decision, roadmap, and task sources; broader account/cloud/content-version questions remain open; `CURRENT_STATE.md` unchanged because no new repository-wide audit was performed
-- Limitations/risks/open approvals: the system adapter intentionally requires `crypto.randomUUID()` instead of falling back to `Math.random()`; clock and gameplay-seed injection remain outside this task. Owner approval is required for the minimum sequence correction: make E02-T04 the remaining clock/deterministic campaign-seed task, then shift the previously approved setup/dungeon/navigation/provider/exit tasks to E02-T05–T09.
+- Limitations/risks/open approvals: the system adapter intentionally requires `crypto.randomUUID()` instead of falling back to `Math.random()`; clock and gameplay-seed injection remain outside this task. The owner accepted the sequence correction and subsequently selected the named validated transition layer as E02-T04; clock/gameplay-seed isolation therefore remains explicit and unscheduled.
 - Deployment: **Not performed**
 
 ### User acceptance
 
-- Status: awaiting Candidate
-- Accepted by/date: pending explicit acceptance
+- Status: accepted
+- Accepted by/date: project owner, 2026-08-10
+- Owner-reported verification: all requested tests passed and current gameplay worked as expected
 
 ### Accepted checkpoint
 
-- Final commit SHA: pending acceptance
-- Pushed source branch: `main` after acceptance
-- Saved Sites version: pending acceptance
-- Roadmap status: E02-T03 remains active until acceptance and checkpoint completion
-- Next task: pending explicit owner approval of the minimum sequence correction
+- Candidate implementation commit: `96ac231bfbc6f677f966c48571aa5cc1e126840b`
+- Pushed source branch: `main`
+- Saved Sites version: recorded in the accepted checkpoint handoff
+- Roadmap status: E02-T03 complete
+- Next task: `E02-T04 — Named validated command/transition layer`
 - Deployment: **Not performed**

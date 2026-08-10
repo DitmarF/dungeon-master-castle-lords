@@ -84,7 +84,7 @@ The project owner accepted the following E02-T01 decisions on 2026-08-10. They a
 | DMCL-P19 | **Accepted** | Name the pure authoritative campaign contract `CampaignState`, retain `GameSave` as the version-3 serialized compatibility name or alias, and preserve the exact v3 runtime shape during the first engine task. | Separates campaign truth from runtime/profile/UI state without forcing a save migration or speculative future slices. | `GAME_STATE.md`, `E02-T01_CORE_ENGINE_CONTRACT_AUDIT.md` |
 | DMCL-P20 | **Accepted** | Build the smallest engine surface from named current operations, pure transitions/selectors, explicit clock/identity/gameplay-seed inputs, a registry-storage port, and dependency-free Node engine tests integrated into `npm run verify`. | Current rules are split across provider/helpers/React boards and are untested independently; no framework or dependency is justified. | `ARCHITECTURE.md`, `E02-T01_CORE_ENGINE_CONTRACT_AUDIT.md` |
 | DMCL-P21 | **Accepted** | Separate pure board identity/availability/navigation policy from the React component registry while preserving the EPIC 01 catalog, IDs, ordering, components, and UI. | Application/state currently imports a React-bearing board module and cannot enforce legal navigation at its own boundary. | `ARCHITECTURE.md`, `E02-T01_CORE_ENGINE_CONTRACT_AUDIT.md` |
-| DMCL-P22 | **Accepted** | Sequence E02-T02–T08 as state/tests; clock/identity/RNG inputs; setup transition; dungeon transitions/selectors; board-policy separation; named operation/provider integration; then v3 compatibility/EPIC 02 exit gate. | Orders extractions by current dependency and risk while leaving persistence lifecycle redesign to EPIC 03. | `E02-T01_CORE_ENGINE_CONTRACT_AUDIT.md` |
+| DMCL-P22 | **Superseded by DMCL-P24 (sequence only)** | Sequence E02-T02–T08 as state/tests; clock/identity/RNG inputs; setup transition; dungeon transitions/selectors; board-policy separation; named operation/provider integration; then v3 compatibility/EPIC 02 exit gate. | The architectural requirements remain accepted through DMCL-P19–P21, but the owner selected a different bounded task order after E02-T03. | `E02-T01_CORE_ENGINE_CONTRACT_AUDIT.md` |
 
 ## E02-T03 identity decision
 
@@ -93,6 +93,14 @@ The project owner explicitly approved the bounded E02-T03 identity-source policy
 | ID | Status | Decision | Reason/constraint | Responsible source |
 |---|---|---|---|---|
 | DMCL-P23 | **Accepted** | Distinguish family-specific content IDs, current `PlayerId`/`CampaignId` values, and spatial/derived keys; generate new player/campaign IDs through an injected `IdSource` using the existing `player-…`/`game-…` conventions and identity entropy separate from gameplay RNG. | Preserves all current IDs and save shapes while preventing UI labels/indexes, coordinates, content IDs, and gameplay randomness from becoming one generic identity system. Future entity categories require a real persistent mechanic. | `ARCHITECTURE.md`, `GAME_STATE.md`, `CONTENT_MODEL.md`, `E02-T03_STABLE_ENTITY_AND_ID_SYSTEM.md` |
+
+## EPIC 02 sequence correction
+
+The project owner accepted the E02-T03 Candidate and necessary sequence correction on 2026-08-10, then explicitly selected the named validated transition layer as E02-T04.
+
+| ID | Status | Decision | Reason/constraint | Responsible source |
+|---|---|---|---|---|
+| DMCL-P24 | **Accepted** | Complete E02-T03 as the bounded identity task and make E02-T04 the named validated transition/application layer for current Hero Setup, Dungeon movement/discovery/Heart reach, Settlement claim, and legal board navigation. Keep the unimplemented clock/gameplay-seed isolation explicit and unscheduled until a later bounded task places it. | Preserves the owner-defined immediate task while avoiding a false claim that the narrower E02-T03 completed clock/RNG work. It supersedes DMCL-P22 task numbering only, not the accepted engine, dependency, or compatibility requirements. | `ROADMAP.md`, `E02-T03_STABLE_ENTITY_AND_ID_SYSTEM.md` |
 
 ## Foundation proposals resolved by E00-T05
 
@@ -141,7 +149,7 @@ The responsible documents contain detailed questions. This index groups the deci
 | DMCL-Q13 | **Resolved by accepted DMCL-P18** | Sites/Linux retains its protected installer; macOS and GitHub Actions use lockfile `npm ci`; all share `npm run verify`; independent CI does not replace rendered/mobile or physical-device acceptance. |
 | DMCL-Q14 | **Resolved by accepted DMCL-P16** | Sites/Vinext/Cloudflare remains the delivery constraint unless an explicit later decision replaces it; platform services stay at the edges. |
 | DMCL-Q15 | **Resolved by accepted DMCL-P17** | Use deterministic committed generation for the existing FS adapter and the narrow persisted-banner projection; keep derived CSS handwritten and runtime theme handling unchanged. |
-| DMCL-Q16 | **Resolved historically; superseded by current roadmap status** | E00-T05 activated EPIC 01 with E01-T01 next. EPIC 01 is now complete; EPIC 02 is Current, E02-T01 and E02-T02 are accepted, and E02-T03 is the exact next task. |
+| DMCL-Q16 | **Resolved historically; superseded by current roadmap status** | E00-T05 activated EPIC 01 with E01-T01 next. EPIC 01 is now complete; EPIC 02 is Current, E02-T01 through E02-T03 are accepted, and E02-T04 is the exact next task. |
 
 ## Decision record format
 
@@ -170,6 +178,6 @@ Use a full standalone ADR only when a decision needs alternatives, extensive evi
 
 ## Current approval position
 
-EPIC 01 is complete. DMCL-P01–P13 and DMCL-P16–P23 are accepted; DMCL-P14/P15 remain historical superseded proposals. EPIC 02 is Current, E02-T01 and E02-T02 are accepted, and the owner-approved E02-T03 identity task is active.
+EPIC 01 is complete. DMCL-P01–P13, DMCL-P16–P21, and DMCL-P23–P24 are accepted; DMCL-P14/P15 remain historical superseded proposals, and DMCL-P22's task sequence is superseded by DMCL-P24. EPIC 02 is Current, E02-T01 through E02-T03 are accepted, and E02-T04 is active.
 
-E02-T02 implemented the v3-preserving `CampaignState` boundary and dependency-free engine tests authorized by DMCL-P19–P22. DMCL-P23 records the explicitly approved bounded E02-T03 identity policy. The broader combined DMCL-P22 clock/gameplay-seed work is outside the owner-defined E02-T03 scope, so its minimum sequence correction remains to be accepted with the Candidate. Remaining DMCL-Q entries do not block the bounded identity implementation.
+E02-T02 implemented the v3-preserving `CampaignState` boundary and dependency-free engine tests authorized by DMCL-P19–P21. DMCL-P23 records the accepted bounded E02-T03 identity policy, and DMCL-P24 records the owner-selected E02-T04 transition-layer sequence. Clock/gameplay-seed isolation remains unimplemented and must be placed explicitly later. Remaining DMCL-Q entries do not block the bounded E02-T04 work.

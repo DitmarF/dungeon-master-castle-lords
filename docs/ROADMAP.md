@@ -31,17 +31,17 @@ Accepted constraints carried forward include one authoritative campaign state, v
 
 ## Current Next Task
 
-### E02-T03 — Stable entity and ID system
+### E02-T04 — Named validated command/transition layer
 
 Status: **Next — exactly one**
 
-Goal: establish the smallest explicit identity policy and implementation for current persistent player/campaign instances while keeping content-definition IDs and spatial/derived keys distinct and preserving every existing persisted ID.
+Goal: move the current real rule-bearing campaign mutations behind a small typed transition/application API so boards express player intent instead of rewriting arbitrary campaign state.
 
-The bounded scope is defined in [E02-T03_STABLE_ENTITY_AND_ID_SYSTEM.md](./E02-T03_STABLE_ENTITY_AND_ID_SYSTEM.md) and starts from the accepted [E02-T01 audit](./E02-T01_CORE_ENGINE_CONTRACT_AUDIT.md) and E02-T02 checkpoint. It introduces explicit `PlayerId`, `CampaignId`, and `IdSource` contracts for current creation paths, retains the established `player-…`/`game-…` values, and extends focused engine tests.
+The bounded scope starts from the accepted [E02-T01 audit](./E02-T01_CORE_ENGINE_CONTRACT_AUDIT.md) and E02-T02/E02-T03 checkpoints. It covers only complete Hero Setup, Dungeon movement/discovery/Heart reach, legal Settlement claim, and navigation to an available board. It also separates pure board identity/availability policy from React component bindings while preserving the six-board EPIC 01 catalog.
 
-Non-goals include future hero/settlement/region/army/unit/item identities, a generic entity framework, clock or gameplay-RNG/seed extraction, transition extraction, save-schema changes, cloud/multiplayer authority, broad `GameProvider` refactoring, UI changes, new dependencies, and deployment.
+Non-goals include future gameplay commands, event/CQRS/bus/framework architecture, clock or gameplay-RNG/seed extraction, save-schema changes, cloud/multiplayer authority, broad `GameProvider` refactoring, UI redesign, new dependencies, and deployment.
 
-The project owner accepted E02-T02 on 2026-08-10 and explicitly approved the E02-T03 identity-source policy. E02-T03 is the sole current task. Because this owner-defined task is narrower than the previously combined DMCL-P22 clock/identity/gameplay-seed step, the minimum remaining sequence correction must be presented for owner approval with the Candidate; no later task begins implicitly.
+The project owner accepted E02-T03 and its sequence correction on 2026-08-10, reported all requested tests and gameplay checks passing, and then explicitly selected this named-transition task as E02-T04. This owner-selected ordering supersedes only the old DMCL-P22 task numbering; the still-unimplemented clock/gameplay-seed isolation remains explicit and unscheduled rather than being treated as complete.
 
 ## Epic registry
 
@@ -87,7 +87,7 @@ E01-T01 through E01-T07 established and verified:
 - portable bounded verification through accepted DMCL-P18 and a verification-only GitHub Actions workflow;
 - owner-reported PASS results for all required desktop, portrait, interaction, accessibility, campaign-regression, and physical-smartphone exit checks.
 
-The project owner accepted E01-T07 and EPIC 01 on 2026-08-09. The matching pushed/Sites checkpoint is completed through the normal workflow without deployment. EPIC 02 is Current; E02-T01 and E02-T02 were accepted on 2026-08-10, and E02-T03 is the exact next task.
+The project owner accepted E01-T07 and EPIC 01 on 2026-08-09. The matching pushed/Sites checkpoint is completed through the normal workflow without deployment. EPIC 02 is Current; E02-T01 through E02-T03 were accepted on 2026-08-10, and E02-T04 is the exact next task.
 
 ## E02-T01 closure
 
@@ -115,6 +115,19 @@ E02-T02 established and verified:
 
 The project owner accepted E02-T02 on 2026-08-10. Its matching source/Sites checkpoint is completed through the normal workflow without deployment before E02-T03 begins.
 
+## E02-T03 closure
+
+E02-T03 established and verified:
+
+- explicit `PlayerId`, `CampaignId`, and injected `IdSource` contracts for the current persistent identity categories;
+- preservation of existing `player-…`/`game-…` values, version-3 campaigns, and version-1 registries without migration;
+- separation of content-definition IDs, persistent player/campaign identities, and spatial/derived keys;
+- crypto-backed system identity generation at the application edge without consuming gameplay RNG;
+- focused engine coverage for identity creation, validation, injection, compatibility, and dependency boundaries;
+- unchanged player creation, campaign creation/loading, Hero Setup, and Dungeon behavior, confirmed by the owner.
+
+The project owner accepted E02-T03 and the necessary sequence correction on 2026-08-10, reporting all tests and gameplay checks passing. The owner then explicitly selected E02-T04 as the named validated transition layer. The matching non-deployed source/Sites checkpoint is completed before E02-T04 implementation begins.
+
 ## EPIC 00 closure
 
 E00-T05 reconciles the project contract by:
@@ -139,11 +152,12 @@ E00-T05 was accepted by the project owner on 2026-08-09, completing EPIC 00. Its
 - Every accepted task updates this file with the current Epic status and exactly one next task.
 - Normal tasks save an accepted Sites version but do not deploy. Deployment requires separate explicit user instruction.
 
-## Deferred decisions that do not block E02-T03
+## Deferred decisions that do not block E02-T04
 
 - exact gameplay formulas, balance, thresholds, costs, and progression values;
 - final player/account/cloud/offline/multiplayer authority model;
 - unfinished setup and other draft persistence;
+- placement of the still-unimplemented clock and deterministic gameplay-seed isolation work after the owner-selected E02-T04 task;
 - exact effect vocabulary until an approved mechanic needs it;
 - localization, mod/content-pack, and remote-content requirements;
 - detailed tasks, formulas, readiness criteria, and exit criteria for future Epics; define these through bounded planning before each Epic is activated.
