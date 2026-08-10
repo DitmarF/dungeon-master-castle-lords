@@ -185,6 +185,14 @@ The development-only campaign inspector is a consumer of campaign truth, not a s
 
 Whether the inspector is open and its temporary clipboard result message are UI-only component state. They are not stored in `CampaignState`, `RuntimeState`, `GameRegistry`, theme preference, or browser persistence. Copying seed/JSON changes only the platform clipboard and has no game-state consequence.
 
+### E02-T08 state-boundary verification
+
+The EPIC 02 exit audit confirms that version-4 `CampaignState` remains the only campaign contract and contains only the currently implemented campaign facts and compatibility snapshots. `PlayerProfile`, `GameRegistry`, `RuntimeState`, theme/hydration, and board-local presentation state remain outside it. No empty World, Combat, Army, Event, calendar, or settlement-economy schema was added.
+
+The E02-T01 stored-fact/snapshot/derived/static/session/UI classification remains applicable. `campaignSeed` is the only later stored fact added by the explicit version-4 migration. `hero.attributes` remains a compatibility snapshot refreshed from authoritative setup facts by the single selector authority; the stored Dungeon snapshot remains authoritative for migrated campaigns and is not regenerated. Focused migration tests preserve existing version-2/version-3 Dungeon, position, discovery, Heart, claim, Hero, and identity facts.
+
+This verification introduces no new state decision or save migration. The full Candidate evidence is recorded in [E02-T08_EPIC_02_EXIT_GATE.md](./E02-T08_EPIC_02_EXIT_GATE.md); owner acceptance is still required before EPIC 02 is marked complete.
+
 ## Established future campaign categories
 
 The approved concept requires the central campaign eventually to represent the consequences of the three connected loops. The following are **established categories**, not approved field schemas or mechanics:

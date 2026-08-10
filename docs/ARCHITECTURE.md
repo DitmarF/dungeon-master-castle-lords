@@ -110,6 +110,14 @@ Before E02-T04, the application/state layer imported `RegisteredBoardId` from `s
 
 Full audit evidence, save risks, module responsibilities, and staged tasks are recorded in [E02-T01_CORE_ENGINE_CONTRACT_AUDIT.md](./E02-T01_CORE_ENGINE_CONTRACT_AUDIT.md).
 
+### E02-T08 exit-gate Candidate audit
+
+The final EPIC 02 audit verifies the implemented flow as board/UI intent → named provider operation → pure validated transition/navigation policy → authoritative `CampaignState` → pure selectors/policy → board rendering. The persistence flow remains `CampaignState` ↔ explicit normalization/migration ↔ the version-1 browser registry adapter. Source/import review finds no React, browser persistence, board implementation, or Sites/Cloudflare dependency in the tested pure engine modules; application navigation legality uses `src/game/navigation.ts`, while React board registration remains a view-composition concern.
+
+The current boards do not directly rewrite the migrated Hero Setup, movement/discovery/Heart, Settlement claim, or navigation facts, and no unrestricted whole-campaign updater remains in their normal API. The existing provider still coordinates timestamps, the active working copy, registry mirroring, lifecycle operations, and storage; this is known bounded application-layer debt rather than campaign-rule authority. No generic framework or speculative gameplay/state slice was introduced.
+
+`npm run test:engine` and `npm run verify` both pass at the Candidate checkpoint. The complete evidence and residual limitations are recorded in [E02-T08_EPIC_02_EXIT_GATE.md](./E02-T08_EPIC_02_EXIT_GATE.md). This is a Candidate assessment only: EPIC 02 remains Current until explicit owner acceptance.
+
 ## Structural principles
 
 ### 1. One authoritative campaign state

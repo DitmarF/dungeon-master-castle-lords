@@ -33,7 +33,7 @@ Accepted constraints carried forward include one authoritative campaign state, v
 
 ### E02-T08 — EPIC 02 verification and exit gate
 
-Status: **Next — exactly one**
+Status: **Current — Candidate awaiting owner acceptance**
 
 Goal: verify the complete EPIC 02 state, transition, selector, identity, RNG, persistence, dependency, and debug-inspector boundaries and determine whether EPIC 02 satisfies its exit criteria.
 
@@ -42,6 +42,8 @@ The task starts from the accepted E02-T07 checkpoint and audits the complete EPI
 Non-goals include new gameplay, architectural frameworks, broad refactors, schema redesign, a fresh `CURRENT_STATE.md` audit, EPIC 03 implementation, dependency changes, and deployment. A discovered defect remains within E02-T08 and must be reported before any bounded fix.
 
 The project owner accepted E02-T07 on 2026-08-10 and reported all requested tests, inspector interactions, responsive checks, normal-gameplay regressions, and copy behavior passing. E02-T08 is verification-only and must stop at Candidate for owner acceptance before EPIC 02 can be marked complete.
+
+The bounded task and Candidate evidence are recorded in [E02-T08_EPIC_02_EXIT_GATE.md](./E02-T08_EPIC_02_EXIT_GATE.md). The exit audit assesses EPIC 02 as **PASS**, subject to owner acceptance; the Epic remains Current and EPIC 03 remains Planned until that acceptance is recorded and checkpointed.
 
 ## Epic registry
 
