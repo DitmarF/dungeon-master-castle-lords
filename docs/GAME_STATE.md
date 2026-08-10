@@ -54,7 +54,7 @@ The word “normally” matters: a draft, camera position, notification, or deri
 
 ## Current persisted campaign
 
-**Observed:** The current `GameSave` is schema version 3 and contains:
+**Observed:** The current `CampaignState` is schema version 3; `GameSave` remains its serialized compatibility alias. It contains:
 
 - identity and lifecycle: game ID, player ID, created timestamp, updated timestamp;
 - navigation/progress: active board ID and whether hero setup is complete;
@@ -96,7 +96,7 @@ The active in-memory game is also copied into this registry after updates. One c
 
 ## Current non-campaign runtime state
 
-**Observed:** These runtime values do not live inside `GameSave`:
+**Observed:** These runtime values do not live inside `CampaignState`/`GameSave`:
 
 - storage hydration completion;
 - currently selected player;
@@ -128,6 +128,14 @@ The field-by-field classification and evidence are recorded in [E02-T01_CORE_ENG
 **Accepted through DMCL-P19–P22 on 2026-08-10:** use `CampaignState` for the pure authoritative campaign contract and retain `GameSave` as the version-3 serialized compatibility name or alias. Preserve the exact current runtime JSON shape for the first implementation task. Do not add future calendar, settlement, world, army, combat, or event slices merely to match a long-term concept.
 
 The campaign continues to reference a player/profile ID without embedding `PlayerProfile`. `GameRegistry`, one-campaign-per-player lookup, profile lifecycle, hydration, theme, and UI state remain separate. Pure transitions and selectors may be extracted incrementally without moving unrelated runtime responsibilities into the campaign.
+
+### E02-T02 implemented boundary
+
+`src/game/campaignState.ts` now owns the pure `CampaignState` contract and its current campaign value types. `GameSave` is a TypeScript alias of `CampaignState`, not a second state shape or a runtime envelope. The version remains `3`; field names, nesting, persisted IDs, timestamps, setup/hero data, generated dungeon snapshot, position, discovery, heart outcome, settlement claim, and active board are unchanged.
+
+`src/game/model.ts` remains a compatibility import surface while separately defining `PlayerProfile`, `GameRegistry`, `RuntimeState`, and `AppView`. `GameRegistry.games` and `RuntimeState.activeGame` now explicitly reference `CampaignState`; they remain persistence/application copies rather than new campaign fields. No migration is introduced because serialization is unchanged, and the existing v2/v3 normalization path is protected by focused Node fixtures.
+
+This implementation does not resolve timestamp semantics, seed-versus-snapshot authority, profile/campaign cardinality, or future gameplay schemas. It also does not yet remove hidden creation time/identity/random inputs; that work remains bounded to E02-T03.
 
 ## Established future campaign categories
 

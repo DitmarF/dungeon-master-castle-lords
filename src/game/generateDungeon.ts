@@ -1,4 +1,8 @@
-import type { CellPosition, DungeonRoom, DungeonState } from "./model";
+import type {
+  CellPosition,
+  DungeonRoom,
+  DungeonState,
+} from "./campaignState.ts";
 
 const COLUMNS = 20;
 const ROWS = 12;

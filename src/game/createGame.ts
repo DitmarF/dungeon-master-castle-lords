@@ -1,4 +1,4 @@
-import { createDungeonLevel, discoverAround } from "./generateDungeon";
+import { createDungeonLevel, discoverAround } from "./generateDungeon.ts";
 import {
   EMPTY_ATTRIBUTES,
   type GameSave,
@@ -8,12 +8,12 @@ import {
   type HeroVocation,
   type PlayerProfile,
   type SkillId,
-} from "./model";
+} from "./model.ts";
 import {
   SKILL_BY_ID,
   createEmptySkillRanks,
   normalizeSkillRanks,
-} from "./skillTrees";
+} from "./skillTrees.ts";
 
 export const CLASS_SKILL: Record<HeroClass, SkillId> = {
   fighter: "close-combat",

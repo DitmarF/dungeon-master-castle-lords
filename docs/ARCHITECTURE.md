@@ -56,6 +56,12 @@ The smallest engine surface is:
 
 This proposal does not require a command framework, event bus, event sourcing, CQRS, ECS, state-management library, cloud repository, or placeholder future gameplay slices. Extraction is incremental; `GameProvider` may continue coordinating React runtime state and persistence while it delegates rule-bearing changes to named operations.
 
+### E02-T02 implemented foundation
+
+E02-T02 establishes `src/game/campaignState.ts` as the pure campaign/model boundary. It defines `CampaignState` with exactly the version-3 campaign fields and retains `GameSave` as a type alias, so existing serialized campaigns keep the same runtime shape and require no migration. `src/game/model.ts` now re-exports those campaign types for compatibility while separately owning `PlayerProfile`, `GameRegistry`, `RuntimeState`, and application-view state. Theme, hydration behavior, and board-local presentation remain outside the campaign contract.
+
+Focused engine verification uses the supported Node runtime and built-in `node:test` with native TypeScript stripping. `npm run test:engine` exercises the state boundary, existing migration/normalization, explicit-seed dungeon determinism, and dependency purity without rendering React or building Sites. The normal `npm test` and `npm run verify` paths include these focused tests. This is only the state/test foundation: hidden clock/identity/random inputs, setup and dungeon transitions, navigation policy, and provider operations remain assigned to E02-T03 through E02-T07.
+
 ### Accepted board-policy correction
 
 The current application/state layer imports `RegisteredBoardId` from `src/boards/registry.ts`, which also imports React component types, icons, and every board implementation. Settlement unlock and active-board fallback policy are therefore unavailable to application code without depending on the board/view layer. Shared `BoardNavigation` also imports board-layer context and registry types.
@@ -167,11 +173,13 @@ Unapproved mechanics may be implemented only as clearly labeled experiments. Imp
 
 ### 12. Verification follows risk and boundaries
 
-**Accepted at principle level.**
+**Accepted and initially implemented.**
 
 Deterministic rules, state transitions, migrations, and generation should be testable without rendering the full application. Board integration and important player flows need focused interaction coverage. Platform output needs its existing artifact validation.
 
-**Accepted — DMCL-P18.** Use `npm run verify` as the shared normal quality gate on ChatGPT Sites/Linux, local macOS, and GitHub Actions Linux. It checks generated FS-token synchronization, lint, one bounded Vinext build plus artifact validation, and the rendered-HTML test. The normal bounded build uses Node standard-library process control so it is portable across Linux and macOS. The protected `npm run install:ci` path remains specific to ChatGPT Sites/Linux; macOS and GitHub Actions use `npm ci`. GitHub Actions is the independent automated checkpoint, but it does not replace rendered interaction/mobile checks or owner physical-smartphone acceptance.
+E02-T02 adds the first dependency-free pure-engine suite through `npm run test:engine`. It runs TypeScript modules directly with Node's built-in test runner and participates in the normal repository gate without making each focused assertion pay for a Sites build.
+
+**Accepted — DMCL-P18.** Use `npm run verify` as the shared normal quality gate on ChatGPT Sites/Linux, local macOS, and GitHub Actions Linux. It checks generated FS-token synchronization, lint, focused engine tests, one bounded Vinext build plus artifact validation, and the rendered-HTML test. The normal bounded build uses Node standard-library process control so it is portable across Linux and macOS. The protected `npm run install:ci` path remains specific to ChatGPT Sites/Linux; macOS and GitHub Actions use `npm ci`. GitHub Actions is the independent automated checkpoint, but it does not replace rendered interaction/mobile checks or owner physical-smartphone acceptance.
 
 ## Target module contract
 

@@ -32,7 +32,7 @@ Treat `CURRENT_STATE.md` as evidence, not target architecture. Treat entries mar
 - `src/ui/`: reusable shell, navigation, sheets, icons, and shared UI.
 - `worker/`, `build/`, `.openai/hosting.json`: Sites/Cloudflare delivery edges.
 - `db/`, `drizzle/`: optional persistence scaffolding; no active application schema.
-- `tests/`: current built-output test.
+- `tests/`: focused pure-engine tests plus the built-output test.
 
 Preserve the existing React/TypeScript, Vinext/Vite, Cloudflare Worker, npm, and lockfile setup unless an explicit approved task changes it.
 
@@ -91,8 +91,9 @@ Requires Node.js `>=22.13.0`. Use only commands present in `package.json`:
 - `npm run dev` — Vite/Vinext development server.
 - `npm run lint` — ESLint for the repository.
 - `npm run build` — bounded Sites build plus artifact validation.
-- `npm test` — runs the build, then the current rendered-HTML test.
-- `npm run verify` — normal automated quality gate: FS token drift check, lint, one bounded build/artifact validation, and the rendered-HTML test.
+- `npm test` — runs the focused engine tests, then the build and current rendered-HTML test.
+- `npm run test:engine` — runs focused TypeScript engine tests directly with Node's built-in test runner; no Sites build or browser is required.
+- `npm run verify` — normal automated quality gate: FS token drift check, lint, focused engine tests, one bounded build/artifact validation, and the rendered-HTML test.
 - `npm run validate:artifact` — validate an existing build artifact.
 - `npm run start` — start an existing Vinext build.
 - `npm run install:ci` — protected locked install for the ChatGPT Sites/Linux environment; use only when dependencies are absent and installation is authorized.
@@ -115,7 +116,7 @@ The Sites installer intentionally retains its Linux-specific integrity, cache, t
 Match verification to risk and task scope:
 
 - Documentation-only: inspect links/references, status labels, spelling, and `git diff`; no dependency install or application build is required.
-- Code changes with dependencies available in a supported environment: run `npm run verify`. Its command graph already runs lint, one build/artifact validation, and the rendered-HTML test; do not repeat the expensive build without a reason.
+- Code changes with dependencies available in a supported environment: run `npm run verify`. Its command graph already runs lint, focused engine tests, one build/artifact validation, and the rendered-HTML test; do not repeat the expensive build without a reason.
 - Build-only/platform changes: run `npm run build`; use `npm run validate:artifact` only when validating an already-produced artifact separately.
 - Database schema changes: inspect generated migrations and use `npm run db:generate` only when the task authorizes schema work.
 - Interaction or visual changes: test the affected mobile portrait/touch flow and relevant keyboard/accessibility behavior. Browser QA is task-dependent; state what was and was not checked.

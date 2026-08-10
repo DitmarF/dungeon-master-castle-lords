@@ -56,7 +56,7 @@ Use only supported commands documented in `AGENTS.md`.
 Under the accepted DMCL-P18 environment contract, ChatGPT Sites/Linux installs with `npm run install:ci`, while local macOS and GitHub Actions use `npm ci`. All three environments run `npm run verify` as the normal automated gate. The GitHub Actions job is independent checkpoint evidence, not deployment and not a replacement for rendered/mobile or physical-device acceptance.
 
 - Documentation-only: verify files, links, references, status labels, and diff; no build is required.
-- Code changes in a supported environment: run `npm run verify`; it includes lint, one build/artifact validation, and the rendered-HTML test.
+- Code changes in a supported environment: run `npm run verify`; it includes lint, focused engine tests, one build/artifact validation, and the rendered-HTML test.
 - Platform/build changes: run `npm run build`.
 - Database changes: generate and inspect migrations only when explicitly authorized.
 
