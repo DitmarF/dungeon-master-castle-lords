@@ -31,17 +31,17 @@ Accepted constraints carried forward include one authoritative campaign state, v
 
 ## Current Next Task
 
-### E02-T07 — Developer/debug state inspector
+### E02-T08 — EPIC 02 verification and exit gate
 
 Status: **Next — exactly one**
 
-Goal: add a small development-only, read-only inspector for the current authoritative campaign state and deterministic context without exposing arbitrary mutation or inventing gameplay controls.
+Goal: verify the complete EPIC 02 state, transition, selector, identity, RNG, persistence, dependency, and debug-inspector boundaries and determine whether EPIC 02 satisfies its exit criteria.
 
-The bounded scope is defined in [E02-T07_DEVELOPER_STATE_INSPECTOR.md](./E02-T07_DEVELOPER_STATE_INSPECTOR.md) and starts from the accepted E02-T06 checkpoint plus the current campaign-state, transition, selector, and RNG contracts. It covers a development-only access path using the existing overlay foundation, current campaign/Dungeon/Hero facts, selector-derived Hero attributes, raw read-only JSON, and optional copy actions.
+The task starts from the accepted E02-T07 checkpoint and audits the complete EPIC 02 implementation against its accepted task records and current source-of-truth documents. It runs the supported automated gates, reviews the final code and dependency directions, reconciles responsible documentation, and records manual regression evidence and limitations.
 
-Non-goals include a state editor, generic campaign mutation, arbitrary JSON import, gameplay cheats, controls for unimplemented systems, a devtools framework, production analytics, UI redesign, new dependencies, and deployment.
+Non-goals include new gameplay, architectural frameworks, broad refactors, schema redesign, a fresh `CURRENT_STATE.md` audit, EPIC 03 implementation, dependency changes, and deployment. A discovered defect remains within E02-T08 and must be reported before any bounded fix.
 
-The project owner accepted E02-T06 on 2026-08-10 and reported all requested tests, verifications, existing-save migration checks, and new-campaign behavior passing. E02-T07 must remain read-only, consume the current selector authority, preserve normal gameplay when closed, and introduce no gameplay state or operation.
+The project owner accepted E02-T07 on 2026-08-10 and reported all requested tests, inspector interactions, responsive checks, normal-gameplay regressions, and copy behavior passing. E02-T08 is verification-only and must stop at Candidate for owner acceptance before EPIC 02 can be marked complete.
 
 ## Epic registry
 
@@ -87,7 +87,7 @@ E01-T01 through E01-T07 established and verified:
 - portable bounded verification through accepted DMCL-P18 and a verification-only GitHub Actions workflow;
 - owner-reported PASS results for all required desktop, portrait, interaction, accessibility, campaign-regression, and physical-smartphone exit checks.
 
-The project owner accepted E01-T07 and EPIC 01 on 2026-08-09. The matching pushed/Sites checkpoint is completed through the normal workflow without deployment. EPIC 02 is Current; E02-T01 through E02-T06 were accepted on 2026-08-10, and E02-T07 is the exact next task.
+The project owner accepted E01-T07 and EPIC 01 on 2026-08-09. The matching pushed/Sites checkpoint is completed through the normal workflow without deployment. EPIC 02 is Current; E02-T01 through E02-T07 were accepted on 2026-08-10, and E02-T08 is the exact next task.
 
 ## E02-T01 closure
 
@@ -165,6 +165,18 @@ E02-T06 established and verified:
 
 The project owner accepted E02-T06 on 2026-08-10 and reported all requested tests, verifications, migration checks, and new-campaign behavior passing. Its matching non-deployed source/Sites checkpoint is completed before E02-T07 implementation begins.
 
+## E02-T07 closure
+
+E02-T07 established and verified:
+
+- one development-gated read-only inspector within the existing Settings and modal architecture;
+- direct display of current campaign, Dungeon, Hero, deterministic-seed, and raw JSON facts;
+- selector-derived Hero attributes without duplicated rule interpretation;
+- copy-only clipboard actions with no campaign transition, persistence, JSON import, or cheat surface;
+- production Settings without an inspector entry and unchanged normal gameplay when the inspector is closed.
+
+The project owner accepted E02-T07 on 2026-08-10 and reported all requested tests, inspector interactions, responsive checks, and normal-gameplay regressions passing. Its matching non-deployed source/Sites checkpoint is completed before E02-T08 begins.
+
 ## EPIC 00 closure
 
 E00-T05 reconciles the project contract by:
@@ -189,7 +201,7 @@ E00-T05 was accepted by the project owner on 2026-08-09, completing EPIC 00. Its
 - Every accepted task updates this file with the current Epic status and exactly one next task.
 - Normal tasks save an accepted Sites version but do not deploy. Deployment requires separate explicit user instruction.
 
-## Deferred decisions that do not block E02-T07
+## Deferred decisions that do not block E02-T08
 
 - exact gameplay formulas, balance, thresholds, costs, and progression values;
 - final player/account/cloud/offline/multiplayer authority model;
