@@ -31,17 +31,17 @@ Accepted constraints carried forward include one authoritative campaign state, v
 
 ## Current Next Task
 
-### E02-T04 — Named validated command/transition layer
+### E02-T05 — Selectors and derived-state layer
 
 Status: **Next — exactly one**
 
-Goal: move the current real rule-bearing campaign mutations behind a small typed transition/application API so boards express player intent instead of rewriting arbitrary campaign state.
+Goal: establish a small pure selector layer for calculations with duplicated authority, beginning with the current Hero attribute bonuses, totals, and Hero Setup preview.
 
-The bounded scope is defined in [E02-T04_NAMED_VALIDATED_TRANSITIONS.md](./E02-T04_NAMED_VALIDATED_TRANSITIONS.md) and starts from the accepted [E02-T01 audit](./E02-T01_CORE_ENGINE_CONTRACT_AUDIT.md) and E02-T02/E02-T03 checkpoints. It covers only complete Hero Setup, Dungeon movement/discovery/Heart reach, legal Settlement claim, and navigation to an available board. It also separates pure board identity/availability policy from React component bindings while preserving the six-board EPIC 01 catalog.
+The task starts from the accepted E02-T04 checkpoint and the stored-versus-derived classification in the accepted [E02-T01 audit](./E02-T01_CORE_ENGINE_CONTRACT_AUDIT.md). Its primary scope is one authoritative calculation for current class bonuses, vocation bonuses, free allocation, persisted Hero attribute totals, and Hero Setup preview. Additional selectors require present shared rule or derivation evidence; trivial property wrappers and speculative future Hero systems remain out of scope.
 
-Non-goals include future gameplay commands, event/CQRS/bus/framework architecture, clock or gameplay-RNG/seed extraction, save-schema changes, cloud/multiplayer authority, broad `GameProvider` refactoring, UI redesign, new dependencies, and deployment.
+Non-goals include full Hero foundations or progression, combat-derived stats, skills/equipment/economy, generic effect or selector frameworks, new gameplay or balance values, UI redesign, new dependencies, and deployment.
 
-The project owner accepted E02-T03 and its sequence correction on 2026-08-10, reported all requested tests and gameplay checks passing, and then explicitly selected this named-transition task as E02-T04. This owner-selected ordering supersedes only the old DMCL-P22 task numbering; the still-unimplemented clock/gameplay-seed isolation remains explicit and unscheduled rather than being treated as complete.
+The project owner accepted E02-T04 on 2026-08-10 and reported all requested tests, verifications, and gameplay checks passing. E02-T05 must preserve current version-3 campaigns and may not silently change the accepted classification of stored facts, stored snapshots, and derived values.
 
 ## Epic registry
 
@@ -87,7 +87,7 @@ E01-T01 through E01-T07 established and verified:
 - portable bounded verification through accepted DMCL-P18 and a verification-only GitHub Actions workflow;
 - owner-reported PASS results for all required desktop, portrait, interaction, accessibility, campaign-regression, and physical-smartphone exit checks.
 
-The project owner accepted E01-T07 and EPIC 01 on 2026-08-09. The matching pushed/Sites checkpoint is completed through the normal workflow without deployment. EPIC 02 is Current; E02-T01 through E02-T03 were accepted on 2026-08-10, and E02-T04 is the exact next task.
+The project owner accepted E01-T07 and EPIC 01 on 2026-08-09. The matching pushed/Sites checkpoint is completed through the normal workflow without deployment. EPIC 02 is Current; E02-T01 through E02-T04 were accepted on 2026-08-10, and E02-T05 is the exact next task.
 
 ## E02-T01 closure
 
@@ -128,6 +128,19 @@ E02-T03 established and verified:
 
 The project owner accepted E02-T03 and the necessary sequence correction on 2026-08-10, reporting all tests and gameplay checks passing. The owner then explicitly selected E02-T04 as the named validated transition layer. The matching non-deployed source/Sites checkpoint is completed before E02-T04 implementation begins.
 
+## E02-T04 closure
+
+E02-T04 established and verified:
+
+- named validated transitions for current Hero Setup, Dungeon movement/discovery/Heart reach, Settlement claim, and legal board navigation;
+- boards expressing player intent through named provider operations instead of unrestricted whole-campaign mutation;
+- pure non-React board identity, availability, unlock, and navigation policy separated from React component bindings;
+- safe rejection of illegal setup, movement, claim, and navigation requests without changing campaign state;
+- preservation of version-3 save meaning, the six-board EPIC 01 catalog, deterministic Dungeon movement, and visible gameplay;
+- focused pure-engine coverage integrated into the normal verification gate.
+
+The project owner accepted E02-T04 on 2026-08-10 and reported all requested tests, verifications, and gameplay checks passing. Its matching non-deployed source/Sites checkpoint is completed before E02-T05 implementation begins.
+
 ## EPIC 00 closure
 
 E00-T05 reconciles the project contract by:
@@ -152,7 +165,7 @@ E00-T05 was accepted by the project owner on 2026-08-09, completing EPIC 00. Its
 - Every accepted task updates this file with the current Epic status and exactly one next task.
 - Normal tasks save an accepted Sites version but do not deploy. Deployment requires separate explicit user instruction.
 
-## Deferred decisions that do not block E02-T04
+## Deferred decisions that do not block E02-T05
 
 - exact gameplay formulas, balance, thresholds, costs, and progression values;
 - final player/account/cloud/offline/multiplayer authority model;

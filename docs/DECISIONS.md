@@ -149,7 +149,7 @@ The responsible documents contain detailed questions. This index groups the deci
 | DMCL-Q13 | **Resolved by accepted DMCL-P18** | Sites/Linux retains its protected installer; macOS and GitHub Actions use lockfile `npm ci`; all share `npm run verify`; independent CI does not replace rendered/mobile or physical-device acceptance. |
 | DMCL-Q14 | **Resolved by accepted DMCL-P16** | Sites/Vinext/Cloudflare remains the delivery constraint unless an explicit later decision replaces it; platform services stay at the edges. |
 | DMCL-Q15 | **Resolved by accepted DMCL-P17** | Use deterministic committed generation for the existing FS adapter and the narrow persisted-banner projection; keep derived CSS handwritten and runtime theme handling unchanged. |
-| DMCL-Q16 | **Resolved historically; superseded by current roadmap status** | E00-T05 activated EPIC 01 with E01-T01 next. EPIC 01 is now complete; EPIC 02 is Current, E02-T01 through E02-T03 are accepted, and E02-T04 is the exact next task. |
+| DMCL-Q16 | **Resolved historically; superseded by current roadmap status** | E00-T05 activated EPIC 01 with E01-T01 next. EPIC 01 is now complete; EPIC 02 is Current, E02-T01 through E02-T04 are accepted, and E02-T05 is the exact next task. |
 
 ## Decision record format
 
@@ -178,6 +178,6 @@ Use a full standalone ADR only when a decision needs alternatives, extensive evi
 
 ## Current approval position
 
-EPIC 01 is complete. DMCL-P01–P13, DMCL-P16–P21, and DMCL-P23–P24 are accepted; DMCL-P14/P15 remain historical superseded proposals, and DMCL-P22's task sequence is superseded by DMCL-P24. EPIC 02 is Current, E02-T01 through E02-T03 are accepted, and E02-T04 is active.
+EPIC 01 is complete. DMCL-P01–P13, DMCL-P16–P21, and DMCL-P23–P24 are accepted; DMCL-P14/P15 remain historical superseded proposals, and DMCL-P22's task sequence is superseded by DMCL-P24. EPIC 02 is Current, E02-T01 through E02-T04 are accepted, and E02-T05 is active.
 
-E02-T02 implemented the v3-preserving `CampaignState` boundary and dependency-free engine tests authorized by DMCL-P19–P21. DMCL-P23 records the accepted bounded E02-T03 identity policy, and DMCL-P24 authorizes the active E02-T04 transition-layer Candidate. Clock/gameplay-seed isolation remains unimplemented and must be placed explicitly later. E02-T04 requires owner acceptance before it becomes a completed checkpoint or any E02-T05 work begins.
+E02-T02 implemented the v3-preserving `CampaignState` boundary and dependency-free engine tests authorized by DMCL-P19–P21. DMCL-P23 records the accepted bounded E02-T03 identity policy, and DMCL-P24 authorized the accepted E02-T04 transition layer. Clock/gameplay-seed isolation remains unimplemented and must be placed explicitly later. E02-T05 is the active bounded selector/derived-state task and must preserve the accepted stored-versus-derived classification unless an explicit owner decision changes it.
