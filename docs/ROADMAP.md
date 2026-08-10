@@ -25,23 +25,23 @@ Status: **Current**
 
 Purpose: establish the shared game-engine and central campaign-state foundations needed by later boards and systems, building on the completed EPIC 01 shell/catalog architecture without introducing unapproved gameplay rules.
 
-E02-T01 audited and reconciled the existing model/provider/rule/storage boundaries. The accepted contract now authorizes the first bounded state/test implementation without a broad provider rewrite or save-schema change.
+E02-T01 audited and reconciled the existing model/provider/rule/storage boundaries. E02-T02 implemented the accepted central campaign boundary and pure-engine test foundation without a broad provider rewrite or save-schema change.
 
 Accepted constraints carried forward include one authoritative campaign state, versioned save compatibility, named validated transitions introduced gradually, stable IDs, domain/application/view/infrastructure boundaries, and no silent gameplay-rule decisions.
 
 ## Current Next Task
 
-### E02-T02 — Establish CampaignState and pure engine testing
+### E02-T03 — Isolate clock, identity, and deterministic campaign creation inputs
 
 Status: **Next — exactly one**
 
-Goal: implement the accepted `CampaignState` boundary while preserving the exact version-3 serialized shape, then establish dependency-free pure-engine tests that run without React, browser storage, or a full Sites build.
+Goal: remove hidden time, player/campaign identity, and gameplay-seed generation from campaign creation paths by supplying the smallest accepted explicit inputs, while preserving current IDs, timestamps, dungeon outcomes, saves, and visible behavior.
 
-Expected scope must be defined with [TASK_TEMPLATE.md](./TASK_TEMPLATE.md) before implementation and start from the accepted [E02-T01 audit](./E02-T01_CORE_ENGINE_CONTRACT_AUDIT.md). It should separate campaign truth from runtime/profile/UI state, preserve existing saves and behavior, add the smallest Node-based engine test path, and integrate focused engine tests into `npm run verify`.
+Expected scope must be defined with [TASK_TEMPLATE.md](./TASK_TEMPLATE.md) before implementation and start from the accepted [E02-T01 audit](./E02-T01_CORE_ENGINE_CONTRACT_AUDIT.md) and E02-T02 checkpoint. It should introduce only the accepted `Clock`, `IdSource`, and deterministic gameplay-seed input needed by current creation/migration paths, extend focused engine tests, and keep platform implementations at the application/infrastructure edge.
 
-Non-goals include future gameplay slices, commands for later mechanics, broad `GameProvider` refactoring, RNG work beyond the T02 boundary, cloud/multiplayer authority, UI changes, new dependencies, and deployment.
+Non-goals include transition extraction assigned to E02-T04–T07, a global RNG service, universal entity IDs, save-schema changes, cloud/multiplayer authority, broad `GameProvider` refactoring, UI changes, new dependencies, and deployment.
 
-The project owner accepted E02-T01 and DMCL-P19–P22 on 2026-08-10. The accepted contract names `CampaignState`, retains `GameSave` as the version-3 compatibility name/alias, preserves the exact v3 runtime shape, approves dependency-free Node engine tests, establishes the minimum clock/identity/RNG/storage ports, and approves the bounded E02-T02–T08 sequence. E02-T02 is the sole next task and has not begun.
+The project owner accepted E02-T02 on 2026-08-10 and confirmed its campaign regression checks pass. The owner also reaffirmed the accepted DMCL-P20 identity-source direction for E02-T03. E02-T03 is the sole next task and has not begun.
 
 ## Epic registry
 
@@ -87,7 +87,7 @@ E01-T01 through E01-T07 established and verified:
 - portable bounded verification through accepted DMCL-P18 and a verification-only GitHub Actions workflow;
 - owner-reported PASS results for all required desktop, portrait, interaction, accessibility, campaign-regression, and physical-smartphone exit checks.
 
-The project owner accepted E01-T07 and EPIC 01 on 2026-08-09. The matching pushed/Sites checkpoint is completed through the normal workflow without deployment. EPIC 02 is Current; E02-T01 was accepted on 2026-08-10 and E02-T02 is the exact next task.
+The project owner accepted E01-T07 and EPIC 01 on 2026-08-09. The matching pushed/Sites checkpoint is completed through the normal workflow without deployment. EPIC 02 is Current; E02-T01 and E02-T02 were accepted on 2026-08-10, and E02-T03 is the exact next task.
 
 ## E02-T01 closure
 
@@ -101,6 +101,19 @@ E02-T01 established and documented:
 - the bounded E02-T02 through E02-T08 sequence without adding future gameplay schemas.
 
 The project owner accepted E02-T01 and DMCL-P19–P22 on 2026-08-10. Its matching pushed/Sites checkpoint is created through the normal workflow without deployment before E02-T02 begins.
+
+## E02-T02 closure
+
+E02-T02 established and verified:
+
+- `CampaignState` as the pure authoritative version-3 campaign contract, with `GameSave` retained as its serialized compatibility alias;
+- physical separation of campaign types from `PlayerProfile`, `GameRegistry`, `RuntimeState`, theme/hydration, and board-local presentation state;
+- preservation of the exact version-3 JSON shape and existing v2/v3 normalization behavior without a schema migration;
+- dependency-free `node:test` engine coverage for state boundaries, migration/normalization, explicit-seed dungeon determinism, and forbidden dependencies;
+- `npm run test:engine` as the focused engine gate and its integration into normal repository verification;
+- unchanged visible gameplay, confirmed by the owner through the requested campaign regression flow.
+
+The project owner accepted E02-T02 on 2026-08-10. Its matching source/Sites checkpoint is completed through the normal workflow without deployment before E02-T03 begins.
 
 ## EPIC 00 closure
 
@@ -126,7 +139,7 @@ E00-T05 was accepted by the project owner on 2026-08-09, completing EPIC 00. Its
 - Every accepted task updates this file with the current Epic status and exactly one next task.
 - Normal tasks save an accepted Sites version but do not deploy. Deployment requires separate explicit user instruction.
 
-## Deferred decisions that do not block E02-T02
+## Deferred decisions that do not block E02-T03
 
 - exact gameplay formulas, balance, thresholds, costs, and progression values;
 - final player/account/cloud/offline/multiplayer authority model;

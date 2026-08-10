@@ -50,7 +50,7 @@ Establish `CampaignState` as the one authoritative pure campaign contract while 
 - [x] Pure engine modules used by focused tests import no React, browser storage, localStorage, Sites, or Cloudflare code.
 - [x] Focused state/migration/determinism tests run independently through `npm run test:engine` and participate in `npm run verify`.
 - [x] Existing campaign facts are preserved through the exercised v2/v3 migration fixtures.
-- [ ] The requested live create/load/setup/movement/claim/save/reload browser flow remains unavailable because the browser's enforced localhost security check could not be verified.
+- [x] The owner reports the requested live create/load/setup/movement/claim/save/reload campaign flow passes and existing visible behavior is unchanged.
 - [x] No unapproved gameplay or architecture decision was introduced.
 - [x] No unrelated files or behavior changed.
 
@@ -69,7 +69,7 @@ Establish `CampaignState` as the one authoritative pure campaign contract while 
 
 ### Environment limitations
 
-- Physical-smartphone testing is not required because there is no UI change; any unavailable pre-existing local save will be reported rather than fabricated.
+- The implementation environment could not complete its own localhost browser run, but the owner supplied the required manual regression result at acceptance. Physical-smartphone testing was not required because there was no UI change.
 
 ## Documentation impact
 
@@ -93,21 +93,21 @@ Establish `CampaignState` as the one authoritative pure campaign contract while 
 - Changed files: `AGENTS.md`; `docs/ARCHITECTURE.md`; `docs/GAME_STATE.md`; `docs/WORKFLOW.md`; this task record; `src/game/campaignState.ts`; `src/game/model.ts`; `src/game/createGame.ts`; `src/game/generateDungeon.ts`; `tests/engine/campaign-state.test.ts`; `package.json`; `tsconfig.json`
 - Acceptance evidence: the campaign module contains only current v3 fields; profile/registry/runtime remain in the compatibility model module; tests prove the alias boundary, v2/v3 normalization and fact retention, explicit-seed determinism, and forbidden-dependency absence; no future schema or provider rewrite was introduced
 - Automated verification: `npm run test:engine` passed 5/5; `npm run lint` passed; the required `npm run verify` passed after rerunning outside the workspace sandbox so Vite could write its temporary config, including 5/5 engine tests, artifact validation, and 1/1 rendered-HTML test
-- Behavior verification: build/render verification passed and migration fixtures retain identity, timestamps, active board, hero position/vision, dungeon snapshot/counters/discovery, heart outcome, settlement claim, and skill normalization; live browser flow was not run because the browser's enforced localhost security check was unavailable
-- Documentation/decision updates: implemented boundary/test responsibilities recorded in architecture/state/workflow/repository guidance; no decision statuses changed; `ROADMAP.md` and `CURRENT_STATE.md` remain unchanged until acceptance/a separately scoped audit respectively
-- Limitations/risks/open approvals: hidden creation clock/ID/RNG inputs remain for E02-T03; current rule-bearing setup/dungeon/navigation/provider paths remain for E02-T04–T07; live manual browser regression remains unverified in this environment
+- Behavior verification: build/render verification passed and migration fixtures retain identity, timestamps, active board, hero position/vision, dungeon snapshot/counters/discovery, heart outcome, settlement claim, and skill normalization; the owner reports the full requested create/load/setup/movement/discovery/heart/claim/settlement/save/reload regression passes
+- Documentation/decision updates: implemented boundary/test responsibilities recorded in architecture/state/workflow/repository guidance; acceptance status and E02-T03 next-task wording recorded in `ROADMAP.md` and `DECISIONS.md`; `CURRENT_STATE.md` remains unchanged because no new audit was performed
+- Limitations/risks/open approvals: hidden creation clock/ID/RNG inputs remain for E02-T03; current rule-bearing setup/dungeon/navigation/provider paths remain for E02-T04–T07; no E02-T02 approval remains open
 - Deployment: **Not performed**
 
 ### User acceptance
 
-- Status: awaiting Candidate
-- Accepted by/date: pending explicit acceptance
+- Status: accepted
+- Accepted by/date: project owner, 2026-08-10
 
 ### Accepted checkpoint
 
-- Final commit SHA: pending acceptance
-- Pushed source branch: `main` after acceptance
-- Saved Sites version: pending acceptance
-- Roadmap status: E02-T02 remains Next until acceptance
-- Next task: `E02-T03 — Isolate clock, identity, and deterministic campaign creation inputs` after accepted checkpoint only
+- Final commit SHA: recorded in the acceptance handoff after this record is committed
+- Pushed source branch: `main`
+- Saved Sites version: recorded in the acceptance handoff
+- Roadmap status: E02-T02 accepted/complete; EPIC 02 remains Current
+- Next task: `E02-T03 — Isolate clock, identity, and deterministic campaign creation inputs`
 - Deployment: **Not performed**

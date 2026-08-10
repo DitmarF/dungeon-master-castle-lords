@@ -133,7 +133,7 @@ The responsible documents contain detailed questions. This index groups the deci
 | DMCL-Q13 | **Resolved by accepted DMCL-P18** | Sites/Linux retains its protected installer; macOS and GitHub Actions use lockfile `npm ci`; all share `npm run verify`; independent CI does not replace rendered/mobile or physical-device acceptance. |
 | DMCL-Q14 | **Resolved by accepted DMCL-P16** | Sites/Vinext/Cloudflare remains the delivery constraint unless an explicit later decision replaces it; platform services stay at the edges. |
 | DMCL-Q15 | **Resolved by accepted DMCL-P17** | Use deterministic committed generation for the existing FS adapter and the narrow persisted-banner projection; keep derived CSS handwritten and runtime theme handling unchanged. |
-| DMCL-Q16 | **Resolved historically; superseded by current roadmap status** | E00-T05 activated EPIC 01 with E01-T01 next. EPIC 01 is now complete; EPIC 02 is Current, E02-T01 is accepted, and E02-T02 is the exact next task. |
+| DMCL-Q16 | **Resolved historically; superseded by current roadmap status** | E00-T05 activated EPIC 01 with E01-T01 next. EPIC 01 is now complete; EPIC 02 is Current, E02-T01 and E02-T02 are accepted, and E02-T03 is the exact next task. |
 
 ## Decision record format
 
@@ -162,6 +162,6 @@ Use a full standalone ADR only when a decision needs alternatives, extensive evi
 
 ## Current approval position
 
-EPIC 01 is complete. DMCL-P01–P13 and DMCL-P16–P22 are accepted; DMCL-P14/P15 remain historical superseded proposals. EPIC 02 is Current, E02-T01 is accepted, and E02-T02 is the exact next task.
+EPIC 01 is complete. DMCL-P01–P13 and DMCL-P16–P22 are accepted; DMCL-P14/P15 remain historical superseded proposals. EPIC 02 is Current, E02-T01 and E02-T02 are accepted, and E02-T03 is the exact next task.
 
-DMCL-P19–P22 authorize E02-T02 to establish the accepted v3-preserving `CampaignState` boundary and dependency-free engine tests. Remaining DMCL-Q entries concern exact mechanics, persistence/product semantics, identity, content policy, or later-Epic details; they do not block E02-T02.
+E02-T02 implemented the v3-preserving `CampaignState` boundary and dependency-free engine tests authorized by DMCL-P19–P22. The owner reaffirmed the accepted DMCL-P20 identity-source direction for E02-T03 on 2026-08-10. Remaining DMCL-Q entries concern exact mechanics, persistence/product semantics, identity, content policy, or later-Epic details; they do not block the bounded E02-T03 work.
