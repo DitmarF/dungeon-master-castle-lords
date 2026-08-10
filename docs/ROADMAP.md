@@ -37,7 +37,7 @@ Status: **Next — exactly one**
 
 Goal: move the current real rule-bearing campaign mutations behind a small typed transition/application API so boards express player intent instead of rewriting arbitrary campaign state.
 
-The bounded scope starts from the accepted [E02-T01 audit](./E02-T01_CORE_ENGINE_CONTRACT_AUDIT.md) and E02-T02/E02-T03 checkpoints. It covers only complete Hero Setup, Dungeon movement/discovery/Heart reach, legal Settlement claim, and navigation to an available board. It also separates pure board identity/availability policy from React component bindings while preserving the six-board EPIC 01 catalog.
+The bounded scope is defined in [E02-T04_NAMED_VALIDATED_TRANSITIONS.md](./E02-T04_NAMED_VALIDATED_TRANSITIONS.md) and starts from the accepted [E02-T01 audit](./E02-T01_CORE_ENGINE_CONTRACT_AUDIT.md) and E02-T02/E02-T03 checkpoints. It covers only complete Hero Setup, Dungeon movement/discovery/Heart reach, legal Settlement claim, and navigation to an available board. It also separates pure board identity/availability policy from React component bindings while preserving the six-board EPIC 01 catalog.
 
 Non-goals include future gameplay commands, event/CQRS/bus/framework architecture, clock or gameplay-RNG/seed extraction, save-schema changes, cloud/multiplayer authority, broad `GameProvider` refactoring, UI redesign, new dependencies, and deployment.
 

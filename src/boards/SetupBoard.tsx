@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { completeGameSetup } from "../game/createGame";
 import { useGame } from "../game/GameProvider";
 import {
   EMPTY_ATTRIBUTES,
@@ -9,10 +8,15 @@ import {
   type FactionType,
   type HeroAttributes,
   type HeroClass,
+  type HeroSetupSelection,
   type HeroVocation,
   type SkillId,
 } from "../game/model";
 import { skillBelongsToTree } from "../game/skillTrees";
+import {
+  getHeroPathBonus,
+  validateHeroSetupSelection,
+} from "../game/transitions";
 import { Crest } from "../ui/Crest";
 import { GameIcon, type IconName } from "../ui/GameIcon";
 import { ActionButton, ProgressBar } from "../ui/GamePrimitives";
@@ -108,22 +112,13 @@ const ATTRIBUTES: { id: AttributeKey; name: string }[] = [
   { id: "lead", name: "Leadership" },
 ];
 
-function automaticBonus(
-  heroClass: HeroClass | null,
-  vocation: HeroVocation | null,
-): HeroAttributes {
-  const bonus = { ...EMPTY_ATTRIBUTES };
-  if (heroClass === "fighter") bonus.str += 1;
-  if (heroClass === "ranger") bonus.per += 1;
-  if (heroClass === "mage") bonus.int += 1;
-  if (vocation === "general") bonus.lead += 1;
-  if (vocation === "spy") bonus.agy += 1;
-  if (vocation === "diplomat") bonus.cha += 1;
-  return bonus;
-}
-
 export function SetupBoard() {
-  const { activeGame, selectedPlayer, returnToPlayers, updateGame } = useGame();
+  const {
+    activeGame,
+    completeHeroSetup,
+    selectedPlayer,
+    returnToPlayers,
+  } = useGame();
   const [faction, setFaction] = useState<FactionType | null>(null);
   const [heroClass, setHeroClass] = useState<HeroClass | null>(null);
   const [vocation, setVocation] = useState<HeroVocation | null>(null);
@@ -139,15 +134,22 @@ export function SetupBoard() {
   );
   const remainingPoints = 2 - spentPoints;
   const bonus = useMemo(
-    () => automaticBonus(heroClass, vocation),
+    () => getHeroPathBonus(heroClass, vocation),
     [heroClass, vocation],
   );
   const completedChoices = [faction, heroClass, vocation, bonusSkill].filter(
     Boolean,
   ).length;
-  const ready = Boolean(
-    faction && heroClass && vocation && bonusSkill && remainingPoints === 0,
+  const selection = useMemo<HeroSetupSelection | null>(
+    () =>
+      faction && heroClass && vocation && bonusSkill
+        ? { faction, heroClass, vocation, freeAttributes, bonusSkill }
+        : null,
+    [faction, heroClass, vocation, freeAttributes, bonusSkill],
   );
+  const ready = selection
+    ? validateHeroSetupSelection(selection).ok
+    : false;
 
   if (!activeGame || !selectedPlayer) return null;
 
@@ -180,24 +182,7 @@ export function SetupBoard() {
   }
 
   function beginCampaign() {
-    if (
-      !faction ||
-      !heroClass ||
-      !vocation ||
-      !bonusSkill ||
-      remainingPoints !== 0
-    ) {
-      return;
-    }
-    updateGame((game) =>
-      completeGameSetup(game, {
-        faction,
-        heroClass,
-        vocation,
-        freeAttributes,
-        bonusSkill,
-      }),
-    );
+    if (selection) completeHeroSetup(selection);
   }
 
   return (

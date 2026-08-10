@@ -39,11 +39,11 @@ The architecture should support fast prototype iteration without allowing UI com
 - versioned campaign data persisted to browser `localStorage`;
 - platform entry, optional storage scaffolding, and Sites configuration at repository edges.
 
-The exact hierarchy and limitations are documented in `CURRENT_STATE.md`. Current patterns such as one large provider, generic whole-save mutation, hard-coded board rendering, one global stylesheet, one campaign per player, and browser-only persistence are prototype facts—not approved long-term architecture.
+The audited baseline hierarchy and limitations are documented in `CURRENT_STATE.md`. Prototype patterns such as one large provider, the former generic whole-save board mutation, the former hard-coded board rendering, one global stylesheet, one campaign per player, and browser-only persistence are not approved long-term architecture; later bounded sections in this document record which of those observations have since changed.
 
 ## EPIC 02 core-engine contract
 
-**Accepted through DMCL-P19–P22 on 2026-08-10.** Name the authoritative pure campaign type `CampaignState`, while retaining `GameSave` as the version-3 serialized compatibility name or alias until a separately approved migration changes the runtime shape. `CampaignState` contains only current justified campaign facts and snapshots. `PlayerProfile`, `GameRegistry`, `RuntimeState`, theme/hydration, and board-local presentation state remain outside it.
+**Accepted through DMCL-P19–P21 and the owner-selected DMCL-P24 sequence on 2026-08-10.** Name the authoritative pure campaign type `CampaignState`, while retaining `GameSave` as the version-3 serialized compatibility name or alias until a separately approved migration changes the runtime shape. `CampaignState` contains only current justified campaign facts and snapshots. `PlayerProfile`, `GameRegistry`, `RuntimeState`, theme/hydration, and board-local presentation state remain outside it.
 
 The smallest engine surface is:
 
@@ -60,7 +60,7 @@ This proposal does not require a command framework, event bus, event sourcing, C
 
 E02-T02 establishes `src/game/campaignState.ts` as the pure campaign/model boundary. It defines `CampaignState` with exactly the version-3 campaign fields and retains `GameSave` as a type alias, so existing serialized campaigns keep the same runtime shape and require no migration. `src/game/model.ts` now re-exports those campaign types for compatibility while separately owning `PlayerProfile`, `GameRegistry`, `RuntimeState`, and application-view state. Theme, hydration behavior, and board-local presentation remain outside the campaign contract.
 
-Focused engine verification uses the supported Node runtime and built-in `node:test` with native TypeScript stripping. `npm run test:engine` exercises the state boundary, existing migration/normalization, explicit-seed dungeon determinism, and dependency purity without rendering React or building Sites. The normal `npm test` and `npm run verify` paths include these focused tests. E02-T02 was only the state/test foundation; E02-T03 adds the bounded identity policy below, while clock/gameplay-seed inputs and setup/dungeon/navigation/provider transitions remain later work.
+Focused engine verification uses the supported Node runtime and built-in `node:test` with native TypeScript stripping. `npm run test:engine` exercises the state boundary, existing migration/normalization, explicit-seed dungeon determinism, and dependency purity without rendering React or building Sites. The normal `npm test` and `npm run verify` paths include these focused tests. E02-T02 was only the state/test foundation; E02-T03 added the bounded identity policy below and E02-T04 adds the named transitions below. Clock/gameplay-seed inputs remain later unscheduled work.
 
 ### E02-T03 implemented identity boundary
 
@@ -68,13 +68,23 @@ E02-T03 establishes `src/game/identity.ts` as the pure current identity contract
 
 This is not a generic entity system. Skills, boards, faction/class/vocation values, and other reusable definitions retain their literal content IDs. Cell keys remain coordinate-derived `CellKey` values, and dungeon room numbers remain stored snapshot-local ordinals rather than global entity identities. No hero, settlement, region, army, unit, or item identity exists until an approved mechanic has a persistent instance that needs one. Existing loaded IDs are never rewritten merely for format consistency.
 
-The provider and browser-storage adapter supply the system identity source to current player/campaign creation and migration fallback paths. Clock and gameplay-seed inputs remain hidden and explicitly outside this owner-defined E02-T03 task; setup/dungeon/navigation/provider transition extraction also remains later work.
+The provider and browser-storage adapter supply the system identity source to current player/campaign creation and migration fallback paths. Clock and gameplay-seed inputs remain hidden and explicitly outside this owner-defined E02-T03 task.
+
+### E02-T04 implemented transition boundary
+
+E02-T04 establishes `src/game/transitions.ts` as the small pure boundary for the four current rule-bearing campaign intents: complete Hero Setup, move the Hero inside the current Dungeon, claim the Settlement after reaching the Dungeon Heart, and navigate to an available board. Each transition validates its current-state and input prerequisites and returns a typed success/failure result. The functions do not stamp time, persist, render, or import React/browser/platform code.
+
+The setup transition is now authoritative for the existing two-point allocation, selected path/root skills, legal root-or-tier-1 bonus skill, calculated attributes, initial position/vision/discovery, setup completion, and Dungeon entry. `SetupBoard` consumes the same validation and path-bonus calculation for readiness and preview instead of duplicating rule math. `createGame.ts` retains campaign/profile creation and migration orchestration while reusing the same attribute calculation for existing save normalization.
+
+The Dungeon transition computes destination, walkability, discovery union, position, and historical Heart reach. Settlement claim validates the Heart prerequisite and uses the same legal-navigation policy for the resulting Settlement entry. Boards retain keyboard/touch input, prompts, copy, animation, and other presentation state.
+
+`GameProvider` exposes exactly these named campaign operations and remains responsible for application timestamp stamping plus active-campaign/registry mirroring. The migrated boards no longer receive an unrestricted `updateGame` function; no unrelated lifecycle, storage, theme, or provider responsibility was rewritten.
 
 ### Accepted board-policy correction
 
-The current application/state layer imports `RegisteredBoardId` from `src/boards/registry.ts`, which also imports React component types, icons, and every board implementation. Settlement unlock and active-board fallback policy are therefore unavailable to application code without depending on the board/view layer. Shared `BoardNavigation` also imports board-layer context and registry types.
+Before E02-T04, the application/state layer imported `RegisteredBoardId` from `src/boards/registry.ts`, which also imported React component types and every board implementation. Settlement unlock and active-board fallback policy were therefore unavailable to application code without depending on the board/view layer. Shared `BoardNavigation` also imported a board-layer context and registry types.
 
-**Accepted minimum correction:** separate stable in-campaign board identity, non-React descriptors, campaign-aware availability, legal navigation, and fallback selection into a pure game/application module. Keep `src/boards/registry.ts` as the React component/presentation binding over those descriptors. Shared UI should receive navigation data and callbacks through the application-facing contract rather than importing board implementations. Preserve the EPIC 01 catalog, ordering, IDs, components, availability behavior, and visible navigation; do not rebuild the board architecture.
+**Accepted and implemented minimum correction:** `src/game/navigation.ts` owns stable in-campaign board identity, six ordered non-React descriptors, campaign-aware registered/enabled/unlocked/active availability, legal navigation inputs, and fallback selection. `src/boards/registry.ts` now only attaches the existing React components to those descriptors. `GameProvider` and `BoardNavigation` import the pure policy rather than the React registry; `GameApp` uses pure resolution and then asks the React registry only for the selected component. The EPIC 01 ordering, IDs, labels, icons, components, enabled states, Settlement unlock, fallback behavior, and visible navigation remain unchanged.
 
 Full audit evidence, save risks, module responsibilities, and staged tasks are recorded in [E02-T01_CORE_ENGINE_CONTRACT_AUDIT.md](./E02-T01_CORE_ENGINE_CONTRACT_AUDIT.md).
 
@@ -204,7 +214,7 @@ The central application would resolve boards from this catalog rather than dupli
 
 E01-T04 establishes the initial concrete contract in `src/boards/registry.ts`: each registered module provides its stable `BoardId`, labels, icon, React component, independent `enabled` flag, and campaign-aware `isUnlocked` rule. E01-T05 registers the complete in-campaign family—Hero, Settlement, World, Dungeon, Combat, and Diplomacy—through that contract. Dungeon and Settlement remain the real prototype boards; Hero, World, Combat, and Diplomacy are explicitly empty EPIC 01 foundations. Setup remains the pre-campaign flow outside the board catalog.
 
-`GameApp` is the in-campaign board router. It resolves the requested active ID through the catalog, renders that module's component, and repairs an unregistered, disabled, or locked active ID to the first enabled and unlocked module through the named `navigateToBoard` application operation. This is state-based in-shell resolution, not browser URL routing. `BoardNavigation` receives the identical catalog and availability selector through `BoardCatalogProvider`; the provider transports the authoritative definitions without creating a second authority or making shared UI import board implementations.
+`GameApp` is the in-campaign board router. It resolves the requested active ID through the pure navigation policy, renders the matching React registry component, and repairs an unregistered, disabled, or locked active ID to the first enabled and unlocked descriptor through the named `navigateToBoard` application operation. This is state-based in-shell resolution, not browser URL routing. `BoardNavigation` reads the same pure descriptors and availability selector directly; it does not import React board implementations or a board-layer context.
 
 The initial availability selector exposes `registered`, `enabled`, `unlocked`, `active`, and derived `available` independently. Settlement's existing `dungeon.settlementClaimed` rule owns only `unlocked`; it does not alter the module's enabled state. The four empty foundations are temporarily enabled and unlocked solely so EPIC 01 can verify catalog, router, shell, and navigation behavior; this does not establish future gameplay unlock rules. Board components continue reading their existing campaign state and invoking existing application-facing operations; richer declarative state-slice, operation, entry, or cleanup declarations remain deferred until a concrete board needs them.
 
@@ -240,7 +250,7 @@ Folder names may evolve; dependency responsibilities matter more than a prescrib
 
 ### State transitions
 
-**Accepted:** Replace broad whole-save mutation gradually with named domain/application operations as each system gains rules. Validate invariants at those boundaries. Do not refactor everything pre-emptively; introduce operations alongside real mechanics.
+**Accepted and implemented for current playable interactions:** Replace broad whole-save mutation gradually with named domain/application operations as each system gains rules. E02-T04 moves every current playable-board rule-bearing mutation behind validated setup, movement, claim, and navigation operations, so the generic whole-campaign updater is no longer exposed. Profile/campaign lifecycle, save, return, hydration, storage, theme, and future mechanics remain separate bounded work rather than being forced into a command framework.
 
 ### Persistence adapters
 

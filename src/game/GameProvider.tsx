@@ -11,6 +11,7 @@ import {
   type ReactNode,
 } from "react";
 import { createNewGame, createPlayerProfile } from "./createGame";
+import type { RegisteredBoardId } from "./navigation";
 import { systemIdSource } from "./systemIdSource";
 import {
   EMPTY_REGISTRY,
@@ -19,9 +20,20 @@ import {
   type PlayerProfile,
   type PlayerId,
   type RuntimeState,
+  type HeroSetupSelection,
 } from "./model";
 import { gameStorage } from "./storage";
-import type { RegisteredBoardId } from "../boards/registry";
+import {
+  claimSettlement as transitionClaimSettlement,
+  completeHeroSetup as transitionCompleteHeroSetup,
+  moveHeroInDungeon as transitionMoveHeroInDungeon,
+  navigateToAvailableBoard,
+  type ClaimSettlementResult,
+  type CompleteHeroSetupResult,
+  type DungeonMoveDirection,
+  type MoveHeroInDungeonResult,
+  type NavigateToAvailableBoardResult,
+} from "./transitions";
 
 type ThemePreference = "system" | "light" | "dark";
 
@@ -50,8 +62,7 @@ type Action =
   | { type: "deletePlayer"; playerId: PlayerId }
   | { type: "openGame"; playerId: PlayerId; game: GameSave }
   | { type: "saveGame"; game: GameSave }
-  | { type: "navigateToBoard"; boardId: RegisteredBoardId }
-  | { type: "updateGame"; updater: (game: GameSave) => GameSave }
+  | { type: "applyCampaignTransition"; game: GameSave }
   | { type: "returnToPlayers"; game: GameSave | null };
 
 const INITIAL_STATE: RuntimeState = {
@@ -167,36 +178,8 @@ function reducer(state: RuntimeState, action: Action): RuntimeState {
         },
       };
 
-    case "navigateToBoard": {
-      if (
-        !state.activeGame ||
-        state.activeGame.activeBoardId === action.boardId
-      ) {
-        return state;
-      }
-      const game = {
-        ...state.activeGame,
-        activeBoardId: action.boardId,
-        updatedAt: new Date().toISOString(),
-      };
-
-      return {
-        ...state,
-        activeGame: game,
-        registry: {
-          ...state.registry,
-          games: { ...state.registry.games, [game.playerId]: game },
-        },
-      };
-    }
-
-    case "updateGame": {
-      if (!state.activeGame) return state;
-      const game = {
-        ...action.updater(state.activeGame),
-        updatedAt: new Date().toISOString(),
-      };
-
+    case "applyCampaignTransition": {
+      const game = action.game;
       return {
         ...state,
         activeGame: game,
@@ -244,8 +227,16 @@ interface GameContextValue {
   startNewGame: (playerId: PlayerId) => void;
   loadGame: (playerId: PlayerId) => void;
   saveGame: () => void;
-  navigateToBoard: (boardId: RegisteredBoardId) => void;
-  updateGame: (updater: (game: GameSave) => GameSave) => void;
+  completeHeroSetup: (
+    selection: HeroSetupSelection,
+  ) => CompleteHeroSetupResult | null;
+  moveHeroInDungeon: (
+    direction: DungeonMoveDirection,
+  ) => MoveHeroInDungeonResult | null;
+  claimSettlement: () => ClaimSettlementResult | null;
+  navigateToBoard: (
+    boardId: RegisteredBoardId,
+  ) => NavigateToAvailableBoardResult | null;
   returnToPlayers: () => void;
 }
 
@@ -344,16 +335,56 @@ export function GameProvider({ children }: { children: ReactNode }) {
     });
   }, [state.activeGame]);
 
-  const navigateToBoard = useCallback(
-    (boardId: RegisteredBoardId) => {
-      dispatch({ type: "navigateToBoard", boardId });
+  const completeHeroSetup = useCallback(
+    (selection: HeroSetupSelection): CompleteHeroSetupResult | null => {
+      if (!state.activeGame) return null;
+      const result = transitionCompleteHeroSetup(state.activeGame, selection);
+      if (!result.ok) return result;
+
+      const game = { ...result.state, updatedAt: new Date().toISOString() };
+      dispatch({ type: "applyCampaignTransition", game });
+      return { ...result, state: game };
     },
-    [],
+    [state.activeGame],
   );
 
-  const updateGame = useCallback((updater: (game: GameSave) => GameSave) => {
-    dispatch({ type: "updateGame", updater });
-  }, []);
+  const moveHeroInDungeon = useCallback(
+    (direction: DungeonMoveDirection): MoveHeroInDungeonResult | null => {
+      if (!state.activeGame) return null;
+      const result = transitionMoveHeroInDungeon(state.activeGame, direction);
+      if (!result.ok) return result;
+
+      const game = { ...result.state, updatedAt: new Date().toISOString() };
+      dispatch({ type: "applyCampaignTransition", game });
+      return { ...result, state: game };
+    },
+    [state.activeGame],
+  );
+
+  const claimSettlement = useCallback((): ClaimSettlementResult | null => {
+    if (!state.activeGame) return null;
+    const result = transitionClaimSettlement(state.activeGame);
+    if (!result.ok) return result;
+
+    const game = { ...result.state, updatedAt: new Date().toISOString() };
+    dispatch({ type: "applyCampaignTransition", game });
+    return { ...result, state: game };
+  }, [state.activeGame]);
+
+  const navigateToBoard = useCallback(
+    (
+      boardId: RegisteredBoardId,
+    ): NavigateToAvailableBoardResult | null => {
+      if (!state.activeGame) return null;
+      const result = navigateToAvailableBoard(state.activeGame, boardId);
+      if (!result.ok || result.state === state.activeGame) return result;
+
+      const game = { ...result.state, updatedAt: new Date().toISOString() };
+      dispatch({ type: "applyCampaignTransition", game });
+      return { ...result, state: game };
+    },
+    [state.activeGame],
+  );
 
   const returnToPlayers = useCallback(() => {
     const game = state.activeGame
@@ -409,8 +440,10 @@ export function GameProvider({ children }: { children: ReactNode }) {
       startNewGame,
       loadGame,
       saveGame,
+      completeHeroSetup,
+      moveHeroInDungeon,
+      claimSettlement,
       navigateToBoard,
-      updateGame,
       returnToPlayers,
     }),
     [
@@ -428,8 +461,10 @@ export function GameProvider({ children }: { children: ReactNode }) {
       startNewGame,
       loadGame,
       saveGame,
+      completeHeroSetup,
+      moveHeroInDungeon,
+      claimSettlement,
       navigateToBoard,
-      updateGame,
       returnToPlayers,
       setDarkMode,
       useSystemTheme,

@@ -41,11 +41,11 @@ Adding another Fighter, skill, room type, building, unit, or terrain should exte
 
 Skill descriptions are currently presentation text; most described effects are not executable mechanics. Their wording must not be treated as approved rules.
 
-**Observed:** `src/boards/registry.ts` centralizes basic board metadata—stable ID, labels, icon, and enabled flag—for dungeon, settlement, world, and combat. Component resolution and unlock rules are not part of this catalog today.
+**Implemented through E02-T04:** `src/game/navigation.ts` owns the six stable board IDs, ordered non-React descriptors, enabled state, and campaign unlock policy. `src/boards/registry.ts` binds the existing React components over those definitions without becoming a second metadata or navigation-rule authority.
 
 ### Distributed or duplicated content
 
-**Observed:** Faction, class, vocation, and attribute display definitions are embedded in `SetupBoard`. Class/vocation bonus logic also exists separately in setup preview code and `createGame.ts`. Labels, icons, presentation copy, initial skills, and mechanical bonuses therefore do not have one authoritative definition.
+**Observed after E02-T04:** Faction, class, vocation, and attribute display definitions remain embedded in `SetupBoard`; their broader content consolidation is not part of the transition task. Mechanical path bonuses, initial root skills, legal bonus-skill eligibility, calculated attributes, and setup validation now have one authoritative pure definition in `transitions.ts`, consumed by the board and migration normalization. Some presentation labels/icons still parallel skill-tree content and remain later bounded content work.
 
 **Observed:** Faction-related presentation and banner colors appear in board/UI components. `GameIcon` contains a typed hand-authored icon mapping. Most UI copy and board-specific labels are component-local.
 

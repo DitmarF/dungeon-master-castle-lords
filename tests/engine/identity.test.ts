@@ -13,11 +13,11 @@ import {
   type PersistentIdentityKind,
 } from "../../src/game/identity.ts";
 import {
-  completeGameSetup,
   createNewGame,
   createPlayerProfile,
   migrateLegacyGame,
 } from "../../src/game/createGame.ts";
+import { completeHeroSetup } from "../../src/game/transitions.ts";
 import { systemIdSource } from "../../src/game/systemIdSource.ts";
 
 function sequenceIdSource(
@@ -129,7 +129,7 @@ test("identity injection preserves the current creation, setup, and load flow", 
   });
   const player = createPlayerProfile("Regression Lord", "blue", source);
   const campaign = createNewGame(player.id, source);
-  const completed = completeGameSetup(campaign, {
+  const completion = completeHeroSetup(campaign, {
     faction: "dungeon",
     heroClass: "fighter",
     vocation: "general",
@@ -143,6 +143,8 @@ test("identity injection preserves the current creation, setup, and load flow", 
     },
     bonusSkill: "close-combat",
   });
+  if (!completion.ok) throw new Error(`Setup failed: ${completion.code}`);
+  const completed = completion.state;
   const loaded = migrateLegacyGame(
     structuredClone(completed),
     player.id,

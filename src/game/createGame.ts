@@ -1,14 +1,8 @@
-import { createDungeonLevel, discoverAround } from "./generateDungeon.ts";
+import { createDungeonLevel } from "./generateDungeon.ts";
 import {
-  EMPTY_ATTRIBUTES,
   type GameSave,
-  type HeroAttributes,
-  type HeroClass,
-  type HeroSetupSelection,
-  type HeroVocation,
   type PlayerProfile,
   type PlayerId,
-  type SkillId,
 } from "./model.ts";
 import {
   createCampaignId,
@@ -17,22 +11,13 @@ import {
   type IdSource,
 } from "./identity.ts";
 import {
+  CLASS_SKILL,
+  calculateHeroAttributes,
+} from "./transitions.ts";
+import {
   SKILL_BY_ID,
-  createEmptySkillRanks,
   normalizeSkillRanks,
 } from "./skillTrees.ts";
-
-export const CLASS_SKILL: Record<HeroClass, SkillId> = {
-  fighter: "close-combat",
-  ranger: "ranged-combat",
-  mage: "mage-combat",
-};
-
-export const VOCATION_SKILL: Record<HeroVocation, SkillId> = {
-  general: "tactics",
-  spy: "deception",
-  diplomat: "diplomacy",
-};
 
 export function createPlayerProfile(
   name: string,
@@ -67,67 +52,6 @@ export function createNewGame(
   };
 }
 
-function addAttributes(...sources: HeroAttributes[]): HeroAttributes {
-  const result = { ...EMPTY_ATTRIBUTES };
-  for (const source of sources) {
-    (Object.keys(result) as (keyof HeroAttributes)[]).forEach((key) => {
-      result[key] += source[key];
-    });
-  }
-  return result;
-}
-
-function classBonus(heroClass: HeroClass): HeroAttributes {
-  return {
-    ...EMPTY_ATTRIBUTES,
-    ...(heroClass === "fighter" ? { str: 1 } : {}),
-    ...(heroClass === "ranger" ? { per: 1 } : {}),
-    ...(heroClass === "mage" ? { int: 1 } : {}),
-  };
-}
-
-function vocationBonus(vocation: HeroVocation): HeroAttributes {
-  return {
-    ...EMPTY_ATTRIBUTES,
-    ...(vocation === "general" ? { lead: 1 } : {}),
-    ...(vocation === "spy" ? { agy: 1 } : {}),
-    ...(vocation === "diplomat" ? { cha: 1 } : {}),
-  };
-}
-
-export function completeGameSetup(game: GameSave, selection: HeroSetupSelection): GameSave {
-  const skills = createEmptySkillRanks();
-  skills[CLASS_SKILL[selection.heroClass]] += 1;
-  skills[VOCATION_SKILL[selection.vocation]] += 1;
-  skills[selection.bonusSkill] += 1;
-
-  return {
-    ...game,
-    setupComplete: true,
-    activeBoardId: "dungeon",
-    hero: {
-      ...selection,
-      attributes: addAttributes(
-        selection.freeAttributes,
-        classBonus(selection.heroClass),
-        vocationBonus(selection.vocation),
-      ),
-      skills,
-      position: game.dungeon.start,
-      visionRadius: 1,
-    },
-    dungeon: {
-      ...game.dungeon,
-      discovered: discoverAround(
-        game.dungeon.start,
-        game.dungeon.grid.columns,
-        game.dungeon.grid.rows,
-      ),
-    },
-    updatedAt: new Date().toISOString(),
-  };
-}
-
 export function migrateLegacyGame(
   value: unknown,
   playerId: string,
@@ -157,11 +81,7 @@ export function migrateLegacyGame(
         hero: {
           ...current.hero,
           bonusSkill,
-          attributes: addAttributes(
-            current.hero.freeAttributes,
-            classBonus(current.hero.heroClass),
-            vocationBonus(current.hero.vocation),
-          ),
+          attributes: calculateHeroAttributes(current.hero),
           skills: normalizeSkillRanks(current.hero.skills),
         },
       };

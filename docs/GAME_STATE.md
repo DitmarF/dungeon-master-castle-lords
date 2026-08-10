@@ -125,7 +125,7 @@ The current v3 payload classifies as follows:
 
 The field-by-field classification and evidence are recorded in [E02-T01_CORE_ENGINE_CONTRACT_AUDIT.md](./E02-T01_CORE_ENGINE_CONTRACT_AUDIT.md#2-state-value-classification).
 
-**Accepted through DMCL-P19–P22 on 2026-08-10:** use `CampaignState` for the pure authoritative campaign contract and retain `GameSave` as the version-3 serialized compatibility name or alias. Preserve the exact current runtime JSON shape for the first implementation task. Do not add future calendar, settlement, world, army, combat, or event slices merely to match a long-term concept.
+**Accepted through DMCL-P19–P21 and the owner-selected DMCL-P24 sequence on 2026-08-10:** use `CampaignState` for the pure authoritative campaign contract and retain `GameSave` as the version-3 serialized compatibility name or alias. Preserve the exact current runtime JSON shape for the first implementation task. Do not add future calendar, settlement, world, army, combat, or event slices merely to match a long-term concept.
 
 The campaign continues to reference a player/profile ID without embedding `PlayerProfile`. `GameRegistry`, one-campaign-per-player lookup, profile lifecycle, hydration, theme, and UI state remain separate. Pure transitions and selectors may be extracted incrementally without moving unrelated runtime responsibilities into the campaign.
 
@@ -151,6 +151,19 @@ The current persistent identity types are now explicit without changing serializ
 Content-definition IDs are not player/campaign IDs. Coordinates and `CellKey` values such as `"3,4"` are spatial/derived keys scoped to the stored dungeon, while `DungeonRoom.id` is a snapshot-local generator ordinal. Neither is a global persistent entity identity. The current hero, settlement outcome, and generated dungeon do not gain manufactured entity IDs in this task.
 
 Clock and gameplay-seed isolation remain unresolved by this identity-only task. The broader player/account/owner relationship, multiple campaigns, cloud/global identity, and multiplayer authority also remain open.
+
+### E02-T04 implemented transition policy
+
+The version-3 shape and field classifications remain unchanged. E02-T04 changes only who may author current campaign transitions:
+
+- `completeHeroSetup` validates the current incomplete Setup state and existing setup constraints, then creates the stored hero/setup/discovery facts and snapshots;
+- `moveHeroInDungeon` validates the current Dungeon context and owns destination, walkability, stored position, discovery, and historical Heart-reached outcome;
+- `claimSettlement` validates that the Heart was reached, records the claim fact, and enters Settlement through legal board policy;
+- `navigateToAvailableBoard` validates the pure registered/enabled/unlocked board availability before changing the stored resume board.
+
+These pure transitions retain `updatedAt`; application operations in `GameProvider` stamp it only for a successful state change and mirror the result into `RuntimeState.activeGame` and `GameRegistry.games`. Failed transitions return a typed reason and do not produce a replacement campaign. Automatic browser persistence remains the adapter around the registry and no migration is required.
+
+The four migrated board interactions no longer receive unrestricted whole-campaign mutation. Player/profile creation, campaign create/load, save, return, hydration, theme, and UI-only draft/prompt/map state remain outside this transition set. Clock semantics and gameplay-seed isolation remain pending and are not implied by this implementation.
 
 ## Established future campaign categories
 

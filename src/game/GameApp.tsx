@@ -1,16 +1,12 @@
 "use client";
 
 import { useEffect } from "react";
-import { BoardCatalogProvider } from "../boards/BoardCatalogContext";
 import { SetupBoard } from "../boards/SetupBoard";
 import { StartBoard } from "../boards/StartBoard";
-import {
-  BOARD_CATALOG,
-  getBoardAvailability,
-  resolveActiveBoard,
-} from "../boards/registry";
+import { getBoardModule } from "../boards/registry";
 import { GameIcon } from "../ui/GameIcon";
 import { useGame } from "./GameProvider";
+import { resolveActiveBoard } from "./navigation";
 
 export function GameApp() {
   const {
@@ -25,7 +21,7 @@ export function GameApp() {
       ? resolveActiveBoard(activeGame)
       : null;
   const fallbackBoardId = boardResolution?.usedFallback
-    ? boardResolution.module.id
+    ? boardResolution.descriptor.id
     : null;
 
   useEffect(() => {
@@ -71,13 +67,9 @@ export function GameApp() {
     );
   }
 
-  const ActiveBoard = boardResolution.module.component;
-  return (
-    <BoardCatalogProvider
-      catalog={BOARD_CATALOG}
-      getAvailability={getBoardAvailability}
-    >
-      <ActiveBoard />
-    </BoardCatalogProvider>
-  );
+  const boardModule = getBoardModule(boardResolution.descriptor.id);
+  if (!boardModule) return null;
+
+  const ActiveBoard = boardModule.component;
+  return <ActiveBoard />;
 }

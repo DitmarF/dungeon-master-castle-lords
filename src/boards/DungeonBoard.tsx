@@ -9,9 +9,9 @@ import {
   type PointerEvent as ReactPointerEvent,
   type WheelEvent as ReactWheelEvent,
 } from "react";
-import { cellKey, discoverAround, isWalkable } from "../game/generateDungeon";
+import { cellKey } from "../game/generateDungeon";
 import { useGame } from "../game/GameProvider";
-import type { CellPosition } from "../game/model";
+import type { DungeonMoveDirection } from "../game/transitions";
 import { GameIcon } from "../ui/GameIcon";
 import {
   ActionButton,
@@ -24,10 +24,10 @@ const CELL_SIZE = 48;
 const MAX_ZOOM = 3.5;
 
 const DIRECTIONS = {
-  w: { x: 0, y: -1, label: "north", arrow: "↑" },
-  a: { x: -1, y: 0, label: "west", arrow: "←" },
-  s: { x: 0, y: 1, label: "south", arrow: "↓" },
-  d: { x: 1, y: 0, label: "east", arrow: "→" },
+  w: { direction: "north", arrow: "↑" },
+  a: { direction: "west", arrow: "←" },
+  s: { direction: "south", arrow: "↓" },
+  d: { direction: "east", arrow: "→" },
 } as const;
 
 interface ScreenPoint {
@@ -63,7 +63,12 @@ function clamp(value: number, minimum: number, maximum: number): number {
 }
 
 export function DungeonBoard() {
-  const { activeGame, selectedPlayer, updateGame } = useGame();
+  const {
+    activeGame,
+    claimSettlement,
+    moveHeroInDungeon,
+    selectedPlayer,
+  } = useGame();
   const [heartPromptOpen, setHeartPromptOpen] = useState(false);
   const [moveNote, setMoveNote] = useState("Use the arrows or WASD to explore.");
   const [mapView, setMapView] = useState<MapView>({ zoom: 1, x: 0, y: 0 });
@@ -367,52 +372,24 @@ export function DungeonBoard() {
   }
 
   const moveHero = useCallback(
-    (delta: CellPosition, direction: string) => {
-      if (!activeGame?.hero) return;
-      const next = {
-        x: activeGame.hero.position.x + delta.x,
-        y: activeGame.hero.position.y + delta.y,
-      };
-
-      if (!isWalkable(activeGame.dungeon, next)) {
-        setMoveNote(`Stone blocks the way ${direction}.`);
+    (direction: DungeonMoveDirection) => {
+      const result = moveHeroInDungeon(direction);
+      if (!result) return;
+      if (!result.ok) {
+        if (result.code === "blocked") {
+          setMoveNote(`Stone blocks the way ${direction}.`);
+        }
         return;
       }
 
-      const visible = discoverAround(
-        next,
-        activeGame.dungeon.grid.columns,
-        activeGame.dungeon.grid.rows,
-        activeGame.hero.visionRadius,
-      );
-      const discovered = Array.from(
-        new Set([...activeGame.dungeon.discovered, ...visible]),
-      );
-      const reachedHeart =
-        next.x === activeGame.dungeon.heart.x &&
-        next.y === activeGame.dungeon.heart.y;
-
-      updateGame((game) => {
-        if (!game.hero) return game;
-        return {
-          ...game,
-          hero: { ...game.hero, position: next },
-          dungeon: {
-            ...game.dungeon,
-            discovered,
-            heartReached: game.dungeon.heartReached || reachedHeart,
-          },
-        };
-      });
-
       setMoveNote(
-        reachedHeart
+        result.details.reachedHeart
           ? "The Dungeon Heart answers your touch."
           : `Moved ${direction}. New ground revealed.`,
       );
-      if (reachedHeart) setHeartPromptOpen(true);
+      if (result.details.reachedHeart) setHeartPromptOpen(true);
     },
-    [activeGame, updateGame],
+    [moveHeroInDungeon],
   );
 
   useEffect(() => {
@@ -435,7 +412,7 @@ export function DungeonBoard() {
 
       event.preventDefault();
       const direction = DIRECTIONS[key];
-      moveHero({ x: direction.x, y: direction.y }, direction.label);
+      moveHero(direction.direction);
     };
 
     window.addEventListener("keydown", handleKey);
@@ -470,13 +447,9 @@ export function DungeonBoard() {
   const locationKicker =
     hero.faction === "dungeon" ? "Buried hollow" : "Ruined keep";
 
-  function claimSettlement() {
-    updateGame((game) => ({
-      ...game,
-      activeBoardId: "settlement",
-      dungeon: { ...game.dungeon, settlementClaimed: true },
-    }));
-    setHeartPromptOpen(false);
+  function handleClaimSettlement() {
+    const result = claimSettlement();
+    if (result?.ok) setHeartPromptOpen(false);
   }
 
   return (
@@ -645,12 +618,9 @@ export function DungeonBoard() {
                     type="button"
                     key={key}
                     onClick={() =>
-                      moveHero(
-                        { x: direction.x, y: direction.y },
-                        direction.label,
-                      )
+                      moveHero(direction.direction)
                     }
-                    aria-label={`Move ${direction.label}`}
+                    aria-label={`Move ${direction.direction}`}
                   >
                     <span>{direction.arrow}</span>
                     <small>{key.toUpperCase()}</small>
@@ -707,7 +677,7 @@ export function DungeonBoard() {
               </ActionButton>
               <ActionButton
                 variant="primary"
-                onClick={claimSettlement}
+                onClick={handleClaimSettlement}
                 endIcon={<GameIcon name="arrow" size={17} />}
               >
                 Claim settlement

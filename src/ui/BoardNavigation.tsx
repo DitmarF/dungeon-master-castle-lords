@@ -1,7 +1,10 @@
 import type { CSSProperties } from "react";
-import { useBoardCatalog } from "../boards/BoardCatalogContext";
-import type { RegisteredBoardId } from "../boards/registry";
 import type { GameSave } from "../game/model";
+import {
+  BOARD_DESCRIPTORS,
+  getBoardAvailability,
+  type RegisteredBoardId,
+} from "../game/navigation";
 import { GameIcon } from "./GameIcon";
 
 interface BoardNavigationProps {
@@ -10,16 +13,14 @@ interface BoardNavigationProps {
 }
 
 export function BoardNavigation({ game, onSelect }: BoardNavigationProps) {
-  const { catalog, getAvailability } = useBoardCatalog();
-
   return (
     <nav
       className="board-nav"
       aria-label="Game boards"
-      style={{ "--board-count": catalog.length } as CSSProperties}
+      style={{ "--board-count": BOARD_DESCRIPTORS.length } as CSSProperties}
     >
-      {catalog.map((board) => {
-        const availability = getAvailability(board.id, game);
+      {BOARD_DESCRIPTORS.map((board) => {
+        const availability = getBoardAvailability(board.id, game);
         const stateLabel = !availability.enabled
           ? `${board.label} — unavailable`
           : !availability.unlocked
