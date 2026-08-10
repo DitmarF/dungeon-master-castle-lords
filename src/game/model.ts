@@ -5,6 +5,7 @@ export type {
   AttributeKey,
   BoardId,
   CampaignId,
+  CampaignSeed,
   CampaignState,
   CellPosition,
   DungeonRoom,

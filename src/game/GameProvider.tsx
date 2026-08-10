@@ -13,6 +13,7 @@ import {
 import { createNewGame, createPlayerProfile } from "./createGame";
 import type { RegisteredBoardId } from "./navigation";
 import { systemIdSource } from "./systemIdSource";
+import { systemCampaignSeedSource } from "./systemCampaignSeedSource";
 import {
   EMPTY_REGISTRY,
   type GameRegistry,
@@ -315,7 +316,11 @@ export function GameProvider({ children }: { children: ReactNode }) {
     dispatch({
       type: "openGame",
       playerId,
-      game: createNewGame(playerId, systemIdSource),
+      game: createNewGame(
+        playerId,
+        systemIdSource,
+        systemCampaignSeedSource.nextCampaignSeed(),
+      ),
     });
   }, []);
 

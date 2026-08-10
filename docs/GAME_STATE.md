@@ -54,9 +54,9 @@ The word “normally” matters: a draft, camera position, notification, or deri
 
 ## Current persisted campaign
 
-**Observed:** The current `CampaignState` is schema version 3; `GameSave` remains its serialized compatibility alias. It contains:
+**Observed:** The current `CampaignState` is schema version 4; `GameSave` remains its serialized compatibility alias. It contains:
 
-- identity and lifecycle: game ID, player ID, created timestamp, updated timestamp;
+- identity and lifecycle: game ID, player ID, campaign seed, created timestamp, updated timestamp;
 - navigation/progress: active board ID and whether hero setup is complete;
 - completed hero state, or `null` before setup;
 - one dungeon state.
@@ -171,6 +171,14 @@ The accepted E02-T01 classification remains unchanged: `heroClass`, `vocation`, 
 
 `src/game/selectors.ts` is the single calculation authority for current class/vocation bonuses and total Hero attributes. Hero Setup preview reads it, successful setup writes its result into `hero.attributes`, and existing v2/v3 migration normalization recomputes the snapshot from the saved facts. The consistency rule is therefore: current writes and loads refresh the stored snapshot through the same selector; consumers may rely on the normalized snapshot without independently interpreting class or vocation rules. Removing the snapshot or changing its authority remains a separately approved migration decision.
 
+### E02-T06 implemented campaign-seed policy
+
+`CampaignState`/`GameSave` version 4 adds one `campaignSeed` stored fact. It is an unsigned 32-bit integer and is the authoritative deterministic gameplay-random foundation for the campaign. No counters, mutable global RNG state, or combat/loot/world/event streams exist. The version-1 registry container is unchanged.
+
+For a new campaign, the application obtains `campaignSeed` from a dedicated infrastructure entropy source, then passes it explicitly into pure campaign/Dungeon creation. The current initial `dungeon.seed` equals `campaignSeed` because Dungeon generation is the only implemented random system. Identity generation remains a separate source and cannot advance gameplay randomness.
+
+Migration from supported version-2/version-3 saves sets `campaignSeed` to the already-persisted `dungeon.seed`. This is an explicit compatibility assignment, not an attempt to reconstruct campaign history: the stored Dungeon grid, rooms, tiles, start, Heart, Hero position, discovery, Heart-reached state, and settlement claim remain untouched and authoritative. Version-4 normalization also retains the stored Dungeon snapshot. A future generator version/seed-versus-snapshot policy remains open.
+
 ## Established future campaign categories
 
 The approved concept requires the central campaign eventually to represent the consequences of the three connected loops. The following are **established categories**, not approved field schemas or mechanics:
@@ -256,9 +264,11 @@ Do not persist the same fact in multiple forms without an explicit consistency a
 
 ## Randomness and reproducibility
 
-**Observed:** The dungeon uses a stored numeric seed and also persists the generated rooms and tiles.
+**Observed:** Version 4 stores one campaign seed plus the current Dungeon seed and generated rooms/tiles. For the initial Dungeon in a new campaign the two seeds are equal; migrated campaigns adopt their existing Dungeon seed as the campaign seed without regeneration.
 
 **Accepted:** Any randomness that changes campaign truth must preserve enough authoritative information to resume and migrate safely. Depending on the approved system, that may be a seed plus generator/rule version, the generated result, or both. The choice must be made per system rather than inferred from the current dungeon implementation.
+
+**Implemented for the current system:** New gameplay randomness originates only from explicit seed/state inputs. Infrastructure entropy creates a new campaign seed; pure deterministic helpers consume it. The existing Dungeon snapshot remains authoritative for resume. Future random mechanics must extend this contract only when their responsible Epic defines their state and replay needs.
 
 ## Change and migration discipline
 

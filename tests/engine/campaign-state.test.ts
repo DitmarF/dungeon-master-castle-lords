@@ -11,11 +11,16 @@ import { migrateLegacyGame } from "../../src/game/createGame.ts";
 import { createDungeonLevel } from "../../src/game/generateDungeon.ts";
 import { ALL_SKILLS } from "../../src/game/skillTrees.ts";
 import type { IdSource } from "../../src/game/identity.ts";
+import type { CampaignSeedSource } from "../../src/game/random.ts";
 
 const MIGRATION_ID_SOURCE: IdSource = {
   next(kind) {
     return kind === "player" ? "player-migration" : "game-migration";
   },
+};
+
+const MIGRATION_SEED_SOURCE: CampaignSeedSource = {
+  nextCampaignSeed: () => 7_654_321,
 };
 
 const ZERO_ATTRIBUTES: HeroAttributes = {
@@ -29,9 +34,10 @@ const ZERO_ATTRIBUTES: HeroAttributes = {
 
 function createCampaignState(): CampaignState {
   return {
-    version: 3,
+    version: 4,
     id: "game-fixture",
     playerId: "player-fixture",
+    campaignSeed: 1_234_567,
     createdAt: "2026-08-01T10:00:00.000Z",
     updatedAt: "2026-08-01T11:00:00.000Z",
     activeBoardId: "setup",
@@ -41,13 +47,14 @@ function createCampaignState(): CampaignState {
   };
 }
 
-test("CampaignState is the exact version-3 campaign boundary", () => {
+test("CampaignState is the exact version-4 campaign boundary", () => {
   const campaign = createCampaignState();
   const compatibleSave: GameSave = campaign;
 
   assert.strictEqual(compatibleSave, campaign);
   assert.deepEqual(Object.keys(campaign).sort(), [
     "activeBoardId",
+    "campaignSeed",
     "createdAt",
     "dungeon",
     "hero",
@@ -57,7 +64,7 @@ test("CampaignState is the exact version-3 campaign boundary", () => {
     "updatedAt",
     "version",
   ]);
-  assert.equal(campaign.version, 3);
+  assert.equal(campaign.version, 4);
   assert.equal("players" in campaign, false);
   assert.equal("hydrated" in campaign, false);
   assert.equal("theme" in campaign, false);
@@ -66,17 +73,24 @@ test("CampaignState is the exact version-3 campaign boundary", () => {
   assert.equal("events" in campaign, false);
 });
 
-test("an existing version-3 campaign without a hero remains structurally unchanged", () => {
+test("a version-3 campaign adopts its Dungeon seed without regeneration", () => {
   const campaign = createCampaignState();
-
-  assert.deepEqual(
-    migrateLegacyGame(
-      structuredClone(campaign),
-      campaign.playerId,
-      MIGRATION_ID_SOURCE,
-    ),
-    campaign,
+  const versionThree = structuredClone(campaign) as Partial<CampaignState> & {
+    version: number;
+  };
+  versionThree.version = 3;
+  delete versionThree.campaignSeed;
+  const migrated = migrateLegacyGame(
+    versionThree,
+    campaign.playerId,
+    MIGRATION_ID_SOURCE,
+    MIGRATION_SEED_SOURCE,
   );
+
+  assert.equal(migrated.version, 4);
+  assert.equal(migrated.campaignSeed, campaign.dungeon.seed);
+  assert.deepEqual(migrated.dungeon, campaign.dungeon);
+  assert.equal(migrated.hero, null);
 });
 
 test("version-2 and version-3 hero saves retain facts while snapshots normalize", () => {
@@ -120,9 +134,11 @@ test("version-2 and version-3 hero saves retain facts while snapshots normalize"
       { ...legacy, version },
       "player-fallback",
       MIGRATION_ID_SOURCE,
+      MIGRATION_SEED_SOURCE,
     );
 
-    assert.equal(migrated.version, 3);
+    assert.equal(migrated.version, 4);
+    assert.equal(migrated.campaignSeed, dungeon.seed);
     assert.equal(migrated.id, legacy.id);
     assert.equal(migrated.playerId, legacy.playerId);
     assert.equal(migrated.createdAt, legacy.createdAt);
@@ -156,6 +172,29 @@ test("dungeon generation is deterministic when given an explicit seed", () => {
   assert.deepEqual(second, first);
   assert.notDeepEqual(different.rooms, first.rooms);
   assert.equal(first.seed, 987_654_321);
+  assert.deepEqual(first.rooms, [
+    { id: 1, x: 0, y: 8, width: 4, height: 3 },
+    { id: 2, x: 4, y: 1, width: 4, height: 3 },
+    { id: 3, x: 9, y: 7, width: 3, height: 4 },
+    { id: 4, x: 12, y: 1, width: 4, height: 3 },
+    { id: 5, x: 16, y: 7, width: 4, height: 4 },
+  ]);
+  assert.deepEqual(first.start, { x: 2, y: 9 });
+  assert.deepEqual(first.heart, { x: 18, y: 9 });
+  assert.deepEqual(first.tiles, [
+    "####################",
+    "####....####....####",
+    "##......####.......#",
+    "##.#....####....##.#",
+    "##.###.#######.###.#",
+    "##.###.#######.###.#",
+    "##.###.#######.###.#",
+    "##.###.##...##.#....",
+    "....##.##...##.#....",
+    "....................",
+    "....#####...####....",
+    "####################",
+  ]);
   assert.equal(first.tiles.length, first.grid.rows);
   assert.ok(first.tiles.every((row) => row.length === first.grid.columns));
 });
@@ -165,6 +204,7 @@ test("tested engine modules stay independent from UI, browser, and platform code
     new URL("../../src/game/campaignState.ts", import.meta.url),
     new URL("../../src/game/createGame.ts", import.meta.url),
     new URL("../../src/game/generateDungeon.ts", import.meta.url),
+    new URL("../../src/game/random.ts", import.meta.url),
     new URL("../../src/game/skillTrees.ts", import.meta.url),
   ];
 

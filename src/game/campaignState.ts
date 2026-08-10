@@ -1,8 +1,10 @@
 import type { SkillId } from "./skillTrees.ts";
 import type { CampaignId, PlayerId } from "./identity.ts";
+import type { CampaignSeed } from "./random.ts";
 
 export type { SkillId } from "./skillTrees.ts";
 export type { CampaignId, PlayerId } from "./identity.ts";
+export type { CampaignSeed } from "./random.ts";
 
 export type BoardId =
   | "setup"
@@ -74,9 +76,10 @@ export interface DungeonState {
 }
 
 export interface CampaignState {
-  version: 3;
+  version: 4;
   id: CampaignId;
   playerId: PlayerId;
+  campaignSeed: CampaignSeed;
   createdAt: string;
   updatedAt: string;
   activeBoardId: BoardId;
@@ -85,7 +88,7 @@ export interface CampaignState {
   dungeon: DungeonState;
 }
 
-/** Serialized version-3 compatibility name. */
+/** Serialized version-4 compatibility name. */
 export type GameSave = CampaignState;
 
 export const EMPTY_ATTRIBUTES: HeroAttributes = {

@@ -38,9 +38,10 @@ const VALID_SELECTION: HeroSetupSelection = {
 
 function createSetupCampaign(): CampaignState {
   return {
-    version: 3,
+    version: 4,
     id: "game-transitions",
     playerId: "player-transitions",
+    campaignSeed: 1_234,
     createdAt: "2026-08-10T10:00:00.000Z",
     updatedAt: "2026-08-10T10:00:00.000Z",
     activeBoardId: "setup",

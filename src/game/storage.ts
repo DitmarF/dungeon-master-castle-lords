@@ -1,6 +1,7 @@
 import { EMPTY_REGISTRY, type GameRegistry } from "./model";
 import { migrateLegacyGame } from "./createGame";
 import { systemIdSource } from "./systemIdSource";
+import { systemCampaignSeedSource } from "./systemCampaignSeedSource";
 
 const STORAGE_KEY = "dmcl.prototype.registry.v1";
 
@@ -32,7 +33,12 @@ export const gameStorage = {
         games: Object.fromEntries(
           Object.entries(parsed.games).map(([playerId, game]) => [
             playerId,
-            migrateLegacyGame(game, playerId, systemIdSource),
+            migrateLegacyGame(
+              game,
+              playerId,
+              systemIdSource,
+              systemCampaignSeedSource,
+            ),
           ]),
         ),
       };

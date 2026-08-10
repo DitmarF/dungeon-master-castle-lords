@@ -67,7 +67,7 @@ These entries explain the current code. They are not accepted long-term decision
 | DMCL-I02 | One React context/reducer still coordinates runtime state, but current playable rule-bearing changes now enter through named validated setup, Dungeon movement, Settlement claim, and navigation operations; the unrestricted whole-campaign updater is no longer exposed. | Continue adding operations only alongside approved real mechanics; broader provider/lifecycle separation remains later bounded work. | `ARCHITECTURE.md`, `GAME_STATE.md`, `E02-T04_NAMED_VALIDATED_TRANSITIONS.md` |
 | DMCL-I03 | Player registry and campaigns persist in browser `localStorage`. | Revisit before cloud identity, cross-device saves, valuable campaigns, or multiplayer. | `CURRENT_STATE.md`, `GAME_STATE.md` |
 | DMCL-I04 | A local player has at most one campaign, keyed by player ID. | Product rule remains TBD. | `CURRENT_STATE.md`, `GAME_STATE.md` |
-| DMCL-I05 | The current save is `GameSave` version 3 inside `GameRegistry` version 1. | Preserve through migrations until explicitly superseded. | `CURRENT_STATE.md`, `GAME_STATE.md` |
+| DMCL-I05 | The current save is `GameSave` version 4 inside `GameRegistry` version 1; version 4 adds only the authoritative campaign RNG seed. | Preserve version-2/version-3 campaigns through the E02-T06 migration and retain the registry container until explicitly superseded. | `GAME_STATE.md`, `E02-T06_DETERMINISTIC_CAMPAIGN_RNG.md` |
 | DMCL-I06 | One pure six-board descriptor/availability policy drives legal navigation and one React registry binds components. Dungeon and Settlement are real prototype boards; Hero, World, Combat, and Diplomacy are enabled architectural foundations, and Settlement retains its campaign unlock. | Revisit scaffold availability when each later Epic establishes real entry rules. | `ARCHITECTURE.md`, `E01-T04_TYPED_BOARD_CATALOG.md`, `E01-T05_EMPTY_BOARD_SCAFFOLD.md`, `E02-T04_NAMED_VALIDATED_TRANSITIONS.md` |
 | DMCL-I07 | Skill trees are centralized typed content, and current Hero class/vocation attribute bonuses plus totals have one pure selector authority; broader Hero-foundation display/content remains board-local. | Revisit the remaining Hero content when EPIC 04 approves and scopes its foundation catalog. | `CONTENT_MODEL.md`, `E02-T05_SELECTORS_AND_DERIVED_STATE.md` |
 | DMCL-I08 | Game content is authored in TypeScript; no external content loader/schema/editor exists. | TypeScript is accepted for the prototype until a concrete externalization need exists. | `CONTENT_MODEL.md` |
@@ -101,6 +101,14 @@ The project owner accepted the E02-T03 Candidate and necessary sequence correcti
 | ID | Status | Decision | Reason/constraint | Responsible source |
 |---|---|---|---|---|
 | DMCL-P24 | **Accepted** | Complete E02-T03 as the bounded identity task and make E02-T04 the named validated transition/application layer for current Hero Setup, Dungeon movement/discovery/Heart reach, Settlement claim, and legal board navigation. Keep the unimplemented clock/gameplay-seed isolation explicit and unscheduled until a later bounded task places it. | Preserves the owner-defined immediate task while avoiding a false claim that the narrower E02-T03 completed clock/RNG work. It supersedes DMCL-P22 task numbering only, not the accepted engine, dependency, or compatibility requirements. | `ROADMAP.md`, `E02-T03_STABLE_ENTITY_AND_ID_SYSTEM.md`, `E02-T04_NAMED_VALIDATED_TRANSITIONS.md` |
+
+## E02-T06 campaign RNG decision
+
+The project owner explicitly selected the deterministic campaign-RNG foundation as E02-T06 on 2026-08-10.
+
+| ID | Status | Decision | Reason/constraint | Responsible source |
+|---|---|---|---|---|
+| DMCL-P25 | **Accepted** | Add one persisted unsigned 32-bit `campaignSeed`, migrate `GameSave` from version 3 to version 4, obtain new seeds through infrastructure entropy separate from `IdSource`, and require explicit seeds for the unchanged deterministic Dungeon generator. Existing version-2/version-3 saves adopt their stored Dungeon seed without regenerating the stored Dungeon snapshot. | Establishes the smallest current deterministic authority while preserving all existing campaign facts and avoiding speculative streams, counters, or future random mechanics. | `ARCHITECTURE.md`, `GAME_STATE.md`, `E02-T06_DETERMINISTIC_CAMPAIGN_RNG.md` |
 
 ## Foundation proposals resolved by E00-T05
 
@@ -178,6 +186,6 @@ Use a full standalone ADR only when a decision needs alternatives, extensive evi
 
 ## Current approval position
 
-EPIC 01 is complete. DMCL-P01–P13, DMCL-P16–P21, and DMCL-P23–P24 are accepted; DMCL-P14/P15 remain historical superseded proposals, and DMCL-P22's task sequence is superseded by DMCL-P24. EPIC 02 is Current, E02-T01 through E02-T05 are accepted, and E02-T06 is active.
+EPIC 01 is complete. DMCL-P01–P13, DMCL-P16–P21, and DMCL-P23–P25 are accepted; DMCL-P14/P15 remain historical superseded proposals, and DMCL-P22's task sequence is superseded by DMCL-P24. EPIC 02 is Current, E02-T01 through E02-T05 are accepted, and E02-T06 is active.
 
-E02-T02 implemented the v3-preserving `CampaignState` boundary and dependency-free engine tests authorized by DMCL-P19–P21. DMCL-P23 records the accepted bounded E02-T03 identity policy, DMCL-P24 authorized the accepted E02-T04 transition layer, and E02-T05 implemented the accepted concrete selector boundary without changing the stored-snapshot classification. E02-T06 is the active deterministic campaign-RNG task; clock isolation remains unimplemented and unscheduled.
+E02-T02 implemented the original v3-preserving `CampaignState` boundary and dependency-free engine tests authorized by DMCL-P19–P21. DMCL-P23 records the accepted bounded E02-T03 identity policy, DMCL-P24 authorized the accepted E02-T04 transition layer, and E02-T05 implemented the accepted concrete selector boundary. DMCL-P25 authorizes the active E02-T06 version-4 campaign-seed migration; clock isolation remains unimplemented and unscheduled.

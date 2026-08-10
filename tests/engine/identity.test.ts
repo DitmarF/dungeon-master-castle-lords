@@ -19,6 +19,11 @@ import {
 } from "../../src/game/createGame.ts";
 import { completeHeroSetup } from "../../src/game/transitions.ts";
 import { systemIdSource } from "../../src/game/systemIdSource.ts";
+import type { CampaignSeedSource } from "../../src/game/random.ts";
+
+const MIGRATION_SEED_SOURCE: CampaignSeedSource = {
+  nextCampaignSeed: () => 246_810,
+};
 
 function sequenceIdSource(
   values: Record<PersistentIdentityKind, string[]>,
@@ -91,7 +96,7 @@ test("current profile and campaign creation consume only their ID categories", (
   );
 
   const player = createPlayerProfile("  The Red Lord  ", "red", source);
-  const campaign = createNewGame(player.id, source);
+  const campaign = createNewGame(player.id, source, 123_456);
 
   assert.equal(player.id, "player-created-profile");
   assert.equal(player.name, "The Red Lord");
@@ -113,6 +118,7 @@ test("legacy migration preserves existing identity strings without rewriting", (
     },
     "player-registry-fallback",
     source,
+    MIGRATION_SEED_SOURCE,
   );
 
   assert.equal(migrated.id, "Legacy Campaign Label");
@@ -128,7 +134,7 @@ test("identity injection preserves the current creation, setup, and load flow", 
     campaign: ["game-regression"],
   });
   const player = createPlayerProfile("Regression Lord", "blue", source);
-  const campaign = createNewGame(player.id, source);
+  const campaign = createNewGame(player.id, source, 654_321);
   const completion = completeHeroSetup(campaign, {
     faction: "dungeon",
     heroClass: "fighter",
@@ -152,6 +158,7 @@ test("identity injection preserves the current creation, setup, and load flow", 
       player: ["player-unused"],
       campaign: ["game-unused"],
     }),
+    MIGRATION_SEED_SOURCE,
   );
 
   assert.equal(loaded.id, "game-regression");
@@ -161,6 +168,7 @@ test("identity injection preserves the current creation, setup, and load flow", 
   assert.deepEqual(loaded.hero?.position, loaded.dungeon.start);
   assert.deepEqual(loaded.dungeon.tiles, campaign.dungeon.tiles);
   assert.equal(loaded.dungeon.seed, campaign.dungeon.seed);
+  assert.equal(loaded.campaignSeed, campaign.campaignSeed);
   assert.ok(loaded.dungeon.discovered.length > 0);
 });
 

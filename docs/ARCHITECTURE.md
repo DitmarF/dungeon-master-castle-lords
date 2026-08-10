@@ -43,7 +43,7 @@ The audited baseline hierarchy and limitations are documented in `CURRENT_STATE.
 
 ## EPIC 02 core-engine contract
 
-**Accepted through DMCL-P19–P21 and the owner-selected DMCL-P24 sequence on 2026-08-10.** Name the authoritative pure campaign type `CampaignState`, while retaining `GameSave` as the version-3 serialized compatibility name or alias until a separately approved migration changes the runtime shape. `CampaignState` contains only current justified campaign facts and snapshots. `PlayerProfile`, `GameRegistry`, `RuntimeState`, theme/hydration, and board-local presentation state remain outside it.
+**Accepted through DMCL-P19–P21 and the owner-selected DMCL-P24 sequence on 2026-08-10.** Name the authoritative pure campaign type `CampaignState`. E02-T02 retained `GameSave` as the version-3 serialized compatibility alias until a separately approved migration; E02-T06 is that bounded migration and advances the alias to version 4 solely to add the campaign RNG seed. `CampaignState` contains only current justified campaign facts and snapshots. `PlayerProfile`, `GameRegistry`, `RuntimeState`, theme/hydration, and board-local presentation state remain outside it.
 
 The smallest engine surface is:
 
@@ -84,7 +84,15 @@ The Dungeon transition computes destination, walkability, discovery union, posit
 
 E02-T05 establishes `src/game/selectors.ts` as the narrow pure derived-state authority for the current Hero attribute mechanic. It owns the existing Fighter/Strength, Ranger/Perception, Mage/Intellect, General/Leadership, Spy/Agility, and Diplomat/Charisma bonus mappings, the combined path bonus, and total attributes from free allocation plus those bonuses. The selector module imports no React, board, browser, storage, or platform code.
 
-`SetupBoard` derives both path-card bonus copy and the live attribute preview from this authority. `completeHeroSetup` writes the same calculated total into the version-3 Hero snapshot, and `migrateLegacyGame` refreshes that snapshot from the saved class, vocation, and free-allocation facts during existing v2/v3 normalization. This is a concrete selector for a shared calculation, not a universal query layer; board availability remains in its already justified pure navigation policy, and no trivial property selectors were added.
+`SetupBoard` derives both path-card bonus copy and the live attribute preview from this authority. `completeHeroSetup` writes the same calculated total into the stored Hero snapshot, and `migrateLegacyGame` refreshes that snapshot from the saved class, vocation, and free-allocation facts during supported save normalization. This is a concrete selector for a shared calculation, not a universal query layer; board availability remains in its already justified pure navigation policy, and no trivial property selectors were added.
+
+### E02-T06 implemented campaign RNG boundary
+
+E02-T06 establishes `src/game/random.ts` as the small pure randomness contract. It defines a validated unsigned 32-bit `CampaignSeed`, a stateful `RandomSource` returned from an explicit seed, and the integer helper required by the current Dungeon generator. It does not define global state, future-system streams, counters, or random gameplay commands.
+
+`CampaignState`/`GameSave` version 4 adds exactly one `campaignSeed` stored fact. New campaigns obtain it from `systemCampaignSeedSource` at the application edge; the current initial Dungeon uses that same seed because it is the only implemented random game system. `IdSource` and `systemIdSource` remain independent and cannot consume or advance gameplay RNG.
+
+`createDungeonLevel` now requires an explicit seed and reuses the unchanged Mulberry32 algorithm through the pure contract. Supported version-2/version-3 campaigns migrate by adopting their already-stored Dungeon seed as `campaignSeed`; their persisted Dungeon result remains authoritative and is never regenerated. The system seed adapter uses platform entropy only to create a new campaign fact and imports no identity contract. Clock isolation remains separate unscheduled work.
 
 ### Accepted board-policy correction
 

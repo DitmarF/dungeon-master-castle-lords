@@ -13,6 +13,12 @@ import {
 import { CLASS_SKILL } from "./transitions.ts";
 import { selectHeroAttributes } from "./selectors.ts";
 import {
+  isCampaignSeed,
+  requireCampaignSeed,
+  type CampaignSeed,
+  type CampaignSeedSource,
+} from "./random.ts";
+import {
   SKILL_BY_ID,
   normalizeSkillRanks,
 } from "./skillTrees.ts";
@@ -34,19 +40,22 @@ export function createPlayerProfile(
 export function createNewGame(
   playerId: PlayerId,
   idSource: IdSource,
+  campaignSeed: CampaignSeed,
+  createdAt = new Date().toISOString(),
 ): GameSave {
-  const now = new Date().toISOString();
+  const seed = requireCampaignSeed(campaignSeed);
 
   return {
-    version: 3,
+    version: 4,
     id: createCampaignId(idSource),
     playerId,
-    createdAt: now,
-    updatedAt: now,
+    campaignSeed: seed,
+    createdAt,
+    updatedAt: createdAt,
     activeBoardId: "setup",
     setupComplete: false,
     hero: null,
-    dungeon: createDungeonLevel(),
+    dungeon: createDungeonLevel(seed),
   };
 }
 
@@ -54,33 +63,46 @@ export function migrateLegacyGame(
   value: unknown,
   playerId: string,
   idSource: IdSource,
+  campaignSeedSource: CampaignSeedSource,
 ): GameSave {
   if (value && typeof value === "object") {
     const candidate = value as { version?: unknown; dungeon?: unknown };
     if (
-      (candidate.version === 2 || candidate.version === 3) &&
+      (candidate.version === 2 ||
+        candidate.version === 3 ||
+        candidate.version === 4) &&
       candidate.dungeon &&
       typeof candidate.dungeon === "object" &&
       "tiles" in candidate.dungeon
     ) {
-      const current = value as GameSave & { version: number };
-      if (!current.hero) return { ...current, version: 3 };
+      const current = value as Omit<GameSave, "version" | "campaignSeed"> & {
+        version: 2 | 3 | 4;
+        campaignSeed?: unknown;
+      };
+      const campaignSeed = isCampaignSeed(current.campaignSeed)
+        ? current.campaignSeed
+        : requireCampaignSeed(current.dungeon.seed);
+      const normalized: GameSave = {
+        ...current,
+        version: 4,
+        campaignSeed,
+      };
+      if (!normalized.hero) return normalized;
 
-      const bonusSkill = SKILL_BY_ID[current.hero.bonusSkill]
-        ? current.hero.bonusSkill
-        : CLASS_SKILL[current.hero.heroClass];
+      const bonusSkill = SKILL_BY_ID[normalized.hero.bonusSkill]
+        ? normalized.hero.bonusSkill
+        : CLASS_SKILL[normalized.hero.heroClass];
 
       // Rebuild derived attributes from the saved choices so rules fixes also
       // repair existing campaigns, while the skill normalizer adds the new
       // branch nodes without changing already learned ranks.
       return {
-        ...current,
-        version: 3,
+        ...normalized,
         hero: {
-          ...current.hero,
+          ...normalized.hero,
           bonusSkill,
-          attributes: selectHeroAttributes(current.hero),
-          skills: normalizeSkillRanks(current.hero.skills),
+          attributes: selectHeroAttributes(normalized.hero),
+          skills: normalizeSkillRanks(normalized.hero.skills),
         },
       };
     }
@@ -95,7 +117,11 @@ export function migrateLegacyGame(
     // Legacy saves predate runtime ID validation. Retain their exact strings;
     // only newly generated identities must satisfy the current convention.
     const retainedPlayerId = (legacy.playerId ?? playerId) as PlayerId;
-    const migrated = createNewGame(retainedPlayerId, idSource);
+    const migrated = createNewGame(
+      retainedPlayerId,
+      idSource,
+      campaignSeedSource.nextCampaignSeed(),
+    );
     return {
       ...migrated,
       id: (legacy.id as CampaignId | undefined) ?? migrated.id,
@@ -110,5 +136,9 @@ export function migrateLegacyGame(
     };
   }
 
-  return createNewGame(playerId as PlayerId, idSource);
+  return createNewGame(
+    playerId as PlayerId,
+    idSource,
+    campaignSeedSource.nextCampaignSeed(),
+  );
 }

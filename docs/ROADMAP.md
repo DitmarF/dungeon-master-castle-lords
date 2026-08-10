@@ -37,7 +37,7 @@ Status: **Next — exactly one**
 
 Goal: introduce the smallest explicit campaign-level deterministic randomness foundation while preserving every existing generated Dungeon snapshot and keeping identity entropy separate from gameplay RNG.
 
-The task starts from the accepted E02-T05 checkpoint and the randomness/state policy in the accepted [E02-T01 audit](./E02-T01_CORE_ENGINE_CONTRACT_AUDIT.md). It covers one authoritative campaign seed, an application/infrastructure entropy boundary for new campaigns, deterministic current Dungeon creation from explicit inputs, a compatibility migration that never regenerates existing Dungeon snapshots, and a current-code `Math.random()` audit.
+The bounded scope is defined in [E02-T06_DETERMINISTIC_CAMPAIGN_RNG.md](./E02-T06_DETERMINISTIC_CAMPAIGN_RNG.md) and starts from the accepted E02-T05 checkpoint plus the randomness/state policy in the accepted [E02-T01 audit](./E02-T01_CORE_ENGINE_CONTRACT_AUDIT.md). It covers one authoritative campaign seed, an application/infrastructure entropy boundary for new campaigns, deterministic current Dungeon creation from explicit inputs, a compatibility migration that never regenerates existing Dungeon snapshots, and a current-code `Math.random()` audit.
 
 Non-goals include combat, loot, weather, AI, diplomacy, events, World generation, separate random streams/counters, multiplayer simulation, cryptographic gameplay requirements, UI redesign, new dependencies, and deployment.
 
