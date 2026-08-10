@@ -1,6 +1,8 @@
 "use client";
 
+import { useState } from "react";
 import { useGame } from "../game/GameProvider";
+import { DeveloperStateInspector } from "./DeveloperStateInspector";
 import { GameIcon } from "./GameIcon";
 import { ModalOverlay } from "./ModalOverlay";
 
@@ -10,11 +12,17 @@ interface SettingsSheetProps {
 
 export function SettingsSheet({ onClose }: SettingsSheetProps) {
   const {
+    activeGame,
     darkMode,
     themePreference,
     setDarkMode,
     useSystemTheme,
   } = useGame();
+  const [developerInspectorOpen, setDeveloperInspectorOpen] = useState(false);
+
+  if (developerInspectorOpen && activeGame) {
+    return <DeveloperStateInspector onClose={onClose} />;
+  }
 
   return (
     <ModalOverlay
@@ -65,6 +73,26 @@ export function SettingsSheet({ onClose }: SettingsSheetProps) {
             <strong>{darkMode ? "On" : "Off"}</strong>
           </button>
         </div>
+
+        {import.meta.env.DEV && activeGame ? (
+          <button
+            type="button"
+            className="settings-option settings-option--action"
+            onClick={() => setDeveloperInspectorOpen(true)}
+            aria-haspopup="dialog"
+          >
+            <span className="settings-option__icon">
+              <GameIcon name="grid" size={20} />
+            </span>
+            <span className="settings-option__copy">
+              <strong>Campaign state inspector</strong>
+              <small>
+                Read-only authoritative state and deterministic context.
+              </small>
+            </span>
+            <span className="settings-option__action-label">Inspect</span>
+          </button>
+        ) : null}
 
         <footer className="settings-sheet__footer">
           <span>

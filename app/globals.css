@@ -2713,6 +2713,23 @@ button.game-slot {
   background: var(--surface-muted);
 }
 
+.settings-option--action {
+  width: 100%;
+  color: inherit;
+  cursor: pointer;
+  text-align: left;
+}
+
+.settings-option--action:hover {
+  border-color: color-mix(in srgb, var(--fs-action-primary) 42%, var(--border-soft));
+}
+
+.settings-option__action-label {
+  color: var(--fs-action-primary);
+  font: var(--font-weight-bold) 0.58rem/1 var(--font-mono);
+  text-transform: uppercase;
+}
+
 .settings-option__icon {
   width: 38px;
   height: 38px;
@@ -2816,6 +2833,147 @@ button.game-slot {
   cursor: pointer;
   font-size: 0.66rem;
   font-weight: var(--font-weight-semibold);
+}
+
+.developer-inspector {
+  display: grid;
+  align-content: start;
+  gap: var(--space-md);
+}
+
+.developer-inspector__actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-xs);
+}
+
+.developer-inspector__actions button {
+  min-height: 44px;
+  padding: 0 var(--space-sm);
+  border: 1px solid color-mix(in srgb, var(--fs-action-primary) 38%, var(--border-soft));
+  border-radius: var(--radius-sm);
+  color: var(--fs-action-primary);
+  background: color-mix(in srgb, var(--fs-action-primary) 8%, var(--surface-muted));
+  cursor: pointer;
+  font-size: 0.68rem;
+  font-weight: var(--font-weight-semibold);
+}
+
+.developer-inspector__copy-status,
+.developer-inspector__empty {
+  margin: 0;
+  color: var(--fs-content-elevation-1);
+  font-size: 0.66rem;
+  line-height: var(--line-height-normal);
+}
+
+.developer-inspector__section {
+  display: grid;
+  gap: var(--space-xs);
+  padding-top: var(--space-sm);
+  border-top: 1px solid var(--border-soft);
+}
+
+.developer-inspector__section h3 {
+  margin: 0;
+  font-size: var(--font-size-sm);
+}
+
+.developer-inspector__section-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-sm);
+}
+
+.developer-inspector__section-heading span {
+  color: var(--fs-content-elevation-1);
+  font: var(--font-weight-semibold) 0.54rem/1 var(--font-mono);
+  text-transform: uppercase;
+}
+
+.developer-inspector__facts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+  margin: 0;
+}
+
+.developer-inspector__facts > div {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+  padding: var(--space-xs);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-sm);
+  background: var(--surface-muted);
+}
+
+.developer-inspector__facts dt,
+.developer-inspector__attributes dt {
+  color: var(--fs-content-elevation-1);
+  font: var(--font-weight-semibold) 0.52rem/1 var(--font-mono);
+  text-transform: uppercase;
+}
+
+.developer-inspector__facts dd {
+  overflow-wrap: anywhere;
+  margin: 0;
+  font: var(--font-weight-semibold) 0.67rem/1.35 var(--font-mono);
+}
+
+.developer-inspector__attributes {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+  margin: 0;
+}
+
+.developer-inspector__attributes > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-xs);
+  padding: var(--space-xs);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-sm);
+  background: var(--surface-muted);
+}
+
+.developer-inspector__attributes dd {
+  margin: 0;
+  color: var(--fs-action-primary);
+  font: var(--font-weight-bold) 0.78rem/1 var(--font-mono);
+}
+
+.developer-inspector__json {
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-sm);
+  background: var(--surface-muted);
+}
+
+.developer-inspector__json summary {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  padding: 0 var(--space-sm);
+  cursor: pointer;
+  color: var(--fs-action-primary);
+  font-size: 0.68rem;
+  font-weight: var(--font-weight-semibold);
+}
+
+.developer-inspector__json pre {
+  max-height: min(42dvh, 420px);
+  overflow: auto;
+  margin: 0;
+  padding: var(--space-sm);
+  border-top: 1px solid var(--border-soft);
+  color: var(--fs-content-primary);
+  font: 0.62rem/1.45 var(--font-mono);
+  tab-size: 2;
+  white-space: pre;
+  overscroll-behavior: contain;
 }
 
 .hero-sheet-backdrop {
@@ -3095,6 +3253,10 @@ button.game-slot {
   .movement-buttons button {
     width: 38px;
     height: 42px;
+  }
+
+  .developer-inspector__facts {
+    grid-template-columns: 1fr;
   }
 }
 

@@ -94,6 +94,14 @@ E02-T06 establishes `src/game/random.ts` as the small pure randomness contract. 
 
 `createDungeonLevel` now requires an explicit seed and reuses the unchanged Mulberry32 algorithm through the pure contract. Supported version-2/version-3 campaigns migrate by adopting their already-stored Dungeon seed as `campaignSeed`; their persisted Dungeon result remains authoritative and is never regenerated. The system seed adapter uses platform entropy only to create a new campaign fact and imports no identity contract. Clock isolation remains separate unscheduled work.
 
+### E02-T07 developer inspector boundary
+
+E02-T07 adds one view-layer `DeveloperStateInspector` behind `import.meta.env.DEV` in the existing Settings sheet. Settings is already reachable from Hero Setup and every in-campaign `GameShell`, so no debug board, navigation entry, provider operation, or second overlay architecture is introduced. Production Settings does not render the entry.
+
+The inspector reads the current `activeGame` working copy and calls `selectHeroAttributes` for current Hero totals. It serializes that same campaign object for read-only JSON and offers only browser clipboard writes for the campaign seed and JSON text. It does not import transitions, storage, identity/RNG sources, or any unrestricted mutation API.
+
+Inspector-open state and copy feedback are component-local UI state. The shared `ModalOverlay` continues to own focus containment, Escape/backdrop closing, body-scroll containment, and focus restoration. No debug state enters `CampaignState`, `RuntimeState`, `GameRegistry`, or persistence.
+
 ### Accepted board-policy correction
 
 Before E02-T04, the application/state layer imported `RegisteredBoardId` from `src/boards/registry.ts`, which also imported React component types and every board implementation. Settlement unlock and active-board fallback policy were therefore unavailable to application code without depending on the board/view layer. Shared `BoardNavigation` also imported a board-layer context and registry types.

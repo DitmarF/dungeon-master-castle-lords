@@ -37,7 +37,7 @@ Status: **Next — exactly one**
 
 Goal: add a small development-only, read-only inspector for the current authoritative campaign state and deterministic context without exposing arbitrary mutation or inventing gameplay controls.
 
-The task starts from the accepted E02-T06 checkpoint and current campaign-state, transition, selector, and RNG contracts. It covers a development-only access path using the existing overlay foundation, current campaign/Dungeon/Hero facts, selector-derived Hero attributes, raw read-only JSON, and optional copy actions.
+The bounded scope is defined in [E02-T07_DEVELOPER_STATE_INSPECTOR.md](./E02-T07_DEVELOPER_STATE_INSPECTOR.md) and starts from the accepted E02-T06 checkpoint plus the current campaign-state, transition, selector, and RNG contracts. It covers a development-only access path using the existing overlay foundation, current campaign/Dungeon/Hero facts, selector-derived Hero attributes, raw read-only JSON, and optional copy actions.
 
 Non-goals include a state editor, generic campaign mutation, arbitrary JSON import, gameplay cheats, controls for unimplemented systems, a devtools framework, production analytics, UI redesign, new dependencies, and deployment.
 

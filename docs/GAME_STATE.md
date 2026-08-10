@@ -179,6 +179,12 @@ For a new campaign, the application obtains `campaignSeed` from a dedicated infr
 
 Migration from supported version-2/version-3 saves sets `campaignSeed` to the already-persisted `dungeon.seed`. This is an explicit compatibility assignment, not an attempt to reconstruct campaign history: the stored Dungeon grid, rooms, tiles, start, Heart, Hero position, discovery, Heart-reached state, and settlement claim remain untouched and authoritative. Version-4 normalization also retains the stored Dungeon snapshot. A future generator version/seed-versus-snapshot policy remains open.
 
+### E02-T07 read-only inspection policy
+
+The development-only campaign inspector is a consumer of campaign truth, not a state owner. It reads the current application working copy, derives current Hero attributes through `selectHeroAttributes`, and formats raw JSON directly from that same object. It has no edit/import/transition/storage API and cannot create a competing campaign representation.
+
+Whether the inspector is open and its temporary clipboard result message are UI-only component state. They are not stored in `CampaignState`, `RuntimeState`, `GameRegistry`, theme preference, or browser persistence. Copying seed/JSON changes only the platform clipboard and has no game-state consequence.
+
 ## Established future campaign categories
 
 The approved concept requires the central campaign eventually to represent the consequences of the three connected loops. The following are **established categories**, not approved field schemas or mechanics:
