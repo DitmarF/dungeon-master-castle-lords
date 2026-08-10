@@ -31,17 +31,17 @@ Accepted constraints carried forward include one authoritative campaign state, v
 
 ## Current Next Task
 
-### E02-T06 — Deterministic campaign RNG foundation
+### E02-T07 — Developer/debug state inspector
 
 Status: **Next — exactly one**
 
-Goal: introduce the smallest explicit campaign-level deterministic randomness foundation while preserving every existing generated Dungeon snapshot and keeping identity entropy separate from gameplay RNG.
+Goal: add a small development-only, read-only inspector for the current authoritative campaign state and deterministic context without exposing arbitrary mutation or inventing gameplay controls.
 
-The bounded scope is defined in [E02-T06_DETERMINISTIC_CAMPAIGN_RNG.md](./E02-T06_DETERMINISTIC_CAMPAIGN_RNG.md) and starts from the accepted E02-T05 checkpoint plus the randomness/state policy in the accepted [E02-T01 audit](./E02-T01_CORE_ENGINE_CONTRACT_AUDIT.md). It covers one authoritative campaign seed, an application/infrastructure entropy boundary for new campaigns, deterministic current Dungeon creation from explicit inputs, a compatibility migration that never regenerates existing Dungeon snapshots, and a current-code `Math.random()` audit.
+The task starts from the accepted E02-T06 checkpoint and current campaign-state, transition, selector, and RNG contracts. It covers a development-only access path using the existing overlay foundation, current campaign/Dungeon/Hero facts, selector-derived Hero attributes, raw read-only JSON, and optional copy actions.
 
-Non-goals include combat, loot, weather, AI, diplomacy, events, World generation, separate random streams/counters, multiplayer simulation, cryptographic gameplay requirements, UI redesign, new dependencies, and deployment.
+Non-goals include a state editor, generic campaign mutation, arbitrary JSON import, gameplay cheats, controls for unimplemented systems, a devtools framework, production analytics, UI redesign, new dependencies, and deployment.
 
-The project owner accepted E02-T05 on 2026-08-10 and reported all requested tests, verifications, Hero Setup checks, and save/load behavior passing. E02-T06 must preserve loaded Dungeon maps, Hero position, discovery, Heart state, settlement claim, and current gameplay while introducing no speculative random system.
+The project owner accepted E02-T06 on 2026-08-10 and reported all requested tests, verifications, existing-save migration checks, and new-campaign behavior passing. E02-T07 must remain read-only, consume the current selector authority, preserve normal gameplay when closed, and introduce no gameplay state or operation.
 
 ## Epic registry
 
@@ -87,7 +87,7 @@ E01-T01 through E01-T07 established and verified:
 - portable bounded verification through accepted DMCL-P18 and a verification-only GitHub Actions workflow;
 - owner-reported PASS results for all required desktop, portrait, interaction, accessibility, campaign-regression, and physical-smartphone exit checks.
 
-The project owner accepted E01-T07 and EPIC 01 on 2026-08-09. The matching pushed/Sites checkpoint is completed through the normal workflow without deployment. EPIC 02 is Current; E02-T01 through E02-T05 were accepted on 2026-08-10, and E02-T06 is the exact next task.
+The project owner accepted E01-T07 and EPIC 01 on 2026-08-09. The matching pushed/Sites checkpoint is completed through the normal workflow without deployment. EPIC 02 is Current; E02-T01 through E02-T06 were accepted on 2026-08-10, and E02-T07 is the exact next task.
 
 ## E02-T01 closure
 
@@ -153,6 +153,18 @@ E02-T05 established and verified:
 
 The project owner accepted E02-T05 on 2026-08-10 and reported all requested tests, verifications, Hero Setup checks, and save/load behavior passing. Its matching non-deployed source/Sites checkpoint is completed before E02-T06 implementation begins.
 
+## E02-T06 closure
+
+E02-T06 established and verified:
+
+- one authoritative persisted unsigned 32-bit campaign seed and a small pure deterministic random-source contract;
+- explicit new-campaign seed entropy at an infrastructure boundary separate from identity generation;
+- the unchanged current Dungeon algorithm consuming an explicit seed with same-seed reproducibility;
+- deliberate version-2/version-3 to version-4 migration that adopts the stored Dungeon seed without regenerating or changing stored Dungeon/progress facts;
+- removal of uncontrolled gameplay `Math.random()` use without speculative streams, counters, or future random mechanics.
+
+The project owner accepted E02-T06 on 2026-08-10 and reported all requested tests, verifications, migration checks, and new-campaign behavior passing. Its matching non-deployed source/Sites checkpoint is completed before E02-T07 implementation begins.
+
 ## EPIC 00 closure
 
 E00-T05 reconciles the project contract by:
@@ -177,12 +189,12 @@ E00-T05 was accepted by the project owner on 2026-08-09, completing EPIC 00. Its
 - Every accepted task updates this file with the current Epic status and exactly one next task.
 - Normal tasks save an accepted Sites version but do not deploy. Deployment requires separate explicit user instruction.
 
-## Deferred decisions that do not block E02-T06
+## Deferred decisions that do not block E02-T07
 
 - exact gameplay formulas, balance, thresholds, costs, and progression values;
 - final player/account/cloud/offline/multiplayer authority model;
 - unfinished setup and other draft persistence;
-- placement of still-unimplemented clock isolation; E02-T06 addresses only the approved campaign gameplay-seed boundary;
+- placement of still-unimplemented clock isolation;
 - exact effect vocabulary until an approved mechanic needs it;
 - localization, mod/content-pack, and remote-content requirements;
 - detailed tasks, formulas, readiness criteria, and exit criteria for future Epics; define these through bounded planning before each Epic is activated.

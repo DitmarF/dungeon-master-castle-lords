@@ -108,14 +108,15 @@ Introduce one explicit persisted campaign seed and a small pure deterministic ra
 
 ### User acceptance
 
-- Status: Candidate awaiting explicit owner acceptance
-- Accepted by/date: pending explicit acceptance
+- Status: **Accepted**
+- Accepted by/date: project owner, 2026-08-10
+- Owner-reported verification: all requested tests, verifications, existing-save migration checks, and new-campaign behavior passed; the implementation works as intended
 
 ### Accepted checkpoint
 
-- Final commit SHA: pending acceptance
-- Pushed source branch: `main` after acceptance
-- Saved Sites version: pending acceptance
-- Roadmap status: E02-T06 remains active until acceptance and checkpoint completion
-- Next task: pending owner acceptance and bounded roadmap definition
+- Final commit SHA: recorded in the checkpoint handoff after the acceptance metadata commit
+- Pushed source branch: `main`
+- Saved Sites version: recorded in the checkpoint handoff
+- Roadmap status: E02-T06 accepted/complete; EPIC 02 remains current
+- Next task: `E02-T07 — Developer/debug state inspector`
 - Deployment: **Not performed**
