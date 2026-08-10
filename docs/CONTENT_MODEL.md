@@ -2,7 +2,7 @@
 
 Status: source of truth for game-content ownership and extension principles  
 Scope: how authored definitions relate to rules, presentation, and campaign instances  
-Last updated: 2026-08-09
+Last updated: 2026-08-10
 
 ## Purpose and authority
 
@@ -43,9 +43,11 @@ Skill descriptions are currently presentation text; most described effects are n
 
 **Implemented through E02-T04:** `src/game/navigation.ts` owns the six stable board IDs, ordered non-React descriptors, enabled state, and campaign unlock policy. `src/boards/registry.ts` binds the existing React components over those definitions without becoming a second metadata or navigation-rule authority.
 
-### Distributed or duplicated content
+### Hero attribute rule definitions
 
-**Observed after E02-T04:** Faction, class, vocation, and attribute display definitions remain embedded in `SetupBoard`; their broader content consolidation is not part of the transition task. Mechanical path bonuses, initial root skills, legal bonus-skill eligibility, calculated attributes, and setup validation now have one authoritative pure definition in `transitions.ts`, consumed by the board and migration normalization. Some presentation labels/icons still parallel skill-tree content and remain later bounded content work.
+**Implemented through E02-T05:** `src/game/selectors.ts` is the one current authority for class/vocation attribute bonus meaning and total Hero attribute calculation. Hero Setup derives its path-card bonus copy and live preview from those typed mappings; setup completion and migration normalization use the same total calculation. The version-3 campaign still stores class, vocation, and free allocation as facts plus total attributes as a compatibility snapshot.
+
+Faction, class, vocation, and attribute names/icons remain presentation definitions in `SetupBoard`; consolidating the complete Hero-foundation catalog belongs to EPIC 04, not this bounded selector task. Initial root skills, legal bonus-skill eligibility, and setup validation remain current rule definitions in `transitions.ts` and `skillTrees.ts`. No generic content/effect framework was introduced.
 
 **Observed:** Faction-related presentation and banner colors appear in board/UI components. `GameIcon` contains a typed hand-authored icon mapping. Most UI copy and board-specific labels are component-local.
 
@@ -170,7 +172,7 @@ One catalog API does not require one physical file. Content may be split into ma
 
 ## Rules and effects
 
-**Observed:** Current skill descriptions imply mechanics, but there is no general effect-execution system. Hero path bonuses are handwritten conditionals.
+**Observed:** Current skill descriptions imply mechanics, but there is no general effect-execution system. The current Hero path attribute bonuses are a small typed selector mapping, not general executable effects.
 
 **Accepted:** When a concrete approved mechanic needs repeatable effects, represent them through typed effect/requirement definitions interpreted by domain rule handlers. Complex behavior may use a named handler with validated parameters. Views may preview the same authoritative definition but must not independently implement the effect.
 

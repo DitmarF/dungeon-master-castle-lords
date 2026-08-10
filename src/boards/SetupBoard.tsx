@@ -14,9 +14,13 @@ import {
 } from "../game/model";
 import { skillBelongsToTree } from "../game/skillTrees";
 import {
-  getHeroPathBonus,
-  validateHeroSetupSelection,
-} from "../game/transitions";
+  selectHeroAttributes,
+  selectHeroClassAttributeBonus,
+  selectHeroPathBonus,
+  selectHeroVocationAttributeBonus,
+  type HeroAttributeBonus,
+} from "../game/selectors";
+import { validateHeroSetupSelection } from "../game/transitions";
 import { Crest } from "../ui/Crest";
 import { GameIcon, type IconName } from "../ui/GameIcon";
 import { ActionButton, ProgressBar } from "../ui/GamePrimitives";
@@ -46,28 +50,24 @@ const FACTIONS: {
 const CLASSES: {
   id: HeroClass;
   name: string;
-  bonus: string;
   skill: string;
   icon: IconName;
 }[] = [
   {
     id: "fighter",
     name: "Fighter",
-    bonus: "+1 Strength",
     skill: "Close Combat",
     icon: "shield",
   },
   {
     id: "ranger",
     name: "Ranger",
-    bonus: "+1 Perception",
     skill: "Ranged Combat",
     icon: "target",
   },
   {
     id: "mage",
     name: "Mage",
-    bonus: "+1 Intellect",
     skill: "Mage Combat",
     icon: "spark",
   },
@@ -76,41 +76,47 @@ const CLASSES: {
 const VOCATIONS: {
   id: HeroVocation;
   name: string;
-  bonus: string;
   skill: string;
   icon: IconName;
 }[] = [
   {
     id: "general",
     name: "General",
-    bonus: "+1 Leadership",
     skill: "Tactics",
     icon: "flag",
   },
   {
     id: "spy",
     name: "Spy",
-    bonus: "+1 Agility",
     skill: "Deception",
     icon: "eye",
   },
   {
     id: "diplomat",
     name: "Diplomat",
-    bonus: "+1 Charisma",
     skill: "Diplomacy",
     icon: "message",
   },
 ];
 
-const ATTRIBUTES: { id: AttributeKey; name: string }[] = [
-  { id: "str", name: "Strength" },
-  { id: "agy", name: "Agility" },
-  { id: "per", name: "Perception" },
-  { id: "int", name: "Intellect" },
-  { id: "cha", name: "Charisma" },
-  { id: "lead", name: "Leadership" },
-];
+const ATTRIBUTE_NAMES: Record<AttributeKey, string> = {
+  str: "Strength",
+  agy: "Agility",
+  per: "Perception",
+  int: "Intellect",
+  cha: "Charisma",
+  lead: "Leadership",
+};
+
+const ATTRIBUTES = (Object.keys(ATTRIBUTE_NAMES) as AttributeKey[]).map(
+  (id) => ({ id, name: ATTRIBUTE_NAMES[id] }),
+);
+
+function formatAttributeBonus(bonus: HeroAttributeBonus | null): string {
+  return bonus
+    ? `+${bonus.amount} ${ATTRIBUTE_NAMES[bonus.attribute]}`
+    : "";
+}
 
 export function SetupBoard() {
   const {
@@ -133,9 +139,13 @@ export function SetupBoard() {
     0,
   );
   const remainingPoints = 2 - spentPoints;
-  const bonus = useMemo(
-    () => getHeroPathBonus(heroClass, vocation),
+  const pathBonus = useMemo(
+    () => selectHeroPathBonus(heroClass, vocation),
     [heroClass, vocation],
+  );
+  const previewAttributes = useMemo(
+    () => selectHeroAttributes({ freeAttributes, heroClass, vocation }),
+    [freeAttributes, heroClass, vocation],
   );
   const completedChoices = [faction, heroClass, vocation, bonusSkill].filter(
     Boolean,
@@ -288,7 +298,9 @@ export function SetupBoard() {
                       <small>{attribute.name}</small>
                     </span>
                     <i>
-                      {bonus[attribute.id] ? `+${bonus[attribute.id]} path` : "base"}
+                      {pathBonus[attribute.id]
+                        ? `+${pathBonus[attribute.id]} path`
+                        : "base"}
                     </i>
                     <span className="attribute-stepper">
                       <button
@@ -299,7 +311,7 @@ export function SetupBoard() {
                       >
                         −
                       </button>
-                      <strong>{freeAttributes[attribute.id] + bonus[attribute.id]}</strong>
+                      <strong>{previewAttributes[attribute.id]}</strong>
                       <button
                         type="button"
                         onClick={() => changeAttribute(attribute.id, 1)}
@@ -340,7 +352,11 @@ export function SetupBoard() {
                   >
                     <GameIcon name={item.icon} size={20} />
                     <strong>{item.name}</strong>
-                    <small>{item.bonus}</small>
+                    <small>
+                      {formatAttributeBonus(
+                        selectHeroClassAttributeBonus(item.id),
+                      )}
+                    </small>
                     <em>{item.skill}</em>
                   </button>
                 ))}
@@ -362,7 +378,11 @@ export function SetupBoard() {
                   >
                     <GameIcon name={item.icon} size={20} />
                     <strong>{item.name}</strong>
-                    <small>{item.bonus}</small>
+                    <small>
+                      {formatAttributeBonus(
+                        selectHeroVocationAttributeBonus(item.id),
+                      )}
+                    </small>
                     <em>{item.skill}</em>
                   </button>
                 ))}

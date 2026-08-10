@@ -19,6 +19,7 @@ import {
   navigateToAvailableBoard,
   validateHeroSetupSelection,
 } from "../../src/game/transitions.ts";
+import { selectHeroAttributes } from "../../src/game/selectors.ts";
 
 const VALID_SELECTION: HeroSetupSelection = {
   faction: "dungeon",
@@ -83,6 +84,10 @@ test("legal Hero Setup completes through one validated pure transition", () => {
     cha: 0,
     lead: 1,
   });
+  assert.deepEqual(
+    result.state.hero?.attributes,
+    selectHeroAttributes(VALID_SELECTION),
+  );
   assert.equal(result.state.hero?.skills["close-combat"], 1);
   assert.equal(result.state.hero?.skills.tactics, 1);
   assert.equal(result.state.hero?.skills["heavy-blow"], 1);

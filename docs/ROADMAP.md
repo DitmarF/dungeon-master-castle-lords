@@ -37,7 +37,7 @@ Status: **Next — exactly one**
 
 Goal: establish a small pure selector layer for calculations with duplicated authority, beginning with the current Hero attribute bonuses, totals, and Hero Setup preview.
 
-The task starts from the accepted E02-T04 checkpoint and the stored-versus-derived classification in the accepted [E02-T01 audit](./E02-T01_CORE_ENGINE_CONTRACT_AUDIT.md). Its primary scope is one authoritative calculation for current class bonuses, vocation bonuses, free allocation, persisted Hero attribute totals, and Hero Setup preview. Additional selectors require present shared rule or derivation evidence; trivial property wrappers and speculative future Hero systems remain out of scope.
+The bounded scope is defined in [E02-T05_SELECTORS_AND_DERIVED_STATE.md](./E02-T05_SELECTORS_AND_DERIVED_STATE.md) and starts from the accepted E02-T04 checkpoint plus the stored-versus-derived classification in the accepted [E02-T01 audit](./E02-T01_CORE_ENGINE_CONTRACT_AUDIT.md). Its primary scope is one authoritative calculation for current class bonuses, vocation bonuses, free allocation, persisted Hero attribute totals, and Hero Setup preview. Additional selectors require present shared rule or derivation evidence; trivial property wrappers and speculative future Hero systems remain out of scope.
 
 Non-goals include full Hero foundations or progression, combat-derived stats, skills/equipment/economy, generic effect or selector frameworks, new gameplay or balance values, UI redesign, new dependencies, and deployment.
 

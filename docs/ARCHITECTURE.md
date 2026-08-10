@@ -74,11 +74,17 @@ The provider and browser-storage adapter supply the system identity source to cu
 
 E02-T04 establishes `src/game/transitions.ts` as the small pure boundary for the four current rule-bearing campaign intents: complete Hero Setup, move the Hero inside the current Dungeon, claim the Settlement after reaching the Dungeon Heart, and navigate to an available board. Each transition validates its current-state and input prerequisites and returns a typed success/failure result. The functions do not stamp time, persist, render, or import React/browser/platform code.
 
-The setup transition is now authoritative for the existing two-point allocation, selected path/root skills, legal root-or-tier-1 bonus skill, calculated attributes, initial position/vision/discovery, setup completion, and Dungeon entry. `SetupBoard` consumes the same validation and path-bonus calculation for readiness and preview instead of duplicating rule math. `createGame.ts` retains campaign/profile creation and migration orchestration while reusing the same attribute calculation for existing save normalization.
+The setup transition is now authoritative for the existing two-point allocation, selected path/root skills, legal root-or-tier-1 bonus skill, initial position/vision/discovery, setup completion, and Dungeon entry. It delegates calculated Hero attributes to the E02-T05 selector boundary below. `SetupBoard` consumes the same transition validation for readiness, while setup completion and `createGame.ts` migration normalization consume the same attribute selector.
 
 The Dungeon transition computes destination, walkability, discovery union, position, and historical Heart reach. Settlement claim validates the Heart prerequisite and uses the same legal-navigation policy for the resulting Settlement entry. Boards retain keyboard/touch input, prompts, copy, animation, and other presentation state.
 
 `GameProvider` exposes exactly these named campaign operations and remains responsible for application timestamp stamping plus active-campaign/registry mirroring. The migrated boards no longer receive an unrestricted `updateGame` function; no unrelated lifecycle, storage, theme, or provider responsibility was rewritten.
+
+### E02-T05 implemented selector boundary
+
+E02-T05 establishes `src/game/selectors.ts` as the narrow pure derived-state authority for the current Hero attribute mechanic. It owns the existing Fighter/Strength, Ranger/Perception, Mage/Intellect, General/Leadership, Spy/Agility, and Diplomat/Charisma bonus mappings, the combined path bonus, and total attributes from free allocation plus those bonuses. The selector module imports no React, board, browser, storage, or platform code.
+
+`SetupBoard` derives both path-card bonus copy and the live attribute preview from this authority. `completeHeroSetup` writes the same calculated total into the version-3 Hero snapshot, and `migrateLegacyGame` refreshes that snapshot from the saved class, vocation, and free-allocation facts during existing v2/v3 normalization. This is a concrete selector for a shared calculation, not a universal query layer; board availability remains in its already justified pure navigation policy, and no trivial property selectors were added.
 
 ### Accepted board-policy correction
 

@@ -165,6 +165,12 @@ These pure transitions retain `updatedAt`; application operations in `GameProvid
 
 The four migrated board interactions no longer receive unrestricted whole-campaign mutation. Player/profile creation, campaign create/load, save, return, hydration, theme, and UI-only draft/prompt/map state remain outside this transition set. Clock semantics and gameplay-seed isolation remain pending and are not implied by this implementation.
 
+### E02-T05 implemented Hero-attribute consistency policy
+
+The accepted E02-T01 classification remains unchanged: `heroClass`, `vocation`, and `freeAttributes` are stored facts, while `hero.attributes` is a version-3 stored snapshot of the current derived total. E02-T05 introduces no schema or save-version change.
+
+`src/game/selectors.ts` is the single calculation authority for current class/vocation bonuses and total Hero attributes. Hero Setup preview reads it, successful setup writes its result into `hero.attributes`, and existing v2/v3 migration normalization recomputes the snapshot from the saved facts. The consistency rule is therefore: current writes and loads refresh the stored snapshot through the same selector; consumers may rely on the normalized snapshot without independently interpreting class or vocation rules. Removing the snapshot or changing its authority remains a separately approved migration decision.
+
 ## Established future campaign categories
 
 The approved concept requires the central campaign eventually to represent the consequences of the three connected loops. The following are **established categories**, not approved field schemas or mechanics:

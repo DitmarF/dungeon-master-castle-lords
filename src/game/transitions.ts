@@ -3,7 +3,6 @@ import {
   type CampaignState,
   type CellPosition,
   type FactionType,
-  type HeroAttributes,
   type HeroClass,
   type HeroSetupSelection,
   type HeroVocation,
@@ -18,6 +17,7 @@ import {
   createEmptySkillRanks,
   type SkillId,
 } from "./skillTrees.ts";
+import { selectHeroAttributes } from "./selectors.ts";
 
 export interface TransitionSuccess<Details extends object = object> {
   ok: true;
@@ -49,42 +49,7 @@ const HERO_VOCATIONS: readonly HeroVocation[] = [
   "spy",
   "diplomat",
 ];
-const ATTRIBUTE_KEYS = Object.keys(EMPTY_ATTRIBUTES) as (keyof HeroAttributes)[];
-
-function addAttributes(...sources: HeroAttributes[]): HeroAttributes {
-  const result = { ...EMPTY_ATTRIBUTES };
-  for (const source of sources) {
-    for (const key of ATTRIBUTE_KEYS) result[key] += source[key];
-  }
-  return result;
-}
-
-export function getHeroPathBonus(
-  heroClass: HeroClass | null,
-  vocation: HeroVocation | null,
-): HeroAttributes {
-  return {
-    ...EMPTY_ATTRIBUTES,
-    ...(heroClass === "fighter" ? { str: 1 } : {}),
-    ...(heroClass === "ranger" ? { per: 1 } : {}),
-    ...(heroClass === "mage" ? { int: 1 } : {}),
-    ...(vocation === "general" ? { lead: 1 } : {}),
-    ...(vocation === "spy" ? { agy: 1 } : {}),
-    ...(vocation === "diplomat" ? { cha: 1 } : {}),
-  };
-}
-
-export function calculateHeroAttributes(
-  selection: Pick<
-    HeroSetupSelection,
-    "freeAttributes" | "heroClass" | "vocation"
-  >,
-): HeroAttributes {
-  return addAttributes(
-    selection.freeAttributes,
-    getHeroPathBonus(selection.heroClass, selection.vocation),
-  );
-}
+const ATTRIBUTE_KEYS = Object.keys(EMPTY_ATTRIBUTES) as (keyof typeof EMPTY_ATTRIBUTES)[];
 
 export function isLegalHeroSetupBonusSkill(
   skillId: SkillId,
@@ -182,7 +147,7 @@ export function completeHeroSetup(
       hero: {
         ...selection,
         freeAttributes: { ...selection.freeAttributes },
-        attributes: calculateHeroAttributes(selection),
+        attributes: selectHeroAttributes(selection),
         skills,
         position: { ...campaign.dungeon.start },
         visionRadius: 1,

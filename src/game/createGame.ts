@@ -10,10 +10,8 @@ import {
   type CampaignId,
   type IdSource,
 } from "./identity.ts";
-import {
-  CLASS_SKILL,
-  calculateHeroAttributes,
-} from "./transitions.ts";
+import { CLASS_SKILL } from "./transitions.ts";
+import { selectHeroAttributes } from "./selectors.ts";
 import {
   SKILL_BY_ID,
   normalizeSkillRanks,
@@ -81,7 +79,7 @@ export function migrateLegacyGame(
         hero: {
           ...current.hero,
           bonusSkill,
-          attributes: calculateHeroAttributes(current.hero),
+          attributes: selectHeroAttributes(current.hero),
           skills: normalizeSkillRanks(current.hero.skills),
         },
       };
