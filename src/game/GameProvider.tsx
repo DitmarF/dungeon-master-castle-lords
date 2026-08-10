@@ -11,11 +11,13 @@ import {
   type ReactNode,
 } from "react";
 import { createNewGame, createPlayerProfile } from "./createGame";
+import { systemIdSource } from "./systemIdSource";
 import {
   EMPTY_REGISTRY,
   type GameRegistry,
   type GameSave,
   type PlayerProfile,
+  type PlayerId,
   type RuntimeState,
 } from "./model";
 import { gameStorage } from "./storage";
@@ -44,9 +46,9 @@ function systemUsesDarkMode(): boolean {
 type Action =
   | { type: "hydrate"; registry: GameRegistry }
   | { type: "createPlayer"; player: PlayerProfile }
-  | { type: "selectPlayer"; playerId: string }
-  | { type: "deletePlayer"; playerId: string }
-  | { type: "openGame"; playerId: string; game: GameSave }
+  | { type: "selectPlayer"; playerId: PlayerId }
+  | { type: "deletePlayer"; playerId: PlayerId }
+  | { type: "openGame"; playerId: PlayerId; game: GameSave }
   | { type: "saveGame"; game: GameSave }
   | { type: "navigateToBoard"; boardId: RegisteredBoardId }
   | { type: "updateGame"; updater: (game: GameSave) => GameSave }
@@ -62,7 +64,7 @@ const INITIAL_STATE: RuntimeState = {
 
 function touchPlayer(
   players: PlayerProfile[],
-  playerId: string,
+  playerId: PlayerId,
   timestamp: string,
 ): PlayerProfile[] {
   return players.map((player) =>
@@ -237,10 +239,10 @@ interface GameContextValue {
   setDarkMode: (enabled: boolean) => void;
   useSystemTheme: () => void;
   createPlayer: (name: string, bannerColor: string) => CreatePlayerResult;
-  selectPlayer: (playerId: string) => void;
-  deletePlayer: (playerId: string) => void;
-  startNewGame: (playerId: string) => void;
-  loadGame: (playerId: string) => void;
+  selectPlayer: (playerId: PlayerId) => void;
+  deletePlayer: (playerId: PlayerId) => void;
+  startNewGame: (playerId: PlayerId) => void;
+  loadGame: (playerId: PlayerId) => void;
   saveGame: () => void;
   navigateToBoard: (boardId: RegisteredBoardId) => void;
   updateGame: (updater: (game: GameSave) => GameSave) => void;
@@ -303,7 +305,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
 
       dispatch({
         type: "createPlayer",
-        player: createPlayerProfile(trimmedName, bannerColor),
+        player: createPlayerProfile(trimmedName, bannerColor, systemIdSource),
       });
       return { ok: true };
     },
@@ -322,7 +324,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
     dispatch({
       type: "openGame",
       playerId,
-      game: createNewGame(playerId),
+      game: createNewGame(playerId, systemIdSource),
     });
   }, []);
 

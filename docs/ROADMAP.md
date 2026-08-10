@@ -31,17 +31,17 @@ Accepted constraints carried forward include one authoritative campaign state, v
 
 ## Current Next Task
 
-### E02-T03 — Isolate clock, identity, and deterministic campaign creation inputs
+### E02-T03 — Stable entity and ID system
 
 Status: **Next — exactly one**
 
-Goal: remove hidden time, player/campaign identity, and gameplay-seed generation from campaign creation paths by supplying the smallest accepted explicit inputs, while preserving current IDs, timestamps, dungeon outcomes, saves, and visible behavior.
+Goal: establish the smallest explicit identity policy and implementation for current persistent player/campaign instances while keeping content-definition IDs and spatial/derived keys distinct and preserving every existing persisted ID.
 
-Expected scope must be defined with [TASK_TEMPLATE.md](./TASK_TEMPLATE.md) before implementation and start from the accepted [E02-T01 audit](./E02-T01_CORE_ENGINE_CONTRACT_AUDIT.md) and E02-T02 checkpoint. It should introduce only the accepted `Clock`, `IdSource`, and deterministic gameplay-seed input needed by current creation/migration paths, extend focused engine tests, and keep platform implementations at the application/infrastructure edge.
+The bounded scope is defined in [E02-T03_STABLE_ENTITY_AND_ID_SYSTEM.md](./E02-T03_STABLE_ENTITY_AND_ID_SYSTEM.md) and starts from the accepted [E02-T01 audit](./E02-T01_CORE_ENGINE_CONTRACT_AUDIT.md) and E02-T02 checkpoint. It introduces explicit `PlayerId`, `CampaignId`, and `IdSource` contracts for current creation paths, retains the established `player-…`/`game-…` values, and extends focused engine tests.
 
-Non-goals include transition extraction assigned to E02-T04–T07, a global RNG service, universal entity IDs, save-schema changes, cloud/multiplayer authority, broad `GameProvider` refactoring, UI changes, new dependencies, and deployment.
+Non-goals include future hero/settlement/region/army/unit/item identities, a generic entity framework, clock or gameplay-RNG/seed extraction, transition extraction, save-schema changes, cloud/multiplayer authority, broad `GameProvider` refactoring, UI changes, new dependencies, and deployment.
 
-The project owner accepted E02-T02 on 2026-08-10 and confirmed its campaign regression checks pass. The owner also reaffirmed the accepted DMCL-P20 identity-source direction for E02-T03. E02-T03 is the sole next task and has not begun.
+The project owner accepted E02-T02 on 2026-08-10 and explicitly approved the E02-T03 identity-source policy. E02-T03 is the sole current task. Because this owner-defined task is narrower than the previously combined DMCL-P22 clock/identity/gameplay-seed step, the minimum remaining sequence correction must be presented for owner approval with the Candidate; no later task begins implicitly.
 
 ## Epic registry
 

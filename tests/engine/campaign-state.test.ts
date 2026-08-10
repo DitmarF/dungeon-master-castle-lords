@@ -10,6 +10,13 @@ import type {
 import { migrateLegacyGame } from "../../src/game/createGame.ts";
 import { createDungeonLevel } from "../../src/game/generateDungeon.ts";
 import { ALL_SKILLS } from "../../src/game/skillTrees.ts";
+import type { IdSource } from "../../src/game/identity.ts";
+
+const MIGRATION_ID_SOURCE: IdSource = {
+  next(kind) {
+    return kind === "player" ? "player-migration" : "game-migration";
+  },
+};
 
 const ZERO_ATTRIBUTES: HeroAttributes = {
   str: 0,
@@ -63,7 +70,11 @@ test("an existing version-3 campaign without a hero remains structurally unchang
   const campaign = createCampaignState();
 
   assert.deepEqual(
-    migrateLegacyGame(structuredClone(campaign), campaign.playerId),
+    migrateLegacyGame(
+      structuredClone(campaign),
+      campaign.playerId,
+      MIGRATION_ID_SOURCE,
+    ),
     campaign,
   );
 });
@@ -108,6 +119,7 @@ test("version-2 and version-3 hero saves retain facts while snapshots normalize"
     const migrated = migrateLegacyGame(
       { ...legacy, version },
       "player-fallback",
+      MIGRATION_ID_SOURCE,
     );
 
     assert.equal(migrated.version, 3);

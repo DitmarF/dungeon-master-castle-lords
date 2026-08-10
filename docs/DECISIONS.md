@@ -86,6 +86,14 @@ The project owner accepted the following E02-T01 decisions on 2026-08-10. They a
 | DMCL-P21 | **Accepted** | Separate pure board identity/availability/navigation policy from the React component registry while preserving the EPIC 01 catalog, IDs, ordering, components, and UI. | Application/state currently imports a React-bearing board module and cannot enforce legal navigation at its own boundary. | `ARCHITECTURE.md`, `E02-T01_CORE_ENGINE_CONTRACT_AUDIT.md` |
 | DMCL-P22 | **Accepted** | Sequence E02-T02–T08 as state/tests; clock/identity/RNG inputs; setup transition; dungeon transitions/selectors; board-policy separation; named operation/provider integration; then v3 compatibility/EPIC 02 exit gate. | Orders extractions by current dependency and risk while leaving persistence lifecycle redesign to EPIC 03. | `E02-T01_CORE_ENGINE_CONTRACT_AUDIT.md` |
 
+## E02-T03 identity decision
+
+The project owner explicitly approved the bounded E02-T03 identity-source policy on 2026-08-10.
+
+| ID | Status | Decision | Reason/constraint | Responsible source |
+|---|---|---|---|---|
+| DMCL-P23 | **Accepted** | Distinguish family-specific content IDs, current `PlayerId`/`CampaignId` values, and spatial/derived keys; generate new player/campaign IDs through an injected `IdSource` using the existing `player-…`/`game-…` conventions and identity entropy separate from gameplay RNG. | Preserves all current IDs and save shapes while preventing UI labels/indexes, coordinates, content IDs, and gameplay randomness from becoming one generic identity system. Future entity categories require a real persistent mechanic. | `ARCHITECTURE.md`, `GAME_STATE.md`, `CONTENT_MODEL.md`, `E02-T03_STABLE_ENTITY_AND_ID_SYSTEM.md` |
+
 ## Foundation proposals resolved by E00-T05
 
 | ID | Status | Decision | Source |
@@ -162,6 +170,6 @@ Use a full standalone ADR only when a decision needs alternatives, extensive evi
 
 ## Current approval position
 
-EPIC 01 is complete. DMCL-P01–P13 and DMCL-P16–P22 are accepted; DMCL-P14/P15 remain historical superseded proposals. EPIC 02 is Current, E02-T01 and E02-T02 are accepted, and E02-T03 is the exact next task.
+EPIC 01 is complete. DMCL-P01–P13 and DMCL-P16–P23 are accepted; DMCL-P14/P15 remain historical superseded proposals. EPIC 02 is Current, E02-T01 and E02-T02 are accepted, and the owner-approved E02-T03 identity task is active.
 
-E02-T02 implemented the v3-preserving `CampaignState` boundary and dependency-free engine tests authorized by DMCL-P19–P22. The owner reaffirmed the accepted DMCL-P20 identity-source direction for E02-T03 on 2026-08-10. Remaining DMCL-Q entries concern exact mechanics, persistence/product semantics, identity, content policy, or later-Epic details; they do not block the bounded E02-T03 work.
+E02-T02 implemented the v3-preserving `CampaignState` boundary and dependency-free engine tests authorized by DMCL-P19–P22. DMCL-P23 records the explicitly approved bounded E02-T03 identity policy. The broader combined DMCL-P22 clock/gameplay-seed work is outside the owner-defined E02-T03 scope, so its minimum sequence correction remains to be accepted with the Candidate. Remaining DMCL-Q entries do not block the bounded identity implementation.

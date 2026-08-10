@@ -1,9 +1,10 @@
-import type { CampaignState } from "./campaignState.ts";
+import type { CampaignState, PlayerId } from "./campaignState.ts";
 
 export { EMPTY_ATTRIBUTES } from "./campaignState.ts";
 export type {
   AttributeKey,
   BoardId,
+  CampaignId,
   CampaignState,
   CellPosition,
   DungeonRoom,
@@ -15,11 +16,12 @@ export type {
   HeroSetupSelection,
   HeroState,
   HeroVocation,
+  PlayerId,
   SkillId,
 } from "./campaignState.ts";
 
 export interface PlayerProfile {
-  id: string;
+  id: PlayerId;
   name: string;
   bannerColor: string;
   createdAt: string;
@@ -30,7 +32,7 @@ export interface GameRegistry {
   version: 1;
   players: PlayerProfile[];
   games: Record<string, CampaignState>;
-  lastActivePlayerId: string | null;
+  lastActivePlayerId: PlayerId | null;
 }
 
 export type AppView = "players" | "game";
@@ -38,7 +40,7 @@ export type AppView = "players" | "game";
 export interface RuntimeState {
   hydrated: boolean;
   registry: GameRegistry;
-  selectedPlayerId: string | null;
+  selectedPlayerId: PlayerId | null;
   activeGame: CampaignState | null;
   view: AppView;
 }

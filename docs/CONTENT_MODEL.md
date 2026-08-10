@@ -102,7 +102,18 @@ This is the approved conceptual contract, not a prescribed concrete TypeScript o
 - Removing or changing persisted references requires compatibility/migration handling.
 - Definition IDs, campaign-instance IDs, and player/campaign IDs are distinct concepts.
 
-The namespace strategy, ID syntax, aliases/deprecation, and content-version policy are TBD.
+**Accepted and implemented for the current repository through E02-T03:**
+
+- existing board, skill, skill-tree, branch, faction, class, and vocation IDs remain stable lowercase literal/content-catalog values; no generic `ContentId` wrapper replaces their family-specific types;
+- current player/profile instances use `PlayerId` values with the established `player-…` prefix;
+- current campaigns use `CampaignId` values with the established `game-…` prefix;
+- display labels and UI array positions never define persistent identity;
+- coordinates, `CellKey` strings, array indexes, and dungeon-room ordinals are spatial/derived or snapshot-local values, not reusable content IDs or campaign-entity IDs;
+- new player/campaign identities use an injected identity source separate from deterministic gameplay randomness;
+- existing persisted IDs retain their meaning and are not migrated merely to satisfy a newer formatting preference;
+- future campaign-entity categories receive IDs only when an approved implemented mechanic requires persistent instances.
+
+Namespace, alias/deprecation, and content-version policy beyond these current categories remain TBD. No hero, settlement, region, army, unit, item, or generic global entity namespace is approved here.
 
 ## Composition instead of bespoke types
 

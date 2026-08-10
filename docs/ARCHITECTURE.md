@@ -60,7 +60,15 @@ This proposal does not require a command framework, event bus, event sourcing, C
 
 E02-T02 establishes `src/game/campaignState.ts` as the pure campaign/model boundary. It defines `CampaignState` with exactly the version-3 campaign fields and retains `GameSave` as a type alias, so existing serialized campaigns keep the same runtime shape and require no migration. `src/game/model.ts` now re-exports those campaign types for compatibility while separately owning `PlayerProfile`, `GameRegistry`, `RuntimeState`, and application-view state. Theme, hydration behavior, and board-local presentation remain outside the campaign contract.
 
-Focused engine verification uses the supported Node runtime and built-in `node:test` with native TypeScript stripping. `npm run test:engine` exercises the state boundary, existing migration/normalization, explicit-seed dungeon determinism, and dependency purity without rendering React or building Sites. The normal `npm test` and `npm run verify` paths include these focused tests. This is only the state/test foundation: hidden clock/identity/random inputs, setup and dungeon transitions, navigation policy, and provider operations remain assigned to E02-T03 through E02-T07.
+Focused engine verification uses the supported Node runtime and built-in `node:test` with native TypeScript stripping. `npm run test:engine` exercises the state boundary, existing migration/normalization, explicit-seed dungeon determinism, and dependency purity without rendering React or building Sites. The normal `npm test` and `npm run verify` paths include these focused tests. E02-T02 was only the state/test foundation; E02-T03 adds the bounded identity policy below, while clock/gameplay-seed inputs and setup/dungeon/navigation/provider transitions remain later work.
+
+### E02-T03 implemented identity boundary
+
+E02-T03 establishes `src/game/identity.ts` as the pure current identity contract. `PlayerId` and `CampaignId` are distinct string types retaining the existing `player-…` and `game-…` prefixes. New values come from an injected `IdSource` and pass current-format narrowing before entering new profiles or campaigns. The system crypto adapter lives separately in `src/game/systemIdSource.ts`; it uses `crypto.randomUUID()` and cannot consume the dungeon/gameplay random stream.
+
+This is not a generic entity system. Skills, boards, faction/class/vocation values, and other reusable definitions retain their literal content IDs. Cell keys remain coordinate-derived `CellKey` values, and dungeon room numbers remain stored snapshot-local ordinals rather than global entity identities. No hero, settlement, region, army, unit, or item identity exists until an approved mechanic has a persistent instance that needs one. Existing loaded IDs are never rewritten merely for format consistency.
+
+The provider and browser-storage adapter supply the system identity source to current player/campaign creation and migration fallback paths. Clock and gameplay-seed inputs remain hidden and explicitly outside this owner-defined E02-T03 task; setup/dungeon/navigation/provider transition extraction also remains later work.
 
 ### Accepted board-policy correction
 

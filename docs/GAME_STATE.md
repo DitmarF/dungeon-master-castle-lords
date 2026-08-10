@@ -135,7 +135,22 @@ The campaign continues to reference a player/profile ID without embedding `Playe
 
 `src/game/model.ts` remains a compatibility import surface while separately defining `PlayerProfile`, `GameRegistry`, `RuntimeState`, and `AppView`. `GameRegistry.games` and `RuntimeState.activeGame` now explicitly reference `CampaignState`; they remain persistence/application copies rather than new campaign fields. No migration is introduced because serialization is unchanged, and the existing v2/v3 normalization path is protected by focused Node fixtures.
 
-This implementation does not resolve timestamp semantics, seed-versus-snapshot authority, profile/campaign cardinality, or future gameplay schemas. It also does not yet remove hidden creation time/identity/random inputs; that work remains bounded to E02-T03.
+The E02-T02 implementation did not resolve timestamp semantics, seed-versus-snapshot authority, profile/campaign cardinality, future gameplay schemas, or hidden creation inputs. E02-T03 adds only the bounded identity policy below; clock and gameplay-seed inputs remain later work.
+
+### E02-T03 implemented identity policy
+
+The current persistent identity types are now explicit without changing serialized data:
+
+- `PlayerId` retains the existing `player-…` convention and identifies one local player profile/registry owner.
+- `CampaignId` retains the existing `game-…` convention and identifies one campaign.
+- `CampaignState.playerId` remains a reference to the separate profile; it does not embed player data.
+- new player/campaign IDs come from an injected `IdSource`; the system adapter uses crypto identity entropy independently from dungeon/gameplay randomness.
+
+`CampaignState` remains version 3 and `GameRegistry` remains version 1. Existing loaded identity strings are preserved exactly, including legacy strings that predate current narrowing; this task adds validation only at new-ID creation boundaries and requires no migration.
+
+Content-definition IDs are not player/campaign IDs. Coordinates and `CellKey` values such as `"3,4"` are spatial/derived keys scoped to the stored dungeon, while `DungeonRoom.id` is a snapshot-local generator ordinal. Neither is a global persistent entity identity. The current hero, settlement outcome, and generated dungeon do not gain manufactured entity IDs in this task.
+
+Clock and gameplay-seed isolation remain unresolved by this identity-only task. The broader player/account/owner relationship, multiple campaigns, cloud/global identity, and multiplayer authority also remain open.
 
 ## Established future campaign categories
 

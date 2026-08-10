@@ -7,8 +7,15 @@ import {
   type HeroSetupSelection,
   type HeroVocation,
   type PlayerProfile,
+  type PlayerId,
   type SkillId,
 } from "./model.ts";
+import {
+  createCampaignId,
+  createPlayerId,
+  type CampaignId,
+  type IdSource,
+} from "./identity.ts";
 import {
   SKILL_BY_ID,
   createEmptySkillRanks,
@@ -27,21 +34,13 @@ export const VOCATION_SKILL: Record<HeroVocation, SkillId> = {
   diplomat: "diplomacy",
 };
 
-export function createId(prefix: string): string {
-  const suffix =
-    typeof crypto !== "undefined" && "randomUUID" in crypto
-      ? crypto.randomUUID()
-      : `${Date.now()}-${Math.random().toString(16).slice(2)}`;
-
-  return `${prefix}-${suffix}`;
-}
-
 export function createPlayerProfile(
   name: string,
   bannerColor: string,
+  idSource: IdSource,
 ): PlayerProfile {
   return {
-    id: createId("player"),
+    id: createPlayerId(idSource),
     name: name.trim(),
     bannerColor,
     createdAt: new Date().toISOString(),
@@ -49,12 +48,15 @@ export function createPlayerProfile(
   };
 }
 
-export function createNewGame(playerId: string): GameSave {
+export function createNewGame(
+  playerId: PlayerId,
+  idSource: IdSource,
+): GameSave {
   const now = new Date().toISOString();
 
   return {
     version: 3,
-    id: createId("game"),
+    id: createCampaignId(idSource),
     playerId,
     createdAt: now,
     updatedAt: now,
@@ -126,7 +128,11 @@ export function completeGameSetup(game: GameSave, selection: HeroSetupSelection)
   };
 }
 
-export function migrateLegacyGame(value: unknown, playerId: string): GameSave {
+export function migrateLegacyGame(
+  value: unknown,
+  playerId: string,
+  idSource: IdSource,
+): GameSave {
   if (value && typeof value === "object") {
     const candidate = value as { version?: unknown; dungeon?: unknown };
     if (
@@ -168,10 +174,13 @@ export function migrateLegacyGame(value: unknown, playerId: string): GameSave {
       updatedAt?: string;
       dungeon?: { level?: number; day?: number; treasury?: number };
     };
-    const migrated = createNewGame(legacy.playerId ?? playerId);
+    // Legacy saves predate runtime ID validation. Retain their exact strings;
+    // only newly generated identities must satisfy the current convention.
+    const retainedPlayerId = (legacy.playerId ?? playerId) as PlayerId;
+    const migrated = createNewGame(retainedPlayerId, idSource);
     return {
       ...migrated,
-      id: legacy.id ?? migrated.id,
+      id: (legacy.id as CampaignId | undefined) ?? migrated.id,
       createdAt: legacy.createdAt ?? migrated.createdAt,
       updatedAt: legacy.updatedAt ?? migrated.updatedAt,
       dungeon: {
@@ -183,5 +192,5 @@ export function migrateLegacyGame(value: unknown, playerId: string): GameSave {
     };
   }
 
-  return createNewGame(playerId);
+  return createNewGame(playerId as PlayerId, idSource);
 }

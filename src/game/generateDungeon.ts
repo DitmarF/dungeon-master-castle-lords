@@ -3,6 +3,10 @@ import type {
   DungeonRoom,
   DungeonState,
 } from "./campaignState.ts";
+import {
+  createCellKey,
+  type CellKey,
+} from "./identity.ts";
 
 const COLUMNS = 20;
 const ROWS = 12;
@@ -22,8 +26,8 @@ function integer(random: () => number, min: number, max: number): number {
   return Math.floor(random() * (max - min + 1)) + min;
 }
 
-function keyOf(position: CellPosition): string {
-  return `${position.x},${position.y}`;
+function keyOf(position: CellPosition): CellKey {
+  return createCellKey(position.x, position.y);
 }
 
 function centerOf(room: DungeonRoom): CellPosition {
@@ -38,8 +42,8 @@ export function discoverAround(
   columns: number,
   rows: number,
   radius = 1,
-): string[] {
-  const cells: string[] = [];
+): CellKey[] {
+  const cells: CellKey[] = [];
   for (let y = position.y - radius; y <= position.y + radius; y += 1) {
     for (let x = position.x - radius; x <= position.x + radius; x += 1) {
       if (x >= 0 && x < columns && y >= 0 && y < rows) {
@@ -120,6 +124,6 @@ export function isWalkable(dungeon: DungeonState, position: CellPosition): boole
   return dungeon.tiles[position.y]?.[position.x] === ".";
 }
 
-export function cellKey(position: CellPosition): string {
+export function cellKey(position: CellPosition): CellKey {
   return keyOf(position);
 }

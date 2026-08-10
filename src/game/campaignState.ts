@@ -1,6 +1,8 @@
 import type { SkillId } from "./skillTrees.ts";
+import type { CampaignId, PlayerId } from "./identity.ts";
 
 export type { SkillId } from "./skillTrees.ts";
+export type { CampaignId, PlayerId } from "./identity.ts";
 
 export type BoardId =
   | "setup"
@@ -73,8 +75,8 @@ export interface DungeonState {
 
 export interface CampaignState {
   version: 3;
-  id: string;
-  playerId: string;
+  id: CampaignId;
+  playerId: PlayerId;
   createdAt: string;
   updatedAt: string;
   activeBoardId: BoardId;
