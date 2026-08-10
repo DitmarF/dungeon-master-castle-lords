@@ -2,7 +2,7 @@
 
 Status: source of truth for runtime-information ownership  
 Scope: what belongs to a campaign, what does not, and what exists today  
-Last updated: 2026-08-09
+Last updated: 2026-08-10
 
 ## Purpose and authority
 
@@ -17,6 +17,7 @@ Status labels:
 - **Established** — required by the approved concept or already-established structure.
 - **Observed** — true in the current implementation, but not automatically a permanent product rule.
 - **Accepted** — approved state policy.
+- **Proposed** — recommended by a bounded task and awaiting explicit owner approval.
 - **TBD/Open Question** — unresolved; implementation must not silently decide it.
 
 Gameplay rules belong in `GAME_CONCEPT.md` or a future responsible rules document. This document records state only after the corresponding concept is approved.
@@ -106,6 +107,27 @@ The active in-memory game is also copied into this registry after updates. One c
 - unfinished hero-setup selections.
 
 The application’s player registry is persisted, but it is not campaign-owned. Theme preference uses a separate browser-storage key. Static skill and board definitions live in code rather than saves.
+
+## E02-T01 current-value classification and accepted state contract
+
+**Observed by the current E02-T01 audit:** `GameSave` version 3 is the authoritative campaign payload. `RuntimeState.activeGame` is its application working copy and `GameRegistry.games[playerId]` is the mirrored registry copy that is serialized automatically. The duplication is application coordination and must not become two independent campaign authorities.
+
+The current v3 payload classifies as follows:
+
+| Values | Classification |
+|---|---|
+| campaign/player reference, timestamps, active board, completed setup choices, hero position, learned ranks, dungeon counters, seed, discovery, heart outcome, and settlement claim | stored facts, with timestamp semantics still TBD |
+| `setupComplete`, calculated hero attributes, the zero-filled skill-record shape, vision radius under current rules, and generated dungeon grid/rooms/tiles/start/heart | stored snapshots or redundant persisted values; preserve until a deliberate migration |
+| legal board availability, setup readiness/attribute preview, skill indexes, discovered-cell indexes/counts, and display summaries | derived values |
+| skill/board definitions and generator constants/rules | static definitions |
+| hydration, selected player, active working copy, and players/game surface | application/session state |
+| theme, setup draft, overlays, prompts, notifications, pan/zoom, and gesture state | UI preference or UI-only state |
+
+The field-by-field classification and evidence are recorded in [E02-T01_CORE_ENGINE_CONTRACT_AUDIT.md](./E02-T01_CORE_ENGINE_CONTRACT_AUDIT.md#2-state-value-classification).
+
+**Accepted through DMCL-P19–P22 on 2026-08-10:** use `CampaignState` for the pure authoritative campaign contract and retain `GameSave` as the version-3 serialized compatibility name or alias. Preserve the exact current runtime JSON shape for the first implementation task. Do not add future calendar, settlement, world, army, combat, or event slices merely to match a long-term concept.
+
+The campaign continues to reference a player/profile ID without embedding `PlayerProfile`. `GameRegistry`, one-campaign-per-player lookup, profile lifecycle, hydration, theme, and UI state remain separate. Pure transitions and selectors may be extracted incrementally without moving unrelated runtime responsibilities into the campaign.
 
 ## Established future campaign categories
 

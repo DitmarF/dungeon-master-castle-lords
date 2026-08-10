@@ -2,7 +2,7 @@
 
 Status: architectural source of truth with explicit approval markers  
 Scope: major structural principles, system boundaries, and dependency direction  
-Last updated: 2026-08-09
+Last updated: 2026-08-10
 
 ## Purpose and authority
 
@@ -17,6 +17,7 @@ Status labels used here:
 - **Established** — already required by the approved project direction or platform.
 - **Observed** — true of the current repository, but not automatically a permanent decision.
 - **Accepted** — approved architectural policy.
+- **Proposed** — recommended by a bounded task and awaiting explicit owner approval.
 - **TBD/Open Question** — unresolved; do not decide implicitly through implementation.
 
 If documents appear to conflict, `GAME_CONCEPT.md` governs product intent, this document governs approved structure, and `CURRENT_STATE.md` governs claims about what is implemented today.
@@ -39,6 +40,29 @@ The architecture should support fast prototype iteration without allowing UI com
 - platform entry, optional storage scaffolding, and Sites configuration at repository edges.
 
 The exact hierarchy and limitations are documented in `CURRENT_STATE.md`. Current patterns such as one large provider, generic whole-save mutation, hard-coded board rendering, one global stylesheet, one campaign per player, and browser-only persistence are prototype facts—not approved long-term architecture.
+
+## EPIC 02 core-engine contract
+
+**Accepted through DMCL-P19–P22 on 2026-08-10.** Name the authoritative pure campaign type `CampaignState`, while retaining `GameSave` as the version-3 serialized compatibility name or alias until a separately approved migration changes the runtime shape. `CampaignState` contains only current justified campaign facts and snapshots. `PlayerProfile`, `GameRegistry`, `RuntimeState`, theme/hydration, and board-local presentation state remain outside it.
+
+The smallest engine surface is:
+
+- named application operations for the current campaign intents;
+- pure validated transitions for hero setup, dungeon movement/discovery/heart outcome, settlement claim, and board navigation as each bounded task extracts them;
+- concrete selectors for current derived reads such as board availability and shared hero/dungeon calculations;
+- explicit application/infrastructure inputs for clock, player/campaign identity, and new gameplay seeds, with identity randomness separate from deterministic rule RNG;
+- a small registry-storage port with browser `localStorage` at the infrastructure edge and pure migration/normalization functions;
+- pure engine tests using the existing Node runtime, without React, browser APIs, Sites/Cloudflare code, or a new testing dependency.
+
+This proposal does not require a command framework, event bus, event sourcing, CQRS, ECS, state-management library, cloud repository, or placeholder future gameplay slices. Extraction is incremental; `GameProvider` may continue coordinating React runtime state and persistence while it delegates rule-bearing changes to named operations.
+
+### Accepted board-policy correction
+
+The current application/state layer imports `RegisteredBoardId` from `src/boards/registry.ts`, which also imports React component types, icons, and every board implementation. Settlement unlock and active-board fallback policy are therefore unavailable to application code without depending on the board/view layer. Shared `BoardNavigation` also imports board-layer context and registry types.
+
+**Accepted minimum correction:** separate stable in-campaign board identity, non-React descriptors, campaign-aware availability, legal navigation, and fallback selection into a pure game/application module. Keep `src/boards/registry.ts` as the React component/presentation binding over those descriptors. Shared UI should receive navigation data and callbacks through the application-facing contract rather than importing board implementations. Preserve the EPIC 01 catalog, ordering, IDs, components, availability behavior, and visible navigation; do not rebuild the board architecture.
+
+Full audit evidence, save risks, module responsibilities, and staged tasks are recorded in [E02-T01_CORE_ENGINE_CONTRACT_AUDIT.md](./E02-T01_CORE_ENGINE_CONTRACT_AUDIT.md).
 
 ## Structural principles
 

@@ -1,7 +1,7 @@
 # Dungeon Master & Castle Lords — Roadmap
 
 Status: source of truth for current Epic, exact next task, and decision gates
-Last updated: 2026-08-09
+Last updated: 2026-08-10
 
 ## Purpose and authority
 
@@ -25,23 +25,23 @@ Status: **Current**
 
 Purpose: establish the shared game-engine and central campaign-state foundations needed by later boards and systems, building on the completed EPIC 01 shell/catalog architecture without introducing unapproved gameplay rules.
 
-The first bounded task is an audit and contract-definition task. It must reconcile the existing model/provider/rule/storage boundaries before any broad state refactor or new engine implementation.
+E02-T01 audited and reconciled the existing model/provider/rule/storage boundaries. The accepted contract now authorizes the first bounded state/test implementation without a broad provider rewrite or save-schema change.
 
 Accepted constraints carried forward include one authoritative campaign state, versioned save compatibility, named validated transitions introduced gradually, stable IDs, domain/application/view/infrastructure boundaries, and no silent gameplay-rule decisions.
 
 ## Current Next Task
 
-### E02-T01 — Audit central game-state boundaries and define the core engine contract
+### E02-T02 — Establish CampaignState and pure engine testing
 
 Status: **Next — exactly one**
 
-Goal: audit the current central game-state, provider, rules, board-operation, and storage boundaries, then define the smallest approved core-engine contract for subsequent EPIC 02 implementation tasks.
+Goal: implement the accepted `CampaignState` boundary while preserving the exact version-3 serialized shape, then establish dependency-free pure-engine tests that run without React, browser storage, or a full Sites build.
 
-Expected scope must be defined with [TASK_TEMPLATE.md](./TASK_TEMPLATE.md) before implementation. It should identify current authoritative state, derived values, mutation paths, validation ownership, persistence boundaries, save-compatibility risks, and the named operations needed next without implementing gameplay or broadly rewriting `GameProvider`.
+Expected scope must be defined with [TASK_TEMPLATE.md](./TASK_TEMPLATE.md) before implementation and start from the accepted [E02-T01 audit](./E02-T01_CORE_ENGINE_CONTRACT_AUDIT.md). It should separate campaign truth from runtime/profile/UI state, preserve existing saves and behavior, add the smallest Node-based engine test path, and integrate focused engine tests into `npm run verify`.
 
-Non-goals include new gameplay, balance decisions, save-schema changes without an approved migration, cloud/multiplayer authority, broad provider refactoring, UI redesign, and deployment.
+Non-goals include future gameplay slices, commands for later mechanics, broad `GameProvider` refactoring, RNG work beyond the T02 boundary, cloud/multiplayer authority, UI changes, new dependencies, and deployment.
 
-E01-T07 and EPIC 01 were accepted by the project owner on 2026-08-09 after the automated gate passed and every owner browser/physical-smartphone checklist item was reported PASS. E02-T01 is identified as Next only; it has not begun.
+The project owner accepted E02-T01 and DMCL-P19–P22 on 2026-08-10. The accepted contract names `CampaignState`, retains `GameSave` as the version-3 compatibility name/alias, preserves the exact v3 runtime shape, approves dependency-free Node engine tests, establishes the minimum clock/identity/RNG/storage ports, and approves the bounded E02-T02–T08 sequence. E02-T02 is the sole next task and has not begun.
 
 ## Epic registry
 
@@ -87,7 +87,20 @@ E01-T01 through E01-T07 established and verified:
 - portable bounded verification through accepted DMCL-P18 and a verification-only GitHub Actions workflow;
 - owner-reported PASS results for all required desktop, portrait, interaction, accessibility, campaign-regression, and physical-smartphone exit checks.
 
-The project owner accepted E01-T07 and EPIC 01 on 2026-08-09. The matching pushed/Sites checkpoint is completed through the normal workflow without deployment. EPIC 02 is Current and E02-T01 is the exact next task.
+The project owner accepted E01-T07 and EPIC 01 on 2026-08-09. The matching pushed/Sites checkpoint is completed through the normal workflow without deployment. EPIC 02 is Current; E02-T01 was accepted on 2026-08-10 and E02-T02 is the exact next task.
+
+## E02-T01 closure
+
+E02-T01 established and documented:
+
+- `GameSave` v3 as the current authoritative campaign payload, with `activeGame` identified as an application working copy;
+- the field-by-field stored fact, stored snapshot, derived, static, session, and UI-only classifications;
+- every current campaign mutation, generic `updateGame` path, React-owned rule, duplicated calculation, identity/randomness source, and migration boundary;
+- the save-compatibility risks for incremental EPIC 02 extraction;
+- the accepted `CampaignState` contract, minimal operations/transitions/selectors/ports, pure-engine testing direction, and board-policy dependency correction;
+- the bounded E02-T02 through E02-T08 sequence without adding future gameplay schemas.
+
+The project owner accepted E02-T01 and DMCL-P19–P22 on 2026-08-10. Its matching pushed/Sites checkpoint is created through the normal workflow without deployment before E02-T02 begins.
 
 ## EPIC 00 closure
 
@@ -113,7 +126,7 @@ E00-T05 was accepted by the project owner on 2026-08-09, completing EPIC 00. Its
 - Every accepted task updates this file with the current Epic status and exactly one next task.
 - Normal tasks save an accepted Sites version but do not deploy. Deployment requires separate explicit user instruction.
 
-## Deferred decisions that do not block E02-T01
+## Deferred decisions that do not block E02-T02
 
 - exact gameplay formulas, balance, thresholds, costs, and progression values;
 - final player/account/cloud/offline/multiplayer authority model;

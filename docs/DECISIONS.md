@@ -2,7 +2,7 @@
 
 Status: lightweight architecture and design-decision index  
 Scope: accepted decisions, current interim choices, pending proposals, and deferred questions  
-Last updated: 2026-08-09
+Last updated: 2026-08-10
 
 ## Purpose
 
@@ -75,6 +75,17 @@ These entries explain the current code. They are not accepted long-term decision
 | DMCL-I10 | Unfinished hero setup and most view interaction state are component-local and disposable. | Draft persistence requires a product decision. | `CURRENT_STATE.md`, `GAME_STATE.md` |
 | DMCL-I11 | World strategy, conquest, supply, meaningful management, tactical combat, executable skill effects, cloud saves, and multiplayer are not implemented. | Do not report concept scope as shipped functionality. | `CURRENT_STATE.md` |
 
+## EPIC 02 core-engine decisions
+
+The project owner accepted the following E02-T01 decisions on 2026-08-10. They authorize the bounded E02-T02–T08 sequence while preserving the documented non-goals and compatibility constraints.
+
+| ID | Status | Decision | Reason/constraint | Responsible source |
+|---|---|---|---|---|
+| DMCL-P19 | **Accepted** | Name the pure authoritative campaign contract `CampaignState`, retain `GameSave` as the version-3 serialized compatibility name or alias, and preserve the exact v3 runtime shape during the first engine task. | Separates campaign truth from runtime/profile/UI state without forcing a save migration or speculative future slices. | `GAME_STATE.md`, `E02-T01_CORE_ENGINE_CONTRACT_AUDIT.md` |
+| DMCL-P20 | **Accepted** | Build the smallest engine surface from named current operations, pure transitions/selectors, explicit clock/identity/gameplay-seed inputs, a registry-storage port, and dependency-free Node engine tests integrated into `npm run verify`. | Current rules are split across provider/helpers/React boards and are untested independently; no framework or dependency is justified. | `ARCHITECTURE.md`, `E02-T01_CORE_ENGINE_CONTRACT_AUDIT.md` |
+| DMCL-P21 | **Accepted** | Separate pure board identity/availability/navigation policy from the React component registry while preserving the EPIC 01 catalog, IDs, ordering, components, and UI. | Application/state currently imports a React-bearing board module and cannot enforce legal navigation at its own boundary. | `ARCHITECTURE.md`, `E02-T01_CORE_ENGINE_CONTRACT_AUDIT.md` |
+| DMCL-P22 | **Accepted** | Sequence E02-T02–T08 as state/tests; clock/identity/RNG inputs; setup transition; dungeon transitions/selectors; board-policy separation; named operation/provider integration; then v3 compatibility/EPIC 02 exit gate. | Orders extractions by current dependency and risk while leaving persistence lifecycle redesign to EPIC 03. | `E02-T01_CORE_ENGINE_CONTRACT_AUDIT.md` |
+
 ## Foundation proposals resolved by E00-T05
 
 | ID | Status | Decision | Source |
@@ -122,7 +133,7 @@ The responsible documents contain detailed questions. This index groups the deci
 | DMCL-Q13 | **Resolved by accepted DMCL-P18** | Sites/Linux retains its protected installer; macOS and GitHub Actions use lockfile `npm ci`; all share `npm run verify`; independent CI does not replace rendered/mobile or physical-device acceptance. |
 | DMCL-Q14 | **Resolved by accepted DMCL-P16** | Sites/Vinext/Cloudflare remains the delivery constraint unless an explicit later decision replaces it; platform services stay at the edges. |
 | DMCL-Q15 | **Resolved by accepted DMCL-P17** | Use deterministic committed generation for the existing FS adapter and the narrow persisted-banner projection; keep derived CSS handwritten and runtime theme handling unchanged. |
-| DMCL-Q16 | **Resolved** | Current Epic is EPIC 01; exact next task is E01-T01. |
+| DMCL-Q16 | **Resolved historically; superseded by current roadmap status** | E00-T05 activated EPIC 01 with E01-T01 next. EPIC 01 is now complete; EPIC 02 is Current, E02-T01 is accepted, and E02-T02 is the exact next task. |
 
 ## Decision record format
 
@@ -151,6 +162,6 @@ Use a full standalone ADR only when a decision needs alternatives, extensive evi
 
 ## Current approval position
 
-The foundation no longer requires architectural re-approval before EPIC 01. DMCL-P01–P13 and DMCL-P16 are accepted; DMCL-P14/P15 are superseded by the Epic roadmap and E01-T01.
+EPIC 01 is complete. DMCL-P01–P13 and DMCL-P16–P22 are accepted; DMCL-P14/P15 remain historical superseded proposals. EPIC 02 is Current, E02-T01 is accepted, and E02-T02 is the exact next task.
 
-Remaining DMCL-Q entries concern exact mechanics, persistence, tooling, or later-Epic details. DMCL-P17 was explicitly accepted through E01-T01, resolves DMCL-Q15, and authorizes bounded implementation in E01-T02.
+DMCL-P19–P22 authorize E02-T02 to establish the accepted v3-preserving `CampaignState` boundary and dependency-free engine tests. Remaining DMCL-Q entries concern exact mechanics, persistence/product semantics, identity, content policy, or later-Epic details; they do not block E02-T02.
