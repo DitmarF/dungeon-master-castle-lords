@@ -44,7 +44,7 @@ Preserve the existing React/TypeScript, Vinext/Vite, Cloudflare Worker, npm, and
 - Game rules must not be defined by UI copy, CSS, browser storage, or hosting code.
 - Durable choices and outcomes belong in the versioned campaign model. UI preferences, hydration, open sheets, pointer gestures, and other presentation state normally do not.
 - Before changing persisted data, identify ownership, authority, defaults, compatibility, and migration behavior. Preserve existing save IDs and meanings unless an approved migration changes them.
-- The current generic `updateGame` API, one-provider structure, hard-coded board rendering, one campaign per player, and local-only persistence are observed interim choices—not permanent decisions.
+- The current one-provider coordination structure, one campaign per player, browser-only persistence, and timestamp/save semantics are observed interim choices—not permanent decisions. The migrated playable mechanics already use named validated operations; do not reintroduce unrestricted whole-campaign board mutation.
 - Implement accepted architecture only through scoped tasks. Do not build a generic effect engine until an approved mechanic supplies the concrete vocabulary; cloud and multiplayer authority remain deferred.
 
 ## Content and mechanics

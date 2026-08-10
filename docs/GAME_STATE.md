@@ -108,15 +108,15 @@ The active in-memory game is also copied into this registry after updates. One c
 
 The application’s player registry is persisted, but it is not campaign-owned. Theme preference uses a separate browser-storage key. Static skill and board definitions live in code rather than saves.
 
-## E02-T01 current-value classification and accepted state contract
+## Current value classification and EPIC 02 evolution
 
-**Observed by the current E02-T01 audit:** `GameSave` version 3 is the authoritative campaign payload. `RuntimeState.activeGame` is its application working copy and `GameRegistry.games[playerId]` is the mirrored registry copy that is serialized automatically. The duplication is application coordination and must not become two independent campaign authorities.
+**Current:** `CampaignState`/`GameSave` version 4 is the authoritative campaign payload. `RuntimeState.activeGame` is its application working copy and `GameRegistry.games[playerId]` is the mirrored registry copy that is serialized automatically. The duplication is application coordination, not two independent campaign authorities.
 
-The current v3 payload classifies as follows:
+The current v4 payload classifies as follows:
 
 | Values | Classification |
 |---|---|
-| campaign/player reference, timestamps, active board, completed setup choices, hero position, learned ranks, dungeon counters, seed, discovery, heart outcome, and settlement claim | stored facts, with timestamp semantics still TBD |
+| campaign/player reference, timestamps, campaign seed, active board, completed setup choices, hero position, learned ranks, dungeon counters/seed, discovery, heart outcome, and settlement claim | stored facts, with timestamp semantics still TBD |
 | `setupComplete`, calculated hero attributes, the zero-filled skill-record shape, vision radius under current rules, and generated dungeon grid/rooms/tiles/start/heart | stored snapshots or redundant persisted values; preserve until a deliberate migration |
 | legal board availability, setup readiness/attribute preview, skill indexes, discovered-cell indexes/counts, and display summaries | derived values |
 | skill/board definitions and generator constants/rules | static definitions |
@@ -125,7 +125,7 @@ The current v3 payload classifies as follows:
 
 The field-by-field classification and evidence are recorded in [E02-T01_CORE_ENGINE_CONTRACT_AUDIT.md](./E02-T01_CORE_ENGINE_CONTRACT_AUDIT.md#2-state-value-classification).
 
-**Accepted through DMCL-P19–P21 and the owner-selected DMCL-P24 sequence on 2026-08-10:** use `CampaignState` for the pure authoritative campaign contract and retain `GameSave` as the version-3 serialized compatibility name or alias. Preserve the exact current runtime JSON shape for the first implementation task. Do not add future calendar, settlement, world, army, combat, or event slices merely to match a long-term concept.
+**Historical EPIC 02 starting contract:** DMCL-P19–P21 first introduced `CampaignState` as a v3-compatible alias without changing the runtime JSON shape. E02-T06 later performed the approved v4 migration that added only `campaignSeed`. No future calendar, settlement, world, army, combat, or event slices were added.
 
 The campaign continues to reference a player/profile ID without embedding `PlayerProfile`. `GameRegistry`, one-campaign-per-player lookup, profile lifecycle, hydration, theme, and UI state remain separate. Pure transitions and selectors may be extracted incrementally without moving unrelated runtime responsibilities into the campaign.
 
@@ -135,7 +135,7 @@ The campaign continues to reference a player/profile ID without embedding `Playe
 
 `src/game/model.ts` remains a compatibility import surface while separately defining `PlayerProfile`, `GameRegistry`, `RuntimeState`, and `AppView`. `GameRegistry.games` and `RuntimeState.activeGame` now explicitly reference `CampaignState`; they remain persistence/application copies rather than new campaign fields. No migration is introduced because serialization is unchanged, and the existing v2/v3 normalization path is protected by focused Node fixtures.
 
-The E02-T02 implementation did not resolve timestamp semantics, seed-versus-snapshot authority, profile/campaign cardinality, future gameplay schemas, or hidden creation inputs. E02-T03 adds only the bounded identity policy below; clock and gameplay-seed inputs remain later work.
+The E02-T02 implementation did not resolve timestamp semantics, seed-versus-snapshot authority, profile/campaign cardinality, future gameplay schemas, or hidden creation inputs. E02-T03 subsequently added only the bounded identity policy below; E02-T06 later added the campaign-seed policy, while clock semantics remain open.
 
 ### E02-T03 implemented identity policy
 
@@ -150,7 +150,7 @@ The current persistent identity types are now explicit without changing serializ
 
 Content-definition IDs are not player/campaign IDs. Coordinates and `CellKey` values such as `"3,4"` are spatial/derived keys scoped to the stored dungeon, while `DungeonRoom.id` is a snapshot-local generator ordinal. Neither is a global persistent entity identity. The current hero, settlement outcome, and generated dungeon do not gain manufactured entity IDs in this task.
 
-Clock and gameplay-seed isolation remain unresolved by this identity-only task. The broader player/account/owner relationship, multiple campaigns, cloud/global identity, and multiplayer authority also remain open.
+At this identity-only checkpoint, clock and gameplay-seed isolation remained unresolved. E02-T06 subsequently implemented the separate campaign-seed authority; clock isolation, the broader player/account/owner relationship, multiple campaigns, cloud/global identity, and multiplayer authority remain open.
 
 ### E02-T04 implemented transition policy
 
@@ -163,7 +163,7 @@ The version-3 shape and field classifications remain unchanged. E02-T04 changes 
 
 These pure transitions retain `updatedAt`; application operations in `GameProvider` stamp it only for a successful state change and mirror the result into `RuntimeState.activeGame` and `GameRegistry.games`. Failed transitions return a typed reason and do not produce a replacement campaign. Automatic browser persistence remains the adapter around the registry and no migration is required.
 
-The four migrated board interactions no longer receive unrestricted whole-campaign mutation. Player/profile creation, campaign create/load, save, return, hydration, theme, and UI-only draft/prompt/map state remain outside this transition set. Clock semantics and gameplay-seed isolation remain pending and are not implied by this implementation.
+The four migrated board interactions no longer receive unrestricted whole-campaign mutation. Player/profile creation, campaign create/load, save, return, hydration, theme, and UI-only draft/prompt/map state remain outside this transition set. E02-T06 subsequently resolved the campaign-seed boundary; clock semantics remain pending.
 
 ### E02-T05 implemented Hero-attribute consistency policy
 
@@ -185,13 +185,13 @@ The development-only campaign inspector is a consumer of campaign truth, not a s
 
 Whether the inspector is open and its temporary clipboard result message are UI-only component state. They are not stored in `CampaignState`, `RuntimeState`, `GameRegistry`, theme preference, or browser persistence. Copying seed/JSON changes only the platform clipboard and has no game-state consequence.
 
-### E02-T08 state-boundary verification
+### E02-T08 accepted state-boundary verification
 
 The EPIC 02 exit audit confirms that version-4 `CampaignState` remains the only campaign contract and contains only the currently implemented campaign facts and compatibility snapshots. `PlayerProfile`, `GameRegistry`, `RuntimeState`, theme/hydration, and board-local presentation state remain outside it. No empty World, Combat, Army, Event, calendar, or settlement-economy schema was added.
 
 The E02-T01 stored-fact/snapshot/derived/static/session/UI classification remains applicable. `campaignSeed` is the only later stored fact added by the explicit version-4 migration. `hero.attributes` remains a compatibility snapshot refreshed from authoritative setup facts by the single selector authority; the stored Dungeon snapshot remains authoritative for migrated campaigns and is not regenerated. Focused migration tests preserve existing version-2/version-3 Dungeon, position, discovery, Heart, claim, Hero, and identity facts.
 
-This verification introduces no new state decision or save migration. The full Candidate evidence is recorded in [E02-T08_EPIC_02_EXIT_GATE.md](./E02-T08_EPIC_02_EXIT_GATE.md); owner acceptance is still required before EPIC 02 is marked complete.
+This verification introduces no new state decision or save migration. The owner accepted the PASS assessment and EPIC 02 closure on 2026-08-10. The full evidence is recorded in [E02-T08_EPIC_02_EXIT_GATE.md](./E02-T08_EPIC_02_EXIT_GATE.md).
 
 ## Established future campaign categories
 

@@ -19,31 +19,27 @@ World strategy, region conquest, supply, meaningful management, tactical combat,
 
 ## Current Epic
 
-### EPIC 02 — Core game engine and state
+### EPIC 03 — Campaign lifecycle and persistence
 
 Status: **Current**
 
-Purpose: establish the shared game-engine and central campaign-state foundations needed by later boards and systems, building on the completed EPIC 01 shell/catalog architecture without introducing unapproved gameplay rules.
+Purpose: define and implement the supported local campaign lifecycle and persistence boundary on top of the accepted EPIC 02 engine foundation.
 
-E02-T01 audited and reconciled the existing model/provider/rule/storage boundaries. E02-T02 implemented the accepted central campaign boundary and pure-engine test foundation without a broad provider rewrite or save-schema change.
-
-Accepted constraints carried forward include one authoritative campaign state, versioned save compatibility, named validated transitions introduced gradually, stable IDs, domain/application/view/infrastructure boundaries, and no silent gameplay-rule decisions.
+EPIC 02 is complete. EPIC 03 begins with one audit/planning task before any lifecycle or persistence behavior changes. Current one-campaign-per-player behavior, automatic local writes, explicit Save, timestamps, replacement/deletion, and browser-only storage are implementation evidence—not silently accepted final product rules.
 
 ## Current Next Task
 
-### E02-T08 — EPIC 02 verification and exit gate
+### E03-T01 — Audit campaign lifecycle and persistence boundaries
 
-Status: **Current — Candidate awaiting owner acceptance**
+Status: **Next — exactly one**
 
-Goal: verify the complete EPIC 02 state, transition, selector, identity, RNG, persistence, dependency, and debug-inspector boundaries and determine whether EPIC 02 satisfies its exit criteria.
+Goal: inspect the current player → campaign → create/load/save/return/`localStorage` flow and define the smallest approved EPIC 03 lifecycle/persistence contract before changing implementation.
 
-The task starts from the accepted E02-T07 checkpoint and audits the complete EPIC 02 implementation against its accepted task records and current source-of-truth documents. It runs the supported automated gates, reviews the final code and dependency directions, reconciles responsible documentation, and records manual regression evidence and limitations.
+The audit will map the existing meanings and boundaries of New Game, Continue, automatic persistence, explicit Save, player/campaign ownership, the current one-campaign-per-player registry, campaign replacement/deletion, timestamps, storage validation/errors, migrations, and the supported browser-local save lifecycle. It will identify the exact owner decisions required before implementation and propose the smallest bounded E03 task sequence.
 
-Non-goals include new gameplay, architectural frameworks, broad refactors, schema redesign, a fresh `CURRENT_STATE.md` audit, EPIC 03 implementation, dependency changes, and deployment. A discovered defect remains within E02-T08 and must be reported before any bounded fix.
+The audit must not answer those product questions through implementation, redesign persistence, alter saves, add cloud/authentication, install dependencies, refactor `GameProvider`, or deploy. Cloud saves, cross-device synchronization, authentication, and multiplayer authority remain explicitly out of scope for the initial contract unless a later owner decision separately changes that boundary.
 
-The project owner accepted E02-T07 on 2026-08-10 and reported all requested tests, inspector interactions, responsive checks, normal-gameplay regressions, and copy behavior passing. E02-T08 is verification-only and must stop at Candidate for owner acceptance before EPIC 02 can be marked complete.
-
-The bounded task and Candidate evidence are recorded in [E02-T08_EPIC_02_EXIT_GATE.md](./E02-T08_EPIC_02_EXIT_GATE.md). The exit audit assesses EPIC 02 as **PASS**, subject to owner acceptance; the Epic remains Current and EPIC 03 remains Planned until that acceptance is recorded and checkpointed.
+Do not begin E03-T01 until this EPIC 02 closure checkpoint is complete.
 
 ## Epic registry
 
@@ -53,8 +49,8 @@ The sequence column records dependency position, not permission to begin an Epic
 |---|---|---|---|
 | EPIC 00 — Project contract and development infrastructure | **Complete** | Establish the audit, product and technical contracts, decision log, roadmap, workflow, repository guidance, FS source, and project README. | Foundation |
 | EPIC 01 — UI shell and board architecture | **Complete** | Finish and generalize the existing mobile-first shell, FS integration, and modular board foundations. | After EPIC 00 |
-| EPIC 02 — Core game engine and state | **Current** | Establish the shared game-engine and central campaign-state foundations needed by later boards and systems. | After EPIC 01 |
-| EPIC 03 — Campaign lifecycle and persistence | Planned | Define and implement the campaign lifecycle and its supported save/load persistence boundary. | After EPIC 02 |
+| EPIC 02 — Core game engine and state | **Complete** | Establish the shared game-engine and central campaign-state foundations needed by later boards and systems. | After EPIC 01 |
+| EPIC 03 — Campaign lifecycle and persistence | **Current** | Define and implement the campaign lifecycle and its supported save/load persistence boundary. | After EPIC 02 |
 | EPIC 04 — Hero foundation | Planned | Establish the approved hero identity, attributes, and foundational campaign representation. | After EPIC 03 |
 | EPIC 05 — Minimal progression framework | Planned | Add the smallest progression framework needed for the first playable loop. | After EPIC 04 |
 | EPIC 06 — Calendar and global turn engine | Planned | Establish strategic Days and the global turn/movement structure. | After EPIC 05 |
@@ -89,7 +85,22 @@ E01-T01 through E01-T07 established and verified:
 - portable bounded verification through accepted DMCL-P18 and a verification-only GitHub Actions workflow;
 - owner-reported PASS results for all required desktop, portrait, interaction, accessibility, campaign-regression, and physical-smartphone exit checks.
 
-The project owner accepted E01-T07 and EPIC 01 on 2026-08-09. The matching pushed/Sites checkpoint is completed through the normal workflow without deployment. EPIC 02 is Current; E02-T01 through E02-T07 were accepted on 2026-08-10, and E02-T08 is the exact next task.
+The project owner accepted E01-T07 and EPIC 01 on 2026-08-09. The matching pushed/Sites checkpoint was completed through the normal workflow without deployment. EPIC 02 subsequently completed through the accepted E02-T08 exit gate.
+
+## EPIC 02 closure
+
+E02-T01 through E02-T08 established and verified:
+
+- one authoritative pure version-4 `CampaignState`/`GameSave` boundary separate from profiles, registry/runtime, theme, and presentation state;
+- stable player/campaign identity categories separate from content and spatial keys;
+- named validated Hero Setup, Dungeon movement/discovery/Heart, Settlement claim, and legal-navigation transitions;
+- one Hero-attribute selector authority and a stored compatibility-snapshot consistency rule;
+- explicit deterministic campaign RNG and no-regeneration v2/v3 → v4 migration;
+- pure engine tests integrated into the normal verification gate;
+- one development-only read-only campaign-state inspector;
+- preserved current saves, six-board architecture, and playable prototype behavior without speculative gameplay or frameworks.
+
+The E02-T08 exit assessment is **PASS**. The project owner accepted E02-T08 and EPIC 02 on 2026-08-10 and separately confirmed the latest GitHub Actions `Verify` result as PASS. The matching closure checkpoint is documentation-only, saves a new non-deployed Sites version, makes EPIC 03 Current, and names E03-T01 as the sole next task.
 
 ## E02-T01 closure
 
@@ -203,7 +214,7 @@ E00-T05 was accepted by the project owner on 2026-08-09, completing EPIC 00. Its
 - Every accepted task updates this file with the current Epic status and exactly one next task.
 - Normal tasks save an accepted Sites version but do not deploy. Deployment requires separate explicit user instruction.
 
-## Deferred decisions that do not block E02-T08
+## Deferred decisions that do not block E03-T01
 
 - exact gameplay formulas, balance, thresholds, costs, and progression values;
 - final player/account/cloud/offline/multiplayer authority model;

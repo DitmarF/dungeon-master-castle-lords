@@ -39,28 +39,28 @@ The architecture should support fast prototype iteration without allowing UI com
 - versioned campaign data persisted to browser `localStorage`;
 - platform entry, optional storage scaffolding, and Sites configuration at repository edges.
 
-The audited baseline hierarchy and limitations are documented in `CURRENT_STATE.md`. Prototype patterns such as one large provider, the former generic whole-save board mutation, the former hard-coded board rendering, one global stylesheet, one campaign per player, and browser-only persistence are not approved long-term architecture; later bounded sections in this document record which of those observations have since changed.
+The current evidence hierarchy and limitations are documented in `CURRENT_STATE.md`. The application now uses named validated transitions and a pure board-navigation policy, while one provider still coordinates runtime/lifecycle concerns. One campaign per player, browser-only persistence, wall-clock timestamping, active/registry mirroring, and one global stylesheet remain observed interim implementation choices rather than approved permanent architecture.
 
-## EPIC 02 core-engine contract
+## Current core-engine architecture
 
-**Accepted through DMCL-P19–P21 and the owner-selected DMCL-P24 sequence on 2026-08-10.** Name the authoritative pure campaign type `CampaignState`. E02-T02 retained `GameSave` as the version-3 serialized compatibility alias until a separately approved migration; E02-T06 is that bounded migration and advances the alias to version 4 solely to add the campaign RNG seed. `CampaignState` contains only current justified campaign facts and snapshots. `PlayerProfile`, `GameRegistry`, `RuntimeState`, theme/hydration, and board-local presentation state remain outside it.
+**Accepted and implemented through EPIC 02.** The authoritative pure campaign type is `CampaignState`; `GameSave` is its version-4 serialized compatibility alias. Version 4 adds only the persisted campaign RNG seed to the earlier v3 shape. `CampaignState` contains current justified campaign facts and compatibility snapshots. `PlayerProfile`, `GameRegistry`, `RuntimeState`, theme/hydration, and board-local presentation state remain outside it.
 
-The smallest engine surface is:
+The current engine surface is:
 
 - named application operations for the current campaign intents;
 - pure validated transitions for hero setup, dungeon movement/discovery/heart outcome, settlement claim, and board navigation as each bounded task extracts them;
 - concrete selectors for current derived reads such as board availability and shared hero/dungeon calculations;
-- explicit application/infrastructure inputs for clock, player/campaign identity, and new gameplay seeds, with identity randomness separate from deterministic rule RNG;
-- a small registry-storage port with browser `localStorage` at the infrastructure edge and pure migration/normalization functions;
+- explicit application/infrastructure inputs for player/campaign identity and new gameplay seeds, with identity entropy separate from deterministic rule RNG; application clock isolation remains open;
+- browser `localStorage` at the infrastructure edge with pure campaign migration/normalization functions inside the current registry adapter;
 - pure engine tests using the existing Node runtime, without React, browser APIs, Sites/Cloudflare code, or a new testing dependency.
 
-This proposal does not require a command framework, event bus, event sourcing, CQRS, ECS, state-management library, cloud repository, or placeholder future gameplay slices. Extraction is incremental; `GameProvider` may continue coordinating React runtime state and persistence while it delegates rule-bearing changes to named operations.
+This architecture does not use a command framework, event bus, event sourcing, CQRS, ECS, state-management library, cloud repository, or placeholder future gameplay slices. `GameProvider` continues coordinating React runtime state and persistence while delegating the current rule-bearing changes to named pure operations.
 
 ### E02-T02 implemented foundation
 
 E02-T02 establishes `src/game/campaignState.ts` as the pure campaign/model boundary. It defines `CampaignState` with exactly the version-3 campaign fields and retains `GameSave` as a type alias, so existing serialized campaigns keep the same runtime shape and require no migration. `src/game/model.ts` now re-exports those campaign types for compatibility while separately owning `PlayerProfile`, `GameRegistry`, `RuntimeState`, and application-view state. Theme, hydration behavior, and board-local presentation remain outside the campaign contract.
 
-Focused engine verification uses the supported Node runtime and built-in `node:test` with native TypeScript stripping. `npm run test:engine` exercises the state boundary, existing migration/normalization, explicit-seed dungeon determinism, and dependency purity without rendering React or building Sites. The normal `npm test` and `npm run verify` paths include these focused tests. E02-T02 was only the state/test foundation; E02-T03 added the bounded identity policy below and E02-T04 adds the named transitions below. Clock/gameplay-seed inputs remain later unscheduled work.
+Focused engine verification uses the supported Node runtime and built-in `node:test` with native TypeScript stripping. `npm run test:engine` exercises the state boundary, migration/normalization, deterministic Dungeon generation, identity, selectors, transitions/navigation, dependency purity, and the inspector contract without rendering React or building Sites. The normal `npm test` and `npm run verify` paths include these focused tests. At the E02-T02 checkpoint, identity, transitions, and campaign-seed work were still later tasks; E02-T03, E02-T04, and E02-T06 subsequently implemented those boundaries. Application clock isolation remains open.
 
 ### E02-T03 implemented identity boundary
 
@@ -68,7 +68,7 @@ E02-T03 establishes `src/game/identity.ts` as the pure current identity contract
 
 This is not a generic entity system. Skills, boards, faction/class/vocation values, and other reusable definitions retain their literal content IDs. Cell keys remain coordinate-derived `CellKey` values, and dungeon room numbers remain stored snapshot-local ordinals rather than global entity identities. No hero, settlement, region, army, unit, or item identity exists until an approved mechanic has a persistent instance that needs one. Existing loaded IDs are never rewritten merely for format consistency.
 
-The provider and browser-storage adapter supply the system identity source to current player/campaign creation and migration fallback paths. Clock and gameplay-seed inputs remain hidden and explicitly outside this owner-defined E02-T03 task.
+The provider and browser-storage adapter supply the system identity source to current player/campaign creation and migration fallback paths. E02-T03 deliberately left clock and gameplay-seed work outside its identity scope; E02-T06 subsequently implemented the separate campaign-seed boundary, while application clock isolation remains open.
 
 ### E02-T04 implemented transition boundary
 
@@ -110,13 +110,13 @@ Before E02-T04, the application/state layer imported `RegisteredBoardId` from `s
 
 Full audit evidence, save risks, module responsibilities, and staged tasks are recorded in [E02-T01_CORE_ENGINE_CONTRACT_AUDIT.md](./E02-T01_CORE_ENGINE_CONTRACT_AUDIT.md).
 
-### E02-T08 exit-gate Candidate audit
+### E02-T08 accepted exit audit
 
 The final EPIC 02 audit verifies the implemented flow as board/UI intent → named provider operation → pure validated transition/navigation policy → authoritative `CampaignState` → pure selectors/policy → board rendering. The persistence flow remains `CampaignState` ↔ explicit normalization/migration ↔ the version-1 browser registry adapter. Source/import review finds no React, browser persistence, board implementation, or Sites/Cloudflare dependency in the tested pure engine modules; application navigation legality uses `src/game/navigation.ts`, while React board registration remains a view-composition concern.
 
 The current boards do not directly rewrite the migrated Hero Setup, movement/discovery/Heart, Settlement claim, or navigation facts, and no unrestricted whole-campaign updater remains in their normal API. The existing provider still coordinates timestamps, the active working copy, registry mirroring, lifecycle operations, and storage; this is known bounded application-layer debt rather than campaign-rule authority. No generic framework or speculative gameplay/state slice was introduced.
 
-`npm run test:engine` and `npm run verify` both pass at the Candidate checkpoint. The complete evidence and residual limitations are recorded in [E02-T08_EPIC_02_EXIT_GATE.md](./E02-T08_EPIC_02_EXIT_GATE.md). This is a Candidate assessment only: EPIC 02 remains Current until explicit owner acceptance.
+`npm run test:engine` and `npm run verify` passed at the exit gate, and the owner confirmed the independent GitHub Actions `Verify` result as PASS. The owner accepted E02-T08 and EPIC 02 on 2026-08-10. Complete evidence and residual limitations are recorded in [E02-T08_EPIC_02_EXIT_GATE.md](./E02-T08_EPIC_02_EXIT_GATE.md).
 
 ## Structural principles
 
@@ -155,7 +155,7 @@ Dependencies should point toward the domain. Game rules must not depend on React
 
 Cross-board effects must pass through the central application/domain boundary. A tactical result, dungeon claim, world conquest, or supply change should be represented as an explicit campaign transition rather than an unrelated collection of view-level mutations.
 
-The exact command/event model is not yet established. The principle is that rule-bearing changes are named, validated, testable, and traceable.
+No generic command/event framework is established or required. Current rule-bearing changes use ordinary named, validated, testable pure transition functions; future mechanics should extend that pattern only when their approved rules require it.
 
 ### 5. Persistent data is versioned and migratable
 
@@ -231,7 +231,7 @@ E02-T02 adds the first dependency-free pure-engine suite through `npm run test:e
 
 ## Target module contract
 
-**Accepted:** Evolve each playable board into a typed module registered through one authoritative board catalog. A board module contains or references:
+**Accepted and implemented at the current catalog boundary:** Each in-campaign board is registered through one authoritative typed catalog. A board module contains or references:
 
 - stable board ID and navigation metadata;
 - view/component resolution;
@@ -240,7 +240,7 @@ E02-T02 adds the first dependency-free pure-engine suite through `npm run test:e
 - named application/domain operations it may invoke;
 - optional route/entry requirements and cleanup behavior.
 
-The central application would resolve boards from this catalog rather than duplicating board knowledge in conditional rendering and navigation. This preserves the existing registry idea while making add/remove behavior genuinely modular.
+The central application resolves boards from this catalog rather than duplicating board knowledge in conditional rendering and navigation. This preserves the registry boundary while keeping add/remove behavior bounded.
 
 E01-T04 establishes the initial concrete contract in `src/boards/registry.ts`: each registered module provides its stable `BoardId`, labels, icon, React component, independent `enabled` flag, and campaign-aware `isUnlocked` rule. E01-T05 registers the complete in-campaign family—Hero, Settlement, World, Dungeon, Combat, and Diplomacy—through that contract. Dungeon and Settlement remain the real prototype boards; Hero, World, Combat, and Diplomacy are explicitly empty EPIC 01 foundations. Setup remains the pre-campaign flow outside the board catalog.
 
@@ -328,5 +328,4 @@ This document does not approve:
 1. What session or draft state must persist, beginning with unfinished hero setup?
 2. What is the authoritative player/campaign/persistence model: campaign count, identity, cloud sync, offline behavior, and save semantics?
 3. Should future multiplayer constrain architecture now; if yes, what authority and synchronization model is required?
-4. What verification gates and supported local development environment are required?
-5. Should styling remain handcrafted CSS, use Tailwind intentionally, or defer that choice?
+4. Should styling remain handcrafted CSS, use Tailwind intentionally, or defer that choice?

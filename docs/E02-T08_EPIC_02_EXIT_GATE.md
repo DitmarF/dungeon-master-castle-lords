@@ -1,5 +1,8 @@
 # Dungeon Master & Castle Lords — E02-T08 EPIC 02 verification and exit gate
 
+Status: **Complete — accepted checkpoint**
+Accepted by project owner: 2026-08-10
+
 ## Task ID and name
 
 `E02-T08 — EPIC 02 verification and exit gate`
@@ -12,7 +15,7 @@ Audit and verify the completed EPIC 02 implementation, prove whether its state, 
 
 - Stable base commit: `1ede5c53a3075fccfc8b1f0a939a7368c18ea6f0`
 - Accepted Sites version: `20`
-- Current roadmap milestone: `EPIC 02 — Core game engine and state`; E02-T08 is the sole current verification task
+- Historical task milestone: `EPIC 02 — Core game engine and state`; E02-T08 was its final verification task
 - Relevant decisions: `DMCL-004`, `DMCL-005`, `DMCL-P03`, `DMCL-P05`–`DMCL-P07`, `DMCL-P19`–`DMCL-P21`, `DMCL-P23`–`DMCL-P25`
 - Relevant documents/files: `AGENTS.md`; `docs/ROADMAP.md`; `docs/DECISIONS.md`; `docs/E02-T01_CORE_ENGINE_CONTRACT_AUDIT.md` through `docs/E02-T07_DEVELOPER_STATE_INSPECTOR.md`; `docs/ARCHITECTURE.md`; `docs/GAME_STATE.md`; `docs/CONTENT_MODEL.md`; `docs/WORKFLOW.md`; `docs/TASK_TEMPLATE.md`; `src/game/`; `src/boards/`; `src/ui/`; `app/`; `tests/`; `package.json`; `.openai/hosting.json`
 - Why this task is needed now: all seven implementation/audit slices of EPIC 02 are owner-accepted, but the Epic may close only after one evidence-based verification pass proves the combined boundaries and existing playable flow still hold.
@@ -86,27 +89,28 @@ Audit and verify the completed EPIC 02 implementation, prove whether its state, 
 ## Documentation impact
 
 - Responsible documents to review/reconcile: `docs/ARCHITECTURE.md`, `docs/GAME_STATE.md`, `docs/DECISIONS.md`, `docs/ROADMAP.md`, relevant E02 task records, and this exit-gate record
-- Decision changes: none before owner acceptance unless the audit discovers a status error; EPIC completion and next-Epic activation are acceptance-driven updates
-- Roadmap change after acceptance: mark EPIC 02 complete, make EPIC 03 current, and identify exactly one bounded EPIC 03 task according to the roadmap/workflow; do not begin it
-- `CURRENT_STATE.md` audit required: no; this task intentionally does not perform the document’s fresh-audit maintenance procedure
+- Decision changes: no new architecture/gameplay decision; owner acceptance closes EPIC 02 while all observed/interim lifecycle choices remain interim
+- Roadmap change after acceptance: EPIC 02 is Complete; EPIC 03 is Current; `E03-T01 — Audit campaign lifecycle and persistence boundaries` is the sole next task and is not begun here
+- `CURRENT_STATE.md` audit required by the original E02-T08 scope: no; the later owner-accepted closure instruction explicitly requires and performs the fresh evidence-based audit recorded in this checkpoint
 
 ## Checkpoint
 
 - Configured Sites source branch: `main`
-- Commit/push authorized: only after explicit owner acceptance of the E02-T08 Candidate
-- Expected checkpoint contents: accepted verification/task documentation plus acceptance-driven EPIC 02 closure, decision reconciliation, and exactly one EPIC 03 next task
+- Commit/push authorized: yes; the owner explicitly accepted E02-T08 and authorized the closure checkpoint on 2026-08-10
+- Expected checkpoint contents: accepted verification/task documentation, fresh `CURRENT_STATE.md` audit, acceptance-driven EPIC 02 closure, decision reconciliation, and exactly one EPIC 03 next task
 - Deployment authorized: **No**, unless a separate explicit deployment task says otherwise.
 
 ## Completion report
 
 ### Candidate outcome
 
-- Assessment: **EPIC 02 PASS — Candidate awaiting owner acceptance**
+- Assessment: **EPIC 02 PASS — accepted by project owner**
 - Summary: the combined state, identity, transition, selector, RNG, persistence, dependency, testing, and read-only inspector boundaries satisfy the accepted EPIC 02 exit criteria. No blocking defect, implementation change, schema change, dependency change, new gameplay, or speculative framework was required.
-- Changed files: `docs/E02-T08_EPIC_02_EXIT_GATE.md`, `docs/ARCHITECTURE.md`, `docs/GAME_STATE.md`, `docs/DECISIONS.md`, and `docs/ROADMAP.md`. `docs/CURRENT_STATE.md` and all implementation/test files are unchanged.
+- Closure checkpoint changed files: `AGENTS.md`, `docs/ARCHITECTURE.md`, `docs/CONTENT_MODEL.md`, `docs/CURRENT_STATE.md`, `docs/DECISIONS.md`, `docs/E02-T08_EPIC_02_EXIT_GATE.md`, `docs/GAME_STATE.md`, and `docs/ROADMAP.md`. All implementation and test files are unchanged.
 - Automated verification:
   - `npm run test:engine` — PASS: 41 tests, 0 failures, 0 skipped/cancelled.
   - `npm run verify` — PASS: FS token synchronization, ESLint, the same 41 engine tests, bounded Sites build/artifact validation, and 1 rendered-HTML test all passed.
+  - final closure rerun — PASS on 2026-08-10 after the fresh implementation audit and acceptance-driven documentation reconciliation; results remained 41/41 focused engine tests plus the complete gate above.
   - read-only source/import searches — PASS: no board direct rewrite of migrated campaign mechanics; no `updateGame` API in current source/tests; no uncontrolled `Math.random()` in current game source; no speculative campaign slices; no forbidden pure-engine dependency.
 - Acceptance evidence by boundary:
   - state/persistence — `CampaignState`/`GameSave` version 4 is the single campaign shape; runtime/profile/registry/theme/UI state remains separate; v2/v3 migration adopts the stored Dungeon seed and retains the stored generated Dungeon and progress facts.
@@ -119,20 +123,22 @@ Audit and verify the completed EPIC 02 implementation, prove whether its state, 
 - Save/migration result: PASS. The golden deterministic Dungeon fixture and focused v2/v3 migration tests retain Dungeon layout/snapshot, Hero position, discovery, Heart, claim, Hero setup/attributes, and existing IDs while adding only the approved version-4 `campaignSeed` fact.
 - Residual technical debt (non-blocking): `GameProvider` still coordinates timestamps, active working-copy/registry mirroring, lifecycle calls, and storage; `activeGame` and the registry campaign are synchronized application copies; `hero.attributes` and several Dungeon values remain documented compatibility snapshots; timestamp/clock semantics, save meaning, one-campaign-per-player registry policy, storage error handling/validation depth, and generator-version/seed-versus-snapshot policy remain future bounded work.
 - Deferred decisions: campaign lifecycle/save-slot/manual-save semantics belong to EPIC 03; full Hero identity/progression belongs to EPIC 04+; calendar, economy, World, Combat, armies, events, cloud/multiplayer authority, clock isolation placement, and future RNG streams remain with their responsible Epics. None blocks EPIC 02 closure.
-- Documentation/decision updates: architecture and state documents record the verified Candidate boundary; decision and roadmap wording identify E02-T08 as a PASS Candidate awaiting acceptance. No proposal status was changed and no new gameplay/architecture decision was introduced.
-- Owner decision required: accept or reject the E02-T08 PASS Candidate. Only acceptance authorizes marking EPIC 02 complete, selecting exactly one EPIC 03 next task, reconciling acceptance-driven statuses, committing/pushing, and saving the matching Sites version.
+- Documentation/decision updates: architecture and state documents record the accepted exit boundary; the fresh implementation audit describes the post-EPIC 02 repository; decision and roadmap wording close EPIC 02, make EPIC 03 Current, and name only E03-T01. No deferred gameplay/product choice was promoted and no new gameplay/architecture decision was introduced.
+- Owner acceptance: the project owner accepted this PASS Candidate and EPIC 02 closure on 2026-08-10. The owner separately confirmed the latest GitHub Actions `Verify` result as PASS; no unverified CI run ID or metadata is asserted.
 - Deployment: **Not performed**
 
 ### User acceptance
 
-- Status: Candidate awaiting explicit owner acceptance
-- Accepted by/date: pending explicit acceptance
+- Status: **Accepted**
+- Accepted by/date: project owner, 2026-08-10
+- External verification: latest GitHub Actions `Verify` result owner-confirmed PASS
+- History note: the Candidate documentation was committed and pushed as `80604a1da061bacbd1becb315268b57a387deaeb` before formal owner acceptance. The final closure is recorded in a separate checkpoint; Git history is unchanged.
 
 ### Accepted checkpoint
 
-- Final commit SHA: pending acceptance
-- Pushed source branch: `main` after acceptance
-- Saved Sites version: pending acceptance
-- Roadmap status: EPIC 02 remains Current until owner acceptance and checkpoint completion
-- Next task: identified only after owner acceptance; EPIC 03 will not begin in this task
+- Final commit SHA: reported in the completion handoff after this accepted record is committed
+- Pushed source branch: `main`
+- Saved Sites version: matching non-deployed version reported in the completion handoff
+- Roadmap status: EPIC 02 Complete; EPIC 03 Current
+- Next task: `E03-T01 — Audit campaign lifecycle and persistence boundaries` (not started)
 - Deployment: **Not performed**
