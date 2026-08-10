@@ -31,17 +31,17 @@ Accepted constraints carried forward include one authoritative campaign state, v
 
 ## Current Next Task
 
-### E02-T05 — Selectors and derived-state layer
+### E02-T06 — Deterministic campaign RNG foundation
 
 Status: **Next — exactly one**
 
-Goal: establish a small pure selector layer for calculations with duplicated authority, beginning with the current Hero attribute bonuses, totals, and Hero Setup preview.
+Goal: introduce the smallest explicit campaign-level deterministic randomness foundation while preserving every existing generated Dungeon snapshot and keeping identity entropy separate from gameplay RNG.
 
-The bounded scope is defined in [E02-T05_SELECTORS_AND_DERIVED_STATE.md](./E02-T05_SELECTORS_AND_DERIVED_STATE.md) and starts from the accepted E02-T04 checkpoint plus the stored-versus-derived classification in the accepted [E02-T01 audit](./E02-T01_CORE_ENGINE_CONTRACT_AUDIT.md). Its primary scope is one authoritative calculation for current class bonuses, vocation bonuses, free allocation, persisted Hero attribute totals, and Hero Setup preview. Additional selectors require present shared rule or derivation evidence; trivial property wrappers and speculative future Hero systems remain out of scope.
+The task starts from the accepted E02-T05 checkpoint and the randomness/state policy in the accepted [E02-T01 audit](./E02-T01_CORE_ENGINE_CONTRACT_AUDIT.md). It covers one authoritative campaign seed, an application/infrastructure entropy boundary for new campaigns, deterministic current Dungeon creation from explicit inputs, a compatibility migration that never regenerates existing Dungeon snapshots, and a current-code `Math.random()` audit.
 
-Non-goals include full Hero foundations or progression, combat-derived stats, skills/equipment/economy, generic effect or selector frameworks, new gameplay or balance values, UI redesign, new dependencies, and deployment.
+Non-goals include combat, loot, weather, AI, diplomacy, events, World generation, separate random streams/counters, multiplayer simulation, cryptographic gameplay requirements, UI redesign, new dependencies, and deployment.
 
-The project owner accepted E02-T04 on 2026-08-10 and reported all requested tests, verifications, and gameplay checks passing. E02-T05 must preserve current version-3 campaigns and may not silently change the accepted classification of stored facts, stored snapshots, and derived values.
+The project owner accepted E02-T05 on 2026-08-10 and reported all requested tests, verifications, Hero Setup checks, and save/load behavior passing. E02-T06 must preserve loaded Dungeon maps, Hero position, discovery, Heart state, settlement claim, and current gameplay while introducing no speculative random system.
 
 ## Epic registry
 
@@ -87,7 +87,7 @@ E01-T01 through E01-T07 established and verified:
 - portable bounded verification through accepted DMCL-P18 and a verification-only GitHub Actions workflow;
 - owner-reported PASS results for all required desktop, portrait, interaction, accessibility, campaign-regression, and physical-smartphone exit checks.
 
-The project owner accepted E01-T07 and EPIC 01 on 2026-08-09. The matching pushed/Sites checkpoint is completed through the normal workflow without deployment. EPIC 02 is Current; E02-T01 through E02-T04 were accepted on 2026-08-10, and E02-T05 is the exact next task.
+The project owner accepted E01-T07 and EPIC 01 on 2026-08-09. The matching pushed/Sites checkpoint is completed through the normal workflow without deployment. EPIC 02 is Current; E02-T01 through E02-T05 were accepted on 2026-08-10, and E02-T06 is the exact next task.
 
 ## E02-T01 closure
 
@@ -141,6 +141,18 @@ E02-T04 established and verified:
 
 The project owner accepted E02-T04 on 2026-08-10 and reported all requested tests, verifications, and gameplay checks passing. Its matching non-deployed source/Sites checkpoint is completed before E02-T05 implementation begins.
 
+## E02-T05 closure
+
+E02-T05 established and verified:
+
+- one pure authority for the six current class/vocation attribute bonuses, combined path bonus, and total Hero attributes;
+- Hero Setup path-card copy and live preview derived from that authority instead of parallel mechanical strings or calculations;
+- version-3 `hero.attributes` retained as a compatibility snapshot refreshed by the same selector on setup completion and v2/v3 load normalization;
+- deterministic, non-mutating coverage for all nine current class/vocation combinations;
+- no schema change, balance change, speculative selector framework, or unrelated gameplay work.
+
+The project owner accepted E02-T05 on 2026-08-10 and reported all requested tests, verifications, Hero Setup checks, and save/load behavior passing. Its matching non-deployed source/Sites checkpoint is completed before E02-T06 implementation begins.
+
 ## EPIC 00 closure
 
 E00-T05 reconciles the project contract by:
@@ -165,12 +177,12 @@ E00-T05 was accepted by the project owner on 2026-08-09, completing EPIC 00. Its
 - Every accepted task updates this file with the current Epic status and exactly one next task.
 - Normal tasks save an accepted Sites version but do not deploy. Deployment requires separate explicit user instruction.
 
-## Deferred decisions that do not block E02-T05
+## Deferred decisions that do not block E02-T06
 
 - exact gameplay formulas, balance, thresholds, costs, and progression values;
 - final player/account/cloud/offline/multiplayer authority model;
 - unfinished setup and other draft persistence;
-- placement of the still-unimplemented clock and deterministic gameplay-seed isolation work after the owner-selected E02-T04 task;
+- placement of still-unimplemented clock isolation; E02-T06 addresses only the approved campaign gameplay-seed boundary;
 - exact effect vocabulary until an approved mechanic needs it;
 - localization, mod/content-pack, and remote-content requirements;
 - detailed tasks, formulas, readiness criteria, and exit criteria for future Epics; define these through bounded planning before each Epic is activated.
