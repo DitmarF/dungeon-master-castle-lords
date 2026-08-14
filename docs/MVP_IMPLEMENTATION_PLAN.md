@@ -17,7 +17,7 @@ This document translates the approved [Game Concept 2.0](./GAME_CONCEPT.md) into
 
 The project owner accepted this plan and DMCL-P26 on 2026-08-14. Acceptance did not itself change the campaign schema, migrate a save, or authorize deployment.
 
-DMCL-P26 records the roadmap rebase, EPIC 03 is the active implementation Epic, and the completed E03-T01 audit records its accepted transition decisions as DMCL-P27–DMCL-P39 plus the next campaign-schema number as DMCL-P40. E03-T02 is the sole next task. Each later task still requires its own bounded task definition and any owner decisions named by this plan.
+DMCL-P26 records the roadmap rebase, EPIC 03 is the active implementation Epic, and the completed E03-T01 audit records its accepted transition decisions as DMCL-P27–DMCL-P39 plus campaign version 5 as DMCL-P40. Accepted E03-T02–T07 work implements the opening foundation; E03-T08 is the sole current task and must pass before EPIC 03 can close. Each later task still requires its own bounded task definition and any owner decisions named by this plan.
 
 ## 2. Roadmap rebase
 
@@ -131,7 +131,7 @@ An Epic may begin its decision task while exact later-Epic values remain TBD. It
 
 **Entry:** EPIC 00–02 complete; Game Concept 2.0 and DMCL-022–DMCL-028 accepted.
 
-**Accepted next schema number:** campaign version 5 (DMCL-P40). Version 4 remains the current persisted authority until E03-T05 implements and verifies the accepted version-5 shape and cutover.
+**Implemented schema boundary:** campaign version 5 (DMCL-P40) is the current playable authority after E03-T05/T06. Version 4 remains only a protected migration source; registry version 2 is preferred while the original version-1 payload is retained under DMCL-P31.
 
 | Task | Outcome | Key subtasks |
 |---|---|---|
@@ -401,7 +401,7 @@ Every task applies only the relevant rows, but no Epic may close while an affect
 | AI scope explosion | full rival strategy could dominate MVP work | bounded encounter and strategic threat behavior; full sovereign simulation remains post-MVP |
 | False completion | feature breadth can hide broken save, migration, or inaccessible flows | milestone gates, deterministic fixtures, full-campaign tests, owner physical-device acceptance |
 
-## 21. Completed first task and exact next task
+## 21. Completed transition tasks and exact current task
 
 The first task under this plan was:
 
@@ -442,9 +442,11 @@ Status: **Complete**
 
 Documentation-only verification is sufficient for E03-T01: inspect repository evidence, links, status labels, decision coverage, task bounds, and the complete diff. No application build is required unless the task separately changes code.
 
-### Exact next task
+E03-T01 through E03-T07 are complete and owner-accepted. Their records and `ROADMAP.md` provide the authoritative checkpoint history.
 
-**E03-T02 — Safe local lifecycle and persistence behavior** is the sole next task. It implements the accepted clock, timestamp, manual-Save, typed-failure, safe-hydration, and one-campaign replacement/deletion contract without changing the gameplay schema or starting the version-5 cutover.
+### Exact current task
+
+**E03-T08 — Compatibility and EPIC 03 exit gate** is the sole current task. It audits the combined migration, persistence, determinism, Setup, navigation, presentation, documentation, and manual-acceptance evidence without adding gameplay. EPIC 03 remains Current until the owner explicitly accepts the exit Candidate and the workflow checkpoint completes.
 
 ## 22. Acceptance and activation
 
@@ -457,4 +459,4 @@ On 2026-08-14, the project owner accepted:
 5. E03-T01 as the sole next task;
 6. campaign version 5 as the next campaign-schema number, recorded after E03-T01 as DMCL-P40.
 
-Acceptance activated the plan and EPIC 03. It does not pre-approve gameplay numbers or later decision gates. The accepted E03-T01 checkpoint makes E03-T02 the sole next task and does not authorize deployment.
+Acceptance activated the plan and EPIC 03. It does not pre-approve gameplay numbers or later decision gates. Owner-accepted E03-T01–T07 work leads to E03-T08 as the sole current task; no task or checkpoint authorizes deployment.

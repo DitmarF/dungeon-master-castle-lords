@@ -43,7 +43,7 @@ The current evidence hierarchy and limitations are documented in `CURRENT_STATE.
 
 ## Current core-engine architecture
 
-**Accepted and implemented through E03-T06; extended by the in-progress E03-T07 Candidate.** The authoritative pure campaign type is `CampaignState`; `GameSave` is its version-5 serialized alias. Version 4 remains an explicit legacy compatibility type behind the strict migration boundary. `CampaignState` contains only the accepted Castle opening facts and compatibility snapshots. `PlayerProfile`, `GameRegistry`, `RuntimeState`, theme/hydration, and board-local presentation state remain outside it.
+**Accepted and implemented through E03-T07.** The authoritative pure campaign type is `CampaignState`; `GameSave` is its version-5 serialized alias. Version 4 remains an explicit legacy compatibility type behind the strict migration boundary. `CampaignState` contains only the accepted Castle opening facts and compatibility snapshots. `PlayerProfile`, `GameRegistry`, `RuntimeState`, theme/hydration, and board-local presentation state remain outside it.
 
 The current engine surface is:
 
@@ -110,7 +110,7 @@ The module imports no React, board, provider, storage, clock, identity entropy, 
 
 World generation occurs only while converting an eligible completed Castle source. The resulting snapshot becomes stored authority. The legacy Dungeon is structurally copied under its deterministic regional location without calling `createDungeonLevel`; its cell position remains exploration context rather than becoming strategic coordinates. Dungeon-faction input produces no Castle state. Source mutation and platform dependencies are prohibited and tested.
 
-At the accepted E03-T05 checkpoint the application-facing alias remained version 4 so the target could not become half-integrated. E03-T06 now moves the aliases, provider, navigation, and ordinary Setup to version 5 as one bounded cutover. E03-T07 remains responsible for fuller player-facing migrated-state presentation and recovery choices.
+At the accepted E03-T05 checkpoint the application-facing alias remained version 4 so the target could not become half-integrated. E03-T06 subsequently moved the aliases, provider, navigation, and ordinary Setup to version 5 as one bounded cutover, and E03-T07 added the accepted player-facing migrated-state presentation and recovery choices.
 
 ### E03-T06 accepted Village-first application boundary
 
@@ -120,9 +120,9 @@ At the accepted E03-T05 checkpoint the application-facing alias remained version
 
 `GameProvider` remains the application coordinator: it supplies clock/identity/seed/storage ports, invokes named pure operations, stamps successful campaign changes, performs verified writes, and exposes bounded player-visible persistence status. It has no authority to create a partial foundation. The UI consumes the pure navigation policy; the former Dungeon Heart claim remains a compatibility-shaped provider operation returning `operation-retired`, and no board can use it to create or unlock the capital.
 
-### E03-T07 Candidate opening-presentation boundary
+### E03-T07 accepted opening-presentation boundary
 
-The T07 Candidate keeps World focus/selection as component-local UI state while rendering the stored version-5 World snapshot directly. `WorldBoard` resolves reusable labels from the typed opening catalogs, presents the fixed seven-region topology, and submits only one rule-bearing intent: `enterRegionalDungeon(locationId)`. That pure transition validates the stored location and Dungeon reference, creates or resumes the separate exploration context, reveals the initial view without resetting prior discovery, and enters the Dungeon board. It never calls either generator, changes World placement, or rewrites the Hero strategic-region reference.
+The accepted T07 implementation keeps World focus/selection as component-local UI state while rendering the stored version-5 World snapshot directly. `WorldBoard` resolves reusable labels from the typed opening catalogs, presents the fixed seven-region topology, and submits only one rule-bearing intent: `enterRegionalDungeon(locationId)`. That pure transition validates the stored location and Dungeon reference, creates or resumes the separate exploration context, reveals the initial view without resetting prior discovery, and enters the Dungeon board. It never calls either generator, changes World placement, or rewrites the Hero strategic-region reference.
 
 Settlement and Hero are inspection surfaces over the same campaign foundation. Settlement renders only the existing capital, root authority, controlled-region count, and starting content references. Hero explicitly separates strategic-region context from square-grid exploration position. The Dungeon remains the existing stored snapshot and is presented as a regional location; legacy prototype counters remain absent from normal campaign status.
 

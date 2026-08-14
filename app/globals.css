@@ -1647,9 +1647,9 @@ button.game-slot {
 }
 
 .skill-node--available {
-  border-color: color-mix(in srgb, var(--fs-feedback-success) 72%, var(--border-soft));
+  border-color: color-mix(in srgb, var(--tree-accent) 72%, var(--border-soft));
   color: var(--fs-content-primary);
-  background: color-mix(in srgb, var(--fs-feedback-success) 9%, var(--surface-raised));
+  background: color-mix(in srgb, var(--tree-accent) 9%, var(--surface-raised));
 }
 
 .skill-node--available:hover,
@@ -3053,6 +3053,15 @@ button.game-slot {
 
   .start-features li:last-child {
     display: none;
+  }
+
+  .campaign-actions {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .campaign-actions .button {
+    width: 100%;
+    white-space: nowrap;
   }
 
   .attribute-list {

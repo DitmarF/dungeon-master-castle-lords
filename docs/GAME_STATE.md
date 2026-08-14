@@ -96,7 +96,7 @@ On first successful legacy load, the application strictly decodes and migrates t
 
 ## Accepted EPIC 03 transition contract
 
-**Accepted in E03-T01.** E03-T02 implements the lifecycle/persistence subset below; the opening, World, and gameplay-shape portions remain assigned to E03-T03–T07:
+**Accepted in E03-T01 and implemented through E03-T07.** The lifecycle/persistence, content, World, migration, Setup, navigation, and presentation responsibilities below now describe the current EPIC 03 foundation:
 
 - each local profile has at most one campaign; replacement and profile deletion require explicit confirmation, and the old durable entry remains intact until the candidate write and readback verify;
 - `campaign.createdAt` is immutable creation time; `campaign.updatedAt` changes only with campaign truth or stored resume-context changes; `profile.lastPlayedAt` records successful New/Continue entry rather than campaign modification or Save;
@@ -171,7 +171,7 @@ The pure version-5 navigation policy makes Hero, Settlement, and World initially
 
 The provider submits the complete transition through the verified version-2 persistence path. Successful persistence enters the Village-first campaign durably. A later write failure retains the complete in-memory campaign with explicit unsaved feedback and Save retry; it never reports durability or falls back to a partial campaign.
 
-### E03-T07 Candidate presentation and regional-entry behavior
+### E03-T07 accepted presentation and regional-entry behavior
 
 The opening boards read the existing version-5 foundation without adding campaign fields. World region selection/focus remains UI-only. Choosing the stored `location:regional-dungeon` entry invokes one pure transition that validates its World location and matching retained Dungeon, sets or resumes `hero.explorationContext`, adds only the start-cell visibility not already discovered, and changes the stored resume board to Dungeon. Re-entry preserves the stored cell, rooms, tiles, Heart, and discovery history. The Hero strategic-region reference remains a separate fact and is never replaced with a Dungeon cell or an axial coordinate.
 

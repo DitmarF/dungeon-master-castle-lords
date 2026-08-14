@@ -17,7 +17,7 @@ The implemented prototype now includes:
 
 `local player → safe verified version-2 local registry → Castle-only Hero Setup → atomic version-5 Village/home-ring opening → deterministic regional Dungeon snapshot/context → Settlement/Hero/World access`
 
-E03-T02 implements the accepted browser-local lifecycle, timestamp, failure, verified Save, and replacement/deletion contract. E03-T03 implements the minimum Castle/Village opening content catalogs and makes Castle the sole new-campaign faction while retaining Dungeon compatibility identity. E03-T04 implements the pure deterministic seven-region opening generator. E03-T05 implements the accepted version-5 target model and strict v2/v3/v4-to-v5 migration capability. E03-T06 switches the playable application to that model, activates the verified version-2 registry cutover while retaining the version-1 source, and creates the complete Village-first foundation atomically. Player-facing opening summaries/recovery, region conquest, supply, meaningful management, tactical combat, executable skill effects, faction evolution, cloud saves, and multiplayer remain unimplemented. See CURRENT_STATE.md for the earlier repository-wide audit and the accepted E03 task records for newer bounded evidence.
+E03-T02 implements the accepted browser-local lifecycle, timestamp, failure, verified Save, and replacement/deletion contract. E03-T03 implements the minimum Castle/Village opening content catalogs and makes Castle the sole new-campaign faction while retaining Dungeon compatibility identity. E03-T04 implements the pure deterministic seven-region opening generator. E03-T05 implements the accepted version-5 target model and strict v2/v3/v4-to-v5 migration capability. E03-T06 switches the playable application to that model, activates the verified version-2 registry cutover while retaining the version-1 source, and creates the complete Village-first foundation atomically. E03-T07 presents the authoritative Hero, capital Village, and edge-sharing home ring; enters the retained Dungeon only through its World-region context; and exposes typed recovery states without adding future mechanics. Region conquest, supply, meaningful management, tactical combat, executable skill effects, faction evolution, cloud saves, and multiplayer remain unimplemented. See CURRENT_STATE.md and the accepted E03 task records for current evidence.
 
 ## Accepted activation
 
@@ -42,26 +42,23 @@ Purpose: safely replace the version-4 Dungeon-first prototype foundation with th
 
 EPIC 03 does not add an empty final-game schema. It adds only state and content required by the new opening: Castle authority, a capital Village, the controlled home ring, basic starting sites, regional Dungeon context, and approved retained legacy facts. Economy yields, Road construction, units, Combat, Gambits, Hero progression depth, and evolution effects remain with later Epics.
 
-## Exact next task
+## Exact current task
 
-### E03-T07 — Opening boards, summaries, and inspection
+### E03-T08 — Compatibility and EPIC 03 exit gate
 
-Status: **Next — exactly one**
+Status: **Current — exactly one**
 
-Goal: make the Castle/Village-first foundation understandable and inspectable without pretending later mechanics already exist.
+Goal: perform the final compatibility, persistence, determinism, integration, documentation, and manual-acceptance audit for EPIC 03 without adding gameplay.
 
-E03-T07 must:
+E03-T08 must:
 
-- present the approved New/Continue/replacement/deletion and typed persistence/migration recovery states honestly;
-- keep Castle implicit and preserve the accepted Setup choices without future progression claims;
-- render concise authoritative Hero, Tier-1 Village, and deterministic seven-region home-ring summaries;
-- make the regional Dungeon selectable/enterable only through valid World-region context while preserving its stored snapshot and exploration history;
-- keep strategic position distinct from Dungeon exploration position and keep legacy counters out of strategic/global status;
-- keep Hero/Settlement/World available, Dungeon contextual, and Combat/Diplomacy unavailable;
-- extend the read-only developer inspector with useful version-5 World, capital, context, retained-Dungeon, and compatibility evidence;
-- preserve portrait/touch/keyboard/theme/reduced-motion/accessibility behavior and FS token authority.
+- audit every approved v2/v3/v4 migration class, malformed source, target round trip, retained Dungeon snapshot, and persistence read/write failure path;
+- verify no Dungeon or World reroll/regeneration, stable references, idempotence, atomic one-time Setup, context separation, legal navigation, and source preservation;
+- run the complete supported automated gate and reconcile rendered/manual evidence without replacing owner physical-device acceptance;
+- refresh only responsible documentation from verified implementation evidence and create the EPIC 03 exit record;
+- present an EPIC 03 Exit Candidate and wait for explicit owner acceptance before closure checkpoint work.
 
-E03-T07 must not add economy/yields, Roads, projects, units, Combat, Gambits, faction evolution, new Dungeon content, database/hosting infrastructure, or deployment.
+E03-T08 must not add economy/yields, Roads, projects, units, Combat, Gambits, faction evolution, new Dungeon content, database/hosting infrastructure, begin EPIC 04, or deploy.
 
 ## Epic registry
 
@@ -145,6 +142,18 @@ E03-T02 established and verified:
 
 The project owner accepted E03-T02 on 2026-08-14, approved all points and tests, and reported independent GitHub verification PASS. Its matching non-deployed source/Sites checkpoint completes before E03-T03 begins.
 
+## E03-T03 closure
+
+E03-T03 established and verified the minimum typed Castle-opening catalogs: Castle as the sole new-campaign root, Dungeon as compatibility-only identity, Tier-1 Village, Food/Wood/Stone sites, neutral home-ring terrain, regional Dungeon, inert ruin, family-specific references, deterministic ordering, and catalog validation. It preserved every existing legal Hero Class, Vocation, tree, and skill ID without adding yields, economy, generated instances, or a new campaign schema.
+
+The project owner accepted E03-T03 on 2026-08-14, approved all points and tests, and reported independent GitHub verification PASS. Its matching non-deployed checkpoint completed before E03-T04 began.
+
+## E03-T04 closure
+
+E03-T04 established and verified the pure generator for one axial home region and exactly six controlled adjacent regions, the accepted Food/Wood/Stone/Dungeon/ruin/terrain-only placements, domain-separated World seed provenance, generator version 1, deterministic instance identities, stable ordering, and no mutation or consumption of the legacy Dungeon sequence or snapshot.
+
+The project owner accepted E03-T04 on 2026-08-14, approved all points and tests, and reported independent GitHub verification PASS. Its matching non-deployed checkpoint completed before E03-T05 began.
+
 ## E03-T05 closure
 
 E03-T05 established and verified:
@@ -170,6 +179,19 @@ E03-T06 established and verified:
 - focused atomicity, navigation, persistence, migration/source-preservation, and save/reload coverage.
 
 The project owner accepted E03-T06 on 2026-08-14, approved all points and tests, and reported independent GitHub verification PASS. Its matching non-deployed source/Sites checkpoint completes before E03-T07 begins.
+
+## E03-T07 closure
+
+E03-T07 established and verified:
+
+- honest Start, recovery, replacement, deletion, Save, and incompatibility presentation over the typed persistence outcomes;
+- one authoritative Hero information board, the Tier-1 capital summary, and a continuous edge-sharing seven-region World map with accessible high-contrast hex boundaries;
+- stored World-region selection/inspection and regional Dungeon entry without regeneration or strategic/exploration position confusion;
+- correct Hero/Settlement/World availability, contextual Dungeon access, and disabled Combat/Diplomacy scaffolds;
+- read-only version-5 development inspection and explicit legacy-metadata labeling;
+- portrait, desktop, pointer, keyboard/focus, theme, reduced-motion, reload, and resume evidence without fake later mechanics.
+
+The project owner accepted E03-T07 on 2026-08-14, approved all points and tests, and reported the pushed GitHub verification PASS. Its exact source commit `84130b72e91acfee7923aab8b9db6b98f48989c9` is saved as non-deployed Sites version 28. E03-T08 is the sole current audit task; EPIC 03 remains Current until the exit Candidate is explicitly accepted and checkpointed.
 
 ## E02-T01 closure
 

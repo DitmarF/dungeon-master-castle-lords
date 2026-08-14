@@ -115,9 +115,9 @@ After Hero Setup, a Castle campaign begins with:
 - the six adjacent regions forming a controlled first ring;
 - at least one Food site, one Wood site, and one Stone site within that ring;
 - deterministic placement guarantees that make Iron, Gold, and Mana Crystals reachable before their first mandatory gate;
-- at least one discoverable regional location that can introduce exploration and encounter play.
+- exactly one introductory regional Dungeon location, one inert discoverable ruin location, and one terrain-only region in the remaining three first-ring regions.
 
-The three remaining first-ring regions may contain terrain, an extra resource site, a ruin, a neutral location, a Dungeon, a threat, or another deterministic result.
+All six neighbors begin controlled. EPIC 03 assigns no yield, reward, threat, encounter, travel, or control-change behavior to these opening contents.
 
 The current prototype’s Dungeon-first flow and Dungeon Heart settlement claim are superseded product behavior. In the target concept, a Dungeon Heart may claim, transform, or resolve a regional Dungeon, but it does not create the starting Village.
 
@@ -877,24 +877,23 @@ The repository roadmap remains responsible for exact sequencing. At the time of 
 
 ## 23. Current prototype boundary
 
-At the time of this document:
+After the accepted E03-T02–T07 implementation:
 
-- Setup still offers Dungeon and Castle;
-- completing Setup still enters one embedded Dungeon;
-- Settlement still unlocks by reaching and claiming the Dungeon Heart;
-- the current campaign save contains one Hero and one Dungeon rather than the target World/Settlement/economy model;
-- the repository contains six descriptive Class/Vocation trees with 60 abilities, but no Hero levels, XP, Profession trees, or executable evolution riders;
-- World, Settlement, Combat, and Diplomacy are largely scaffold surfaces;
-- regions, roads, resources, buildings, projects, squads, armies, faction evolution, Gambits, and tactical combat are not implemented.
+- ordinary new campaigns use implicit Castle-only Setup and create one Tier-1 Village plus the deterministic controlled seven-region opening exactly once;
+- campaign version 5 and registry version 2 are the playable local boundaries, with strict v2/v3/v4 migration and the original registry-version-1 source retained;
+- the regional Dungeon belongs to a stored World location and requires valid exploration context; the Dungeon Heart does not create the capital;
+- Hero, Settlement, and World present authoritative opening facts, while Combat and Diplomacy remain unavailable without future legal contexts;
+- the repository still contains six descriptive Class/Vocation trees with 60 abilities but no Hero levels, XP, Profession trees, or executable evolution riders;
+- Food/Wood/Stone, the ruin, terrain-only region, and regional Dungeon are identities/inspection context only; Roads, yields, stockpile, projects, units, armies, Gambits, tactical Combat, and faction evolution are not implemented.
 
-These are implementation facts, not target rules. This concept approval does not migrate saves, change current state versioning, implement code, or authorize deployment.
+These are implementation-boundary facts, not additional gameplay approval. EPIC 03 does not implement the strategic economy or later connected loops and does not authorize deployment.
 
 ## 24. Consolidated TBD decisions
 
 The following remain deliberately open and require bounded design or implementation approval:
 
 1. All exact yields, costs, durations, upkeep, conversion ratios, caps, curves, thresholds, and balance values.
-2. World size, later-region density, terrain catalog, and exact contents of the other three starting-ring regions.
+2. World size beyond the accepted seven-region opening, later-region density, and the future terrain catalog.
 3. Region conquest, contesting, occupation, reclamation, loss, and hostile-Dungeon access.
 4. Road ranks, cost, capacity, maintenance, alternate transport, supply hubs, attrition, and siege rules.
 5. Local stockpiles, storage caps, convoys, spoilage, and market exchange behavior beyond the MVP global stockpile.
@@ -911,8 +910,8 @@ The following remain deliberately open and require bounded design or implementat
 16. Diplomacy relationship values, treaties, negotiation, loyalty change, Favor/leverage sources, and faction reactions.
 17. Exact Dominion, Conquest, Ascension, and defeat thresholds, including Tier 4’s relationship to Ascension.
 18. Final setting-language pass for mixed historical working names and any proposed display-name changes.
-19. Save migration and compatibility treatment for current Castle and Dungeon prototype campaigns.
-20. Final persistence, cloud, offline, identity, campaign-count, and multiplayer policies.
+19. Save compatibility beyond the accepted v2/v3/v4→v5 Castle conversion, pre-Setup preservation, Dungeon-faction incompatibility, and retained-source policy.
+20. Cloud, offline synchronization, authenticated identity, campaign cardinality beyond the one-campaign local MVP, and multiplayer persistence policies.
 
 ## 25. Decision discipline
 

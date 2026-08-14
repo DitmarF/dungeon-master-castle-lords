@@ -1,309 +1,159 @@
 # Dungeon Master & Castle Lords — Current State Audit
 
-Audit date: 2026-08-10
+Audit date: 2026-08-14
 
 Audited checkout: `/Users/dimi/Projects/dungeon-master-castle-lords`
 
 Branch: `main`
 
-Source commit inspected: `80604a1da061bacbd1becb315268b57a387deaeb` (`Document EPIC 02 exit gate`)
-
-> **Audit scope notice:** This is a fresh evidence-based audit of the repository after the accepted EPIC 01 and EPIC 02 engineering work. The closure changes that accompany this audit are documentation-only and do not alter the inspected application behavior.
-
-> **Incremental EPIC 03 evidence (2026-08-14):** The audit body below records the EPIC 02 checkpoint and is retained for historical evidence. Where it conflicts with the current repository, accepted E03-T01–T06 records and the in-progress [E03-T07 Candidate](./E03-T07_OPENING_BOARDS_SUMMARIES_AND_INSPECTION.md) supersede it. The current application uses campaign version 5 and registry version 2, opens with an established Castle Village/home ring, renders authoritative Settlement/World/Hero summaries, enters the retained Dungeon through its regional World context, and reports typed local-storage/migration states. Economy, Roads, travel, projects, units, Combat, Diplomacy mechanics, and strategic Day/resources remain unimplemented.
+Source base inspected: `84130b72e91acfee7923aab8b9db6b98f48989c9` (`Add opening board summaries and inspection`) plus the E03-T08 Candidate audit/reconciliation diff
 
 ## Purpose and evidence labels
 
-This document records what the current repository implements. It is evidence, not target architecture or approval of unresolved product behavior.
+This document records what the repository implements after the owner-accepted E03-T01–T07 work. It is implementation evidence, not approval of unresolved gameplay.
 
-- **Observed** — directly supported by current source, configuration, or tests.
-- **Owner-confirmed** — manually reported by the project owner; not independently inferred from source.
-- **Interim limitation** — current behavior or debt that is not an accepted permanent product rule.
-- **Not implemented** — an approved concept or scaffold has no corresponding gameplay system today.
+- **Observed** — directly supported by source, configuration, or automated tests.
+- **Owner-confirmed** — manually reported by the project owner.
+- **Manual acceptance required** — an interaction/device result that automated source or engine checks cannot establish.
+- **Not implemented** — concept scope with no executable mechanic in the current prototype.
 
 Product intent lives in [GAME_CONCEPT.md](./GAME_CONCEPT.md), approved structure in [ARCHITECTURE.md](./ARCHITECTURE.md), runtime ownership in [GAME_STATE.md](./GAME_STATE.md), and decision status in [DECISIONS.md](./DECISIONS.md).
 
 ## Executive summary
 
-**Observed:** The repository contains a mobile-first browser-game prototype using React 19 and Next.js 16 application conventions through Vinext/Vite and an OpenAI Sites Cloudflare Worker. Its implemented loop is:
+**Observed:** The current playable flow is:
 
-`local player → campaign → Hero Setup → deterministic Dungeon exploration → Dungeon Heart → Settlement claim → placeholder Settlement`
+```text
+local profile
+→ typed/verified registry hydration
+→ Castle-only Hero Setup
+→ atomic Tier-1 Village + controlled seven-region opening
+→ Settlement/Hero/World inspection
+→ regional Dungeon entry from World context
+→ verified local Save/reload/Continue
+```
 
-EPIC 02 established a pure version-4 `CampaignState`, typed identity and deterministic-random boundaries, named validated transitions for every current playable campaign mechanic, a narrow Hero-attribute selector authority, pure navigation legality independent from React board implementations, focused engine tests, and a development-only read-only campaign inspector.
+Campaign version 5 is the application/save authority inside registry version 2. The original registry-version-1 payload is retained untouched during legacy cutover. Supported v2/v3/v4 Castle campaigns migrate deterministically; incomplete v4 campaigns retain identity/seed without a fabricated Hero; v4 Dungeon-faction campaigns are recoverably incompatible and never silently become Castle.
 
-`GameProvider` remains the React application coordinator for hydration, player/campaign lifecycle, timestamps, registry mirroring, persistence calls, theme state, and named operation invocation. It is not the rule authority for the migrated Hero Setup, Dungeon movement/discovery/Heart, Settlement claim, or board-navigation mechanics.
+EPIC 03 implements an opening foundation and safe browser-local lifecycle, not the strategic economy or later game loops. Food/Wood/Stone sites, the ruin, terrain-only region, capital Village, and regional Dungeon are stored identities/context without yields, Roads, projects, threats, rewards, units, or progression effects.
 
-World strategy, economy, calendar progression, tactical combat, armies, events, cloud saves, multiplayer, and executable skill effects are not implemented.
+## Runtime, platform, and verification boundary
 
-## Runtime and stack
+**Observed:** The repository remains a private React 19/Next 16-convention application adapted by Vinext/Vite to a Sites-compatible Cloudflare Worker. `app/page.tsx` mounts one `GameProvider` and `GameApp`. `.openai/hosting.json` references Sites project `appgprj_6a762ab98b2c819181682817b758d7f8`; D1 and R2 are inactive. No dependency, database schema, Worker, hosting, or deployment change is part of EPIC 03.
 
-### Application runtime
+Supported verification remains:
 
-**Observed:**
+- `npm run test:engine` — dependency-free Node engine tests;
+- `npm run verify` — token drift, lint, engine tests, bounded build/artifact validation, and rendered-HTML check;
+- GitHub Actions — `npm ci` plus `npm run verify` as independent checkpoint evidence.
 
-- Package `dungeon-master-castle-lords` is private at version `0.1.0` and requires Node.js `>=22.13.0`.
-- Runtime dependencies are React/React DOM `19.2.6`, Next `16.2.6`, and the currently unused application-level Drizzle package.
-- Vinext `0.0.50` and Vite `8.0.13` adapt the Next app-router conventions to Cloudflare Worker output.
-- `app/page.tsx` mounts one `GameProvider` and `GameApp` client application.
-- `app/layout.tsx` defines metadata, mobile viewport behavior, and pre-render theme bootstrap.
-- `worker/index.ts` is the Cloudflare Worker edge. It delegates application requests to Vinext and handles the image-optimization path.
-- `.openai/hosting.json` references Sites project `appgprj_6a762ab98b2c819181682817b758d7f8`; D1 and R2 are `null`.
-- `db/schema.ts` and the Drizzle journal contain no active application schema. Optional auth/D1 scaffolding is not used by the game flow.
+There is no standalone `typecheck` command and no browser/component/end-to-end test framework. Rendered interaction and physical-device acceptance remain separate from the automated gate.
 
-### Supported scripts and verification
-
-**Observed:**
-
-- `npm run dev` starts the Vite/Vinext development preview.
-- `npm run test:engine` runs TypeScript engine tests directly with Node's built-in test runner and native type stripping; it does not render React or require a Sites build.
-- `npm run build` checks FS-token drift, performs the bounded Vinext build, and validates the Sites artifact.
-- `npm test` runs focused engine tests, the build/artifact check, and the rendered-HTML test.
-- `npm run verify` runs token drift checking, ESLint, all focused engine tests, one bounded build/artifact validation, and the rendered-HTML test.
-- `npm run tokens:generate` and `npm run tokens:check` maintain the committed FS CSS and game-color adapters generated from `sources/fs.tokens.json`.
-- There is no standalone `typecheck` script.
-- `.github/workflows/verify.yml` runs `npm ci` and `npm run verify` on pushes and pull requests using Node `22.13.0`.
-
-The current focused suite contains 41 engine tests across campaign/migration boundaries, identity, deterministic RNG, Hero selectors, validated transitions/navigation, dependency direction, and the developer inspector. One additional built-output test checks the rendered development-preview metadata.
-
-## Application architecture
-
-### Current responsibility boundaries
+## Current responsibility boundaries
 
 | Boundary | Current modules | Observed responsibility |
 |---|---|---|
-| Pure campaign/model | `campaignState.ts`, `model.ts` compatibility exports | Version-4 campaign types and current value types; separate registry/runtime types. |
-| Pure rules/transitions | `transitions.ts`, `generateDungeon.ts`, `random.ts` | Setup validation/completion, movement/discovery/Heart, claim, deterministic generation, and legal transition results. |
-| Pure derived policy | `selectors.ts`, `navigation.ts` | Hero attribute calculation plus board identity, availability, unlock, resolution, and fallback. |
-| Application/runtime | `GameProvider.tsx`, `GameApp.tsx` | Hydration, profile/campaign lifecycle, timestamping, active/registry synchronization, named-operation invocation, theme, and board composition. |
-| Boards | `src/boards/` | Render current state, own board-local interaction/presentation state, and submit player intent. |
-| Shared UI | `src/ui/` | Shell, navigation, overlays, sheets, icons, primitives, notifications, and read-only development inspection. |
-| Persistence adapter | `storage.ts` | Browser `localStorage` serialization, registry guard, and per-campaign migration invocation. |
-| Infrastructure/platform | system entropy adapters, `app/`, `worker/`, `build/`, `.openai/hosting.json` | Crypto-backed identity/seed inputs and Sites/Cloudflare delivery edges. |
+| Campaign/model | `campaignState.ts`, `model.ts` | Version-5 campaign, version-4 compatibility, profile/registry/runtime separation. |
+| Migration/validation | `campaignMigration.ts`, protected legacy normalization in `createGame.ts` | Strict v2/v3→v4→v5 conversion, typed incompatibility/failure, target validation/idempotence. |
+| Rules/generation | `villageOpening.ts`, `campaignTransitionsV5.ts`, `generateStartingWorld.ts`, `generateDungeon.ts`, `random.ts` | Atomic Setup, contextual Dungeon entry/movement, deterministic World and Dungeon behavior. |
+| Application lifecycle | `lifecycle.ts`, `lifecycleV2.ts`, `persistence.ts`, `registryCutover.ts`, `GameProvider.tsx` | Clocked lifecycle, verified transactions, hydration/cutover, active/registry coordination, player-visible status. |
+| Content | `openingContent.ts`, `skillTrees.ts`, `selectors.ts` | Castle-opening identities, stable Hero IDs, temporary compatibility attribute authority. |
+| Navigation | `navigationV5.ts`, compatibility exports in `navigation.ts` | Six-board identity and legal availability independent from React components. |
+| Boards/UI | `src/boards/`, `src/ui/` | Render authoritative state, own transient focus/selection/dialog state, submit named intent. |
+| Platform/storage | `storage.ts`, system clock/ID/seed adapters, app/worker/Sites edges | Browser APIs, wall-clock/entropy inputs, delivery. |
 
-The implemented rule flow is:
+Pure engine modules are tested to avoid React, board, browser-storage, clock/entropy, and Sites/Cloudflare dependencies where those imports would invert the approved direction.
 
-```text
-Board/UI intent
-  → named GameProvider operation
-  → pure validated transition/navigation policy
-  → authoritative CampaignState
-  → pure selector/policy reads
-  → board/shared-UI rendering
+## Campaign state and authority
 
-CampaignState
-  ↔ explicit normalization/migration
-  ↔ GameRegistry
-  ↔ browser localStorage adapter
-```
+### Version-5 payload
 
-Pure engine modules are tested to reject React, board implementation, browser-storage, and Sites/Cloudflare imports. `src/game/navigation.ts` owns legal board policy; `src/boards/registry.ts` only binds the six React components to those pure descriptors.
+**Observed:** `CampaignState` and serialized `GameSave` are aliases of `CampaignStateV5`:
 
-## Campaign state and runtime ownership
+- identity/lifecycle: version, campaign ID, profile reference, campaign seed, immutable creation time, modification/resume time, and active resume board;
+- `foundation: null` before completed Setup, with no durable draft;
+- completed foundation: sole `castle` root authority, one Hero, one Tier-1 capital Village, one stored seven-region World snapshot, and one retained/current regional Dungeon snapshot;
+- Hero: Class, Vocation, free allocation, bonus skill, positive skill ranks, versioned `v4-path-bonus-1` attribute snapshot, strategic region, and optional regional exploration context;
+- World: generator version 1, domain-separated World seed, home region, seven controlled regions, three sites, and two locations;
+- Dungeon: level, seed, grid, rooms, tiles, start/Heart, discovery, Heart history, and optional explicitly non-strategic legacy metadata.
 
-### Authoritative campaign payload
+There is no duplicate Hero faction truth, stored `setupComplete`, strategic Day, stockpile/Gold, Road, project, building/economy, unit/army, encounter/Combat, Gambit, relationship, event, population, evolution, Hero Level/XP, Profession, or equipment slice.
 
-**Observed:** `src/game/campaignState.ts` defines `CampaignState` version `4`; `GameSave` is its serialized compatibility alias rather than a second shape. Its top-level fields are:
+### Non-campaign state
 
-- `version`;
-- `id` and referenced `playerId`;
-- persisted `campaignSeed`;
-- `createdAt` and `updatedAt`;
-- resumable `activeBoardId`;
-- `setupComplete`;
-- completed `hero` or `null`;
-- one stored `dungeon`.
+Profiles and the registry remain outside campaign truth. Hydration state, selected profile, players/game view, active in-memory campaign, persistence error/unsaved status, theme preference, open sheets/dialogs, World selection/focus, pointer/zoom state, and unfinished Setup choices are application/session or UI state.
 
-The current Hero stores faction, class, vocation, two-point free allocation, selected bonus skill, calculated total-attribute snapshot, normalized skill ranks, Dungeon position, and vision radius.
+`RuntimeState.activeGame` and `GameRegistryV2.games[playerId]` are coordinated application copies of the same campaign, not independent board saves.
 
-The current Dungeon stores level/day/treasury counters, dimensions, seed, rooms, tiles, start/Heart positions, discovery keys, historical Heart-reached state, and Settlement-claim state. These counters and snapshots describe the prototype; they do not establish an economy, calendar, or final location schema.
+## Persistence and lifecycle
 
-No World, Combat, Army, Event, calendar, or settlement-economy state slice exists in `CampaignState`.
+**Observed:** The preferred registry is version 2 at `dmcl.prototype.registry.v2`; the legacy source is read from `dmcl.prototype.registry.v1` and never written by cutover/recovery code.
 
-### Adjacent non-campaign state
+- Hydration distinguishes absence, unavailable/read failure, parse failure, registry validation, campaign validation, migration failure, and incompatible legacy campaign.
+- Failed hydration/migration performs no automatic write and cannot become a legitimate empty registry.
+- Candidate writes serialize, write, read back exactly, and report success only after verification; verification failure attempts rollback.
+- Serialization, ordinary write, quota-like, and verification failures have typed bounded player messages rather than raw exceptions.
+- Later non-destructive autosave failure keeps the in-memory campaign marked unsaved and retryable.
+- Manual Save performs the immediate verified write and changes no campaign/profile timestamp.
+- Campaign `createdAt` is immutable; `updatedAt` changes only with campaign truth or stored resume context; profile `lastPlayedAt` changes only on successful New/Continue activation.
+- Each profile has at most one campaign. Replacement and profile deletion are confirmed, verified transactions; failure retains the previous in-memory and durable registry. No campaign-only delete or extra save slot exists.
 
-**Observed:**
+## Migration and compatibility evidence
 
-- `PlayerProfile` stores local profile identity, name, banner color, creation time, and last-played time outside the campaign.
-- `GameRegistry` version `1` stores profiles, campaigns keyed by player ID, and the last active player ID.
-- `RuntimeState` stores hydration, selected player, active campaign working copy, registry, and players/game surface.
-- Theme preference is stored under its own browser key and combined with OS dark-mode state.
-- Setup drafts, open overlays, map pan/zoom/pointers, prompts, copy feedback, notifications, and other view interaction state remain component-local.
-- Skill trees, board descriptors, labels, generator rules, and attribute-bonus mappings are static definitions/rules, not campaign data.
+| Source class | Implemented result |
+|---|---|
+| Supported v2 | Protected v2→v4 normalization, then deterministic v5 class policy. |
+| Supported v3 | Protected v3→v4 normalization, then the same deterministic v5 class policy. |
+| v4 before Setup | Preserve campaign/profile IDs, seed, and lifecycle; `foundation: null`; blank disposable Castle Setup. |
+| Completed v4 Castle | Preserve approved Hero/build/ID/seed/timestamps and exact Dungeon structure/progress; add the deterministic Village/home ring. |
+| Completed v4 Dungeon | Typed recoverable incompatibility; no Castle target; source retained until explicit verified replacement. |
+| Malformed registry | Typed registry failure; no preferred write or empty fallback. |
+| Malformed campaign/target | Typed campaign/migration failure; no repair, regeneration, or source mutation. |
+| Current v5 | Strict validation and clone/round trip; stored World/Dungeon snapshots and IDs remain authoritative. |
+| Retained Dungeon snapshot | Attached to `location:regional-dungeon` without regeneration; exploration cell remains square-grid context. |
+| Old day/treasury/claim | Optional `legacyPrototypeMetadata` only; no strategic Day, Gold, capital, or control effect. |
 
-`RuntimeState.activeGame` and the campaign in `GameRegistry.games[playerId]` are synchronized application copies. They are not two independent campaign truths.
+The focused fixtures assert deterministic repeated conversion, target idempotence, byte-equivalent serialization round trip, stable IDs/references, unchanged source bytes, unchanged retained Dungeon structure, and no World reroll after a target snapshot exists.
 
-### Stored, derived, and static authority
+## Opening and board behavior
 
-**Observed:**
+**Observed:** Valid Hero Setup constructs the complete foundation as one pure replacement value. Invalid or repeated completion changes nothing and cannot duplicate the Hero, capital, seven regions, three sites, two locations, or regional Dungeon.
 
-- Stored facts include campaign/profile references, lifecycle timestamps, campaign and Dungeon seeds, active board, completed setup choices, learned ranks, Hero position, Dungeon counters, discovery, Heart outcome, and claim outcome.
-- Stored compatibility snapshots include `setupComplete`, `hero.attributes`, the normalized complete skill-rank shape, current vision radius, and the generated Dungeon dimensions/rooms/tiles/start/Heart.
-- Derived values include legal board availability, Setup readiness/preview, current Hero totals, discovery indexes/counts, and display summaries.
-- Static definitions include skill trees, board descriptors, attribute-bonus rules, generator constants, and presentation catalogs.
+- Opening board: Settlement.
+- Available after Setup: Hero, Settlement, World.
+- Dungeon: registered/enabled but locked until `hero.explorationContext` names the stored regional Dungeon; World entry creates or resumes that context without changing strategic region or regenerating the Dungeon.
+- Combat and Diplomacy: registered but disabled until later legal contexts.
+- Dungeon Heart settlement claim: retired operation; it cannot create the capital or unlock Settlement.
 
-`hero.attributes` remains persisted for compatibility, but `heroClass`, `vocation`, and `freeAttributes` are the calculation inputs. Current setup completion and save normalization refresh the snapshot through the same pure selector.
+The Hero board is the sole Hero information surface. Settlement shows only current capital/opening facts. World renders the authoritative edge-sharing seven-hex cluster with visible non-color-only selection/focus and high-contrast polygon boundaries. The development inspector is development-only and read-only.
 
-## Persistence and migrations
+## Determinism and stable identity
 
-**Observed:**
+- New campaign identity entropy and campaign-seed entropy are separate infrastructure inputs.
+- Dungeon generation uses the explicit unchanged deterministic seed/algorithm; retained snapshots are authoritative.
+- World seed is FNV-1a over `world/home-ring/v1:<campaignSeed>` and uses its own fresh deterministic stream.
+- World generator version, seed, and authoritative snapshot are stored.
+- Home and first-ring coordinate order, region IDs, capital/site/location IDs, and catalog order are deterministic.
+- Current game/domain source has no uncontrolled gameplay `Math.random()`.
 
-- Player/campaign data is stored in browser `localStorage` under `dmcl.prototype.registry.v1`.
-- Theme preference uses `dmcl.prototype.theme.v1` separately.
-- Hydration reads one version-1 registry, checks its outer shape, and calls `migrateLegacyGame` for every campaign.
-- Current version-4 saves are normalized without regenerating valid stored Dungeons.
-- Supported version-2/version-3 saves become version 4 by adopting their already-stored `dungeon.seed` as `campaignSeed`.
-- Migration preserves stored Dungeon grid/rooms/tiles/start/Heart, Hero position, discovery, Heart-reached state, Settlement claim, IDs, and lifecycle values for supported structured saves. Hero attributes/skills and an invalid bonus-skill fallback are normalized from current authoritative definitions.
-- Less-structured legacy or invalid campaign values can fall back to a newly created campaign while retaining limited legacy identity/timestamp/counter values when present.
-- Registry writes occur automatically after hydrated registry changes. The explicit Save action also updates `updatedAt`; it is not the exclusive durability boundary.
-- Storage read/write errors are swallowed, leaving the session playable without exposing a reliable failure state to the player.
+## Explicit EPIC 03 boundary
 
-**Interim limitation:** The registry currently allows one campaign per player because `games` is keyed by player ID. Starting a new campaign replaces that player's existing campaign after UI confirmation; deleting a player deletes the associated campaign. This is current behavior, not an accepted permanent campaign-lifecycle policy.
+**Not implemented:** economy yields, strategic production/Days, Roads, connection/supply, construction, projects/queues, recruitment, units, armies, Gambits, tactical Combat, Republic/Empire, Industry/Magic, Holy/Unholy, later Hero progression, population, events, cloud saves, authentication, database persistence, multiplayer, or deployment.
 
-No cloud save, authentication-owned campaign, cross-device synchronization, export/import, server conflict handling, or multiplayer persistence is active.
+The presence of content identities, locked board modules, or explanatory placeholders is not an executable mechanic.
 
-## Identity
+## Residual limitations and owner acceptance
 
-**Observed:**
+- Browser `localStorage` remains the only active campaign persistence adapter; no export/import, cloud synchronization, or cross-device guarantee exists.
+- The original version-1 payload is intentionally retained with no automatic cleanup, increasing local storage use.
+- `GameProvider` still coordinates several application concerns and active/registry mirroring; no broader state-library/provider rewrite is justified by EPIC 03.
+- Hero attribute totals remain the explicitly temporary `v4-path-bonus-1` compatibility snapshot through EPIC 05; EPIC 06 must migrate or retire it.
+- The seven-region World and Tier-1 Village are inspection/opening context only until EPIC 04 defines and implements economy/World mechanics.
+- Browser corruption/quota injection is not exposed as a player/developer toggle; those paths are verified through pure adapters and require optional manual browser setup for visual inspection.
+- Physical smartphone touch, safe-area, theme, reduced-motion, focus, and error-dialog acceptance remains an explicit owner action for the EPIC 03 exit Candidate.
 
-- `PlayerId` is a typed `player-…` string and `CampaignId` is a typed `game-…` string.
-- New values come from an injected `IdSource`; the system adapter uses `crypto.randomUUID()` and rejects unavailable secure identity generation instead of falling back to gameplay randomness.
-- Existing loaded legacy identity strings retain their exact meaning rather than being reformatted during migration.
-- Board, skill, tree, branch, faction, class, and vocation IDs are stable family-specific content-definition IDs.
-- `CellKey` is a coordinate-derived `"x,y"` spatial key. Dungeon room numbers are snapshot-local generator ordinals. Neither is a global persistent entity ID.
-- UI labels and array positions do not define current persistent identity.
+## Verification status
 
-No generic entity table, global `EntityId`, or speculative Hero/Settlement/World/Army/Unit/Item identity subsystem exists.
+The E03-T08 exit record contains the exact final command results, fixture-to-criterion matrix, rendered checks, and owner manual QA checklist. The project owner reported E03-T07 accepted and its GitHub `Verify` run PASS; exact commit `84130b72e91acfee7923aab8b9db6b98f48989c9` is also saved as non-deployed Sites version 28. EPIC 03 is not Complete until the owner accepts the E03-T08 Exit Candidate and the matching workflow checkpoint is committed, pushed, independently verified, and saved as a non-deployed Sites version.
 
-## Current rule-bearing transitions
-
-**Observed:** `src/game/transitions.ts` owns four current pure transition boundaries:
-
-1. `completeHeroSetup` validates incomplete Setup state, faction/class/vocation, exactly two non-negative integer free points, and a legal current-tree root/tier-1 bonus skill. It stores the completed Hero, initial position/discovery, and Dungeon entry.
-2. `moveHeroInDungeon` validates campaign/Dungeon context and direction, calculates destination and walkability, updates position/discovery, and records historical Heart reach.
-3. `claimSettlement` requires a ready Hero on the Dungeon board and the existing Heart-reached fact, stores the claim, and legally enters Settlement.
-4. `navigateToAvailableBoard` requires a ready campaign and validates registered, enabled, and unlocked board availability before changing the active board.
-
-Transitions return typed success/failure results and do not stamp time, persist, render, or import React/browser/platform code. `GameProvider` invokes them through named operations, stamps successful state changes, and synchronizes the active/registry copies.
-
-`SetupBoard`, `DungeonBoard`, `SettlementBoard`, `BoardNavigation`, and `GameApp` submit intent or render policy results. They no longer receive an unrestricted whole-campaign mutation API for these mechanics. Player/profile creation, campaign creation/open/replacement/deletion, explicit Save, return, hydration, theme, and registry persistence remain application/lifecycle operations rather than campaign transitions.
-
-## Derived Hero state
-
-**Observed:** `src/game/selectors.ts` is the single current authority for:
-
-- Fighter → +1 Strength;
-- Ranger → +1 Perception;
-- Mage → +1 Intellect;
-- General → +1 Leadership;
-- Spy → +1 Agility;
-- Diplomat → +1 Charisma;
-- combined path bonuses and final attributes from free allocation.
-
-Hero Setup card copy and live preview, setup completion, v2/v3/v4 normalization, and the developer inspector consume this authority. The module is pure and React-independent. No general selector/query framework has been introduced.
-
-## Deterministic randomness
-
-**Observed:**
-
-- Version-4 campaigns persist one unsigned 32-bit `campaignSeed`.
-- New campaign seed entropy comes from `crypto.getRandomValues()` through a dedicated infrastructure adapter.
-- `createDeterministicRandom` implements the explicit seeded Mulberry32 sequence used by the unchanged Dungeon generator.
-- `createDungeonLevel` requires a seed; the initial Dungeon seed equals the campaign seed because no other random gameplay system exists.
-- Current gameplay/domain source contains no uncontrolled `Math.random()` call.
-- Crypto identity generation and campaign-seed generation are separate adapters; creating IDs cannot advance deterministic gameplay randomness.
-- Migrated campaigns retain their stored generated Dungeon snapshot rather than reconstructing it from the seed.
-
-There are no combat, loot, weather, event, AI, diplomacy, or World RNG streams/counters.
-
-## Boards and shared UI
-
-### Six-board architecture
-
-**Observed:** The in-campaign catalog contains six stable ordered destinations:
-
-1. Hero;
-2. Settlement;
-3. World;
-4. Dungeon;
-5. Combat;
-6. Diplomacy.
-
-Setup remains a pre-campaign surface outside the catalog. `GameApp` resolves the current descriptor through pure availability/fallback policy and then obtains its React component from `src/boards/registry.ts`. `BoardNavigation` uses the same pure descriptors and availability policy.
-
-### Meaningful prototype surfaces
-
-- `StartBoard` manages local profiles and current create/continue/replace/delete entry flows.
-- `SetupBoard` implements the current Hero Setup interaction and previews authoritative attribute calculations.
-- `DungeonBoard` renders the stored square-grid Dungeon with fog/discovery, keyboard and on-screen movement, pointer panning, wheel/pinch zoom, objective prompt, and Settlement claim intent.
-- `SettlementBoard` displays the claimed settlement outcome and a return-to-Dungeon action. It has no management mechanics.
-
-### Architectural scaffolds
-
-`HeroBoard`, `WorldBoard`, `CombatBoard`, and `DiplomacyBoard` are enabled EPIC 01 architecture scaffolds. They render the shared shell and explicitly state that their gameplay belongs to later Epics. Their presence and navigability do not mean Hero management, World strategy, tactical combat, or diplomacy mechanics are implemented.
-
-### Shared UI foundation
-
-**Observed:** `GameShell` owns the app/status areas, board viewport, navigation, Hero/Settings overlays, Save feedback, and notification region. `ModalOverlay` supplies dialog semantics, focus containment, Escape/backdrop dismissal, body-scroll containment, and opener-focus restoration for shared sheets. `GamePrimitives.tsx` contains domain-neutral panels, stats/resources, progress, buttons, slots, tooltips/info sheets, grid cells, and SVG-first tokens.
-
-The generated FS adapter supplies semantic UI colors and the primitive game-color projection from `sources/fs.tokens.json`. The application remains portrait/mobile-first with safe-area, responsive, focus-visible, and reduced-motion styling in the global stylesheet.
-
-## Developer tooling and inspection
-
-**Observed:**
-
-- Focused engine tests run without React rendering or a complete Sites build.
-- Source-contract tests protect dependency direction, removal of current uncontrolled `Math.random()`, selector use, board intent boundaries, and inspector restrictions.
-- The normal `npm run verify` gate is shared by local/Sites verification and GitHub Actions.
-- The development-only Campaign State Inspector is available through Settings when `import.meta.env.DEV && activeGame`.
-- It displays schema/campaign/player IDs, campaign and Dungeon seeds, active board, Setup/Hero/Dungeon/progress facts, selector-derived Hero attributes, and formatted raw `activeGame` JSON.
-- It offers only clipboard copy for seed/JSON. It has no transition, storage, edit, import, or arbitrary mutation surface.
-- Production Settings does not render the inspector entry.
-
-**Owner-confirmed:** The latest GitHub Actions `Verify` result is PASS. The owner also previously confirmed the accepted EPIC 02 manual player/campaign, Setup, Dungeon, Heart, Settlement, navigation, save/reload, migration, inspector, and responsive regressions.
-
-## Current playable loop and explicit absences
-
-The implemented player flow is:
-
-1. create or select a local player profile;
-2. create a new campaign or continue the one stored for that profile;
-3. complete Hero Setup;
-4. explore the deterministic stored Dungeon;
-5. reach the Dungeon Heart;
-6. claim the first Settlement;
-7. view the placeholder Settlement and move among the current catalog surfaces.
-
-The repository does **not** implement strategic World play, region conquest, supply, a meaningful settlement economy, calendar advancement, tactical combat, armies/units, items/equipment, events/world simulation, AI rivals, cloud saves, authenticated campaign ownership, multiplayer, or executable skill effects.
-
-## Current technical debt and open implementation boundaries
-
-These are evidence-backed limitations, not a new work plan:
-
-- `GameProvider` still coordinates wall-clock timestamps, profile/campaign lifecycle, active/registry mirroring, automatic persistence, theme, and named transition invocation.
-- `activeGame` and `registry.games[playerId]` remain synchronized application copies maintained by reducer branches.
-- Browser `localStorage` is the only active persistence adapter; write failure is silent.
-- One campaign per player, replacement behavior, player-deletion cascade, and the meaning of New Game/Continue are interim lifecycle behavior.
-- `updatedAt` changes on open, explicit Save, named transitions/navigation, and return-to-players, so “modified,” “opened,” and “saved” semantics are not distinguished.
-- Automatic persistence means the explicit Save action is reassurance/timestamping rather than the only durability boundary.
-- Registry validation is shallow; malformed storage can reset or enter legacy fallback behavior, and errors are not surfaced.
-- `hero.attributes`, `setupComplete`, complete skill-rank shape, vision radius, and generated Dungeon data remain compatibility snapshots/redundant persisted values with documented normalization rules.
-- The Dungeon stores both seed and generated snapshot without a generator/rule version; the stored snapshot is authoritative today, while future seed/version policy remains open.
-- Clock isolation remains unimplemented; rule transitions are pure, but application lifecycle timestamps still call the wall clock directly.
-- Setup drafts remain disposable component state.
-- Hero foundation presentation catalogs remain partly board/UI-local; full consolidation belongs to its responsible later Epic.
-- Large `DungeonBoard`, `SetupBoard`, `StartBoard`, and global stylesheet files remain concentration points, but no refactor is justified solely by size.
-- There is no browser/component/end-to-end test framework or automated accessibility suite; interaction and physical-smartphone acceptance remain manual responsibilities.
-
-## Verification status for this audit
-
-- `npm run test:engine` — **PASS**, 41 tests and 0 failures on the inspected `main` source.
-- `npm run verify` — **PASS** after final documentation reconciliation: FS token synchronization, ESLint, 41 engine tests, bounded Sites build/artifact validation, and 1 rendered-HTML test all passed.
-- GitHub Actions `Verify` — **PASS**, owner-confirmed external evidence; no run ID or metadata is asserted here.
-- Working tree before this closure audit — clean and synchronized with `origin/main` at `80604a1da061bacbd1becb315268b57a387deaeb`.
-- Deployment — not performed or authorized.
-
-## Audit boundary and change confirmation
-
-The audit inspected repository guidance and sources of truth; runtime/build configuration; application entry and provider; campaign, registry, identity, RNG, generator, selectors, navigation, transitions, storage, and migration modules; the six-board catalog and representative boards; shared shell/overlay/inspector UI; focused engine and rendered-output tests; the GitHub Actions workflow; Sites manifest; current Git branch/status/history; and the accepted E02 task records.
-
-This audit changes documentation only. No game source, test, dependency, lockfile, build/platform configuration, persistence schema, gameplay rule, or UI behavior is modified, and no deployment is performed.
+Deployment was not performed or authorized.

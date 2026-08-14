@@ -1,6 +1,6 @@
 # E03-T07 — Opening boards, summaries, and inspection
 
-Status: Candidate — awaiting owner acceptance
+Status: **Complete — accepted by the project owner on 2026-08-14**
 Epic: EPIC 03 — Game Concept 2.0 transition and campaign persistence
 Base checkpoint: `9e8e9cfa691e44fc61bb92d49d8d88ed3a9930c9` / Sites version 27
 Scope: player-facing presentation and read-only inspection of the accepted version-5 Castle/Village opening
@@ -100,6 +100,15 @@ Screenshots captured outside the repository for owner review:
 - Physical smartphone testing remains an owner action.
 - The ruin, terrain-only region, and three resource sites are inspection-only by design. No yield, reward, travel, threat, or control mutation exists.
 
-## Candidate boundary confirmation
+## Accepted boundary confirmation
 
-No campaign-schema/version change, migration-policy reinterpretation, World or Dungeon regeneration, strategic Day/resource economy, Road, project, unit, Combat, Diplomacy mechanic, new dependency, deployment, commit/push, or Sites-version save was performed. E03-T08 has not started.
+No campaign-schema/version change, migration-policy reinterpretation, World or Dungeon regeneration, strategic Day/resource economy, Road, project, unit, Combat, Diplomacy mechanic, new dependency, or deployment was performed.
+
+## User acceptance and checkpoint
+
+- Status: accepted by the project owner on 2026-08-14; all points and tests approved.
+- Source: committed and pushed to `main`; the owner reported the matching GitHub `Verify` workflow PASS.
+- Final commit at the start of E03-T08: `84130b72e91acfee7923aab8b9db6b98f48989c9`.
+- Sites checkpoint: version 28, saved from exact commit `84130b72e91acfee7923aab8b9db6b98f48989c9` after reconciling the configured Sites source branch. The version was not deployed.
+- Next task: `E03-T08 — Compatibility and EPIC 03 exit gate`.
+- Deployment: **Not performed**.

@@ -6,7 +6,7 @@ export function CombatBoard() {
       boardId="combat"
       title="Combat"
       icon="swords"
-      futureEpic="EPIC 11 — Tactical combat skeleton"
+      futureEpic="EPIC 07 — Persistent armies, encounters, and tactical Combat core"
     >
       Hex-grid squad encounters and tactical combat rules belong to the later
       Combat Epic.

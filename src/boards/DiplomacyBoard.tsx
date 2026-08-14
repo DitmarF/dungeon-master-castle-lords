@@ -6,7 +6,7 @@ export function DiplomacyBoard() {
       boardId="diplomacy"
       title="Diplomacy"
       icon="message"
-      futureEpic="later strategic-interaction Epics"
+      futureEpic="EPIC 09 — Diplomacy, intelligence, enemy Heroes, and opposed Gambits"
     >
       Campaign relationships and diplomatic interactions belong to later
       strategic-system work.

@@ -35,6 +35,42 @@ test("opening boards render only authoritative version-5 foundation facts", asyn
   assert.doesNotMatch(settlement, /claimSettlement|settlementClaimed/);
 });
 
+test("locked future boards name the accepted roadmap owners", async () => {
+  const combat = await source("src/boards/CombatBoard.tsx");
+  const diplomacy = await source("src/boards/DiplomacyBoard.tsx");
+
+  assert.match(combat, /EPIC 07/);
+  assert.match(diplomacy, /EPIC 09/);
+  assert.doesNotMatch(combat, /EPIC 11/);
+});
+
+test("available sub-skills inherit their parent tree accent", async () => {
+  const styles = await source("app/globals.css");
+  const availableRule = styles.match(/\.skill-node--available \{[\s\S]*?\n\}/)?.[0];
+
+  assert.ok(availableRule);
+  assert.match(availableRule, /border-color:[^;]*var\(--tree-accent\)/);
+  assert.match(availableRule, /background:[^;]*var\(--tree-accent\)/);
+  assert.doesNotMatch(availableRule, /--fs-feedback-success/);
+});
+
+test("smallest-phone campaign actions stack as full-width touch targets", async () => {
+  const styles = await source("app/globals.css");
+  const start = styles.indexOf("@media (max-width: 379px)");
+  const end = styles.indexOf("@media (max-width: 520px)", start);
+
+  assert.ok(start >= 0 && end > start);
+  const smallestPhoneRules = styles.slice(start, end);
+  assert.match(
+    smallestPhoneRules,
+    /\.campaign-actions \{[\s\S]*?grid-template-columns: minmax\(0, 1fr\)/,
+  );
+  assert.match(
+    smallestPhoneRules,
+    /\.campaign-actions \.button \{[\s\S]*?width: 100%[\s\S]*?white-space: nowrap/,
+  );
+});
+
 test("the home ring uses one edge-sharing axial hex tessellation", async () => {
   const styles = await source("app/globals.css");
 
