@@ -94,7 +94,7 @@ E02-T06 establishes `src/game/random.ts` as the small pure randomness contract. 
 
 `createDungeonLevel` now requires an explicit seed and reuses the unchanged Mulberry32 algorithm through the pure contract. Supported version-2/version-3 campaigns migrate by adopting their already-stored Dungeon seed as `campaignSeed`; their persisted Dungeon result remains authoritative and is never regenerated. The system seed adapter uses platform entropy only to create a new campaign fact and imports no identity contract. Clock isolation remains separate unscheduled work.
 
-### E03-T04 candidate starting-World generator boundary
+### E03-T04 implemented starting-World generator boundary
 
 `src/game/generateStartingWorld.ts` is a pure domain generator over an explicit `CampaignSeed` and the E03-T03 opening catalogs. It owns the minimum axial-coordinate helpers, the accepted canonical first-ring order, the DMCL-P41 FNV-1a World-seed derivation, a fresh World-only deterministic random source, family-specific generated instance IDs, generator version `1`, snapshot assembly, and snapshot validation.
 

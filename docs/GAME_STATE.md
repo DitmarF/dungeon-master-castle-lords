@@ -131,7 +131,7 @@ The application layer now owns lifecycle time and registry transactions through 
 
 The registry-version-2/new-key option in DMCL-P31 remains conditional and is not activated by E03-T02. This task hardens the current version-1 key in place while guaranteeing that failed decode/migration never writes and that failed destructive changes retain the previous durable/in-memory registry.
 
-### E03-T04 candidate World-generation authority
+### E03-T04 implemented World-generation authority
 
 The pure `generateStartingWorld` boundary now implements the explicitly accepted DMCL-P41 generation policy without adding World data to the current version-4 campaign:
 
@@ -143,7 +143,7 @@ The pure `generateStartingWorld` boundary now implements the explicitly accepted
 - the result contains the Tier-1 Village capital reference, seven controlled neutral-terrain regions, Food/Wood/Stone sites, the regional Dungeon, and the inert ruin; the one unattached neighbor is derived as terrain-only;
 - validation checks metadata, exact topology/order, coordinate and ID uniqueness, control, catalog references, distinct placements, and the one terrain-only remainder.
 
-The returned snapshot is a pure candidate value, not current campaign truth. E03-T05 owns version-5 persistence/migration and must store the generated result as authoritative rather than regenerating it during ordinary load. `createDungeonLevel`, existing stored Dungeon snapshots, and the current version-4 schema are unchanged.
+The returned snapshot is a pure generated value, not current campaign truth. E03-T05 owns version-5 persistence/migration and must store the generated result as authoritative rather than regenerating it during ordinary load. `createDungeonLevel`, existing stored Dungeon snapshots, and the current version-4 schema are unchanged.
 
 ## Current non-campaign runtime state
 

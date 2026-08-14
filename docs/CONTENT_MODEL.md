@@ -210,7 +210,7 @@ No generic effect engine should be built before at least one approved mechanic r
 - generator rules consume those definitions and an explicit random source;
 - campaign state stores the authoritative seed/version, result, or both according to the approved state policy.
 
-**Candidate implementation (E03-T04):** `generateStartingWorld` consumes the E03-T03 Castle-opening catalogs without copying their definitions. Generated regions, the capital, sites, and locations carry family-specific instance IDs plus stable definition references. Placement is generator output; the catalog continues to own what Village, Food/Wood/Stone sites, regional Dungeon, ruin, and neutral terrain mean. No yield, location consequence, economy, travel, or other executable rule is attached to those instances.
+**Accepted and implemented (E03-T04):** `generateStartingWorld` consumes the E03-T03 Castle-opening catalogs without copying their definitions. Generated regions, the capital, sites, and locations carry family-specific instance IDs plus stable definition references. Placement is generator output; the catalog continues to own what Village, Food/Wood/Stone sites, regional Dungeon, ruin, and neutral terrain mean. No yield, location consequence, economy, travel, or other executable rule is attached to those instances.
 
 The dungeon hierarchy, generation profiles, authored-versus-procedural balance, and compatibility rules are TBD.
 
