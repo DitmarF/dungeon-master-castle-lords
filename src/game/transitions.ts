@@ -2,7 +2,6 @@ import {
   EMPTY_ATTRIBUTES,
   type CampaignState,
   type CellPosition,
-  type FactionType,
   type HeroClass,
   type HeroSetupSelection,
   type HeroVocation,
@@ -17,6 +16,10 @@ import {
   createEmptySkillRanks,
   type SkillId,
 } from "./skillTrees.ts";
+import {
+  getRootFactionDefinition,
+  isPlayableNewCampaignFaction,
+} from "./openingContent.ts";
 import { selectHeroAttributes } from "./selectors.ts";
 
 export interface TransitionSuccess<Details extends object = object> {
@@ -42,7 +45,6 @@ export const VOCATION_SKILL: Record<HeroVocation, SkillId> = {
   diplomat: "diplomacy",
 };
 
-const FACTIONS: readonly FactionType[] = ["dungeon", "castle"];
 const HERO_CLASSES: readonly HeroClass[] = ["fighter", "ranger", "mage"];
 const HERO_VOCATIONS: readonly HeroVocation[] = [
   "general",
@@ -66,6 +68,7 @@ export function isLegalHeroSetupBonusSkill(
 
 export type HeroSetupValidationCode =
   | "invalid-faction"
+  | "unavailable-faction"
   | "invalid-class"
   | "invalid-vocation"
   | "invalid-attributes"
@@ -78,8 +81,11 @@ export type HeroSetupValidationResult =
 export function validateHeroSetupSelection(
   selection: Readonly<HeroSetupSelection>,
 ): HeroSetupValidationResult {
-  if (!FACTIONS.includes(selection.faction)) {
+  if (!getRootFactionDefinition(selection.faction)) {
     return { ok: false, code: "invalid-faction" };
+  }
+  if (!isPlayableNewCampaignFaction(selection.faction)) {
+    return { ok: false, code: "unavailable-faction" };
   }
   if (!HERO_CLASSES.includes(selection.heroClass)) {
     return { ok: false, code: "invalid-class" };

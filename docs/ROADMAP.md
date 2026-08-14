@@ -17,7 +17,7 @@ The implemented prototype remains:
 
 `local player → safe verified local campaign lifecycle → hero setup → deterministic dungeon exploration → dungeon-heart claim → placeholder settlement`
 
-E03-T02 implements the accepted browser-local lifecycle, timestamp, failure, verified Save, and replacement/deletion contract. The Castle/Village opening, World strategy, region conquest, supply, meaningful management, tactical combat, executable skill effects, faction evolution, cloud saves, and multiplayer remain unimplemented. See CURRENT_STATE.md for the earlier repository-wide audit and the accepted E03 task records for newer bounded evidence.
+E03-T02 implements the accepted browser-local lifecycle, timestamp, failure, verified Save, and replacement/deletion contract. E03-T03 implements the minimum Castle/Village opening content catalogs and makes Castle the sole new-campaign faction while retaining Dungeon compatibility identity. World generation and campaign integration, region conquest, supply, meaningful management, tactical combat, executable skill effects, faction evolution, cloud saves, and multiplayer remain unimplemented. See CURRENT_STATE.md for the earlier repository-wide audit and the accepted E03 task records for newer bounded evidence.
 
 ## Accepted activation
 
@@ -44,21 +44,21 @@ EPIC 03 does not add an empty final-game schema. It adds only state and content 
 
 ## Exact next task
 
-### E03-T03 — Minimum Castle-opening content catalogs
+### E03-T04 — Deterministic Village and home-ring generation
 
 Status: **Next — exactly one**
 
-Goal: create the smallest authoritative typed Castle, Tier-1 Village, starting-site, terrain, and regional-Dungeon content definitions required by the accepted Game Concept 2.0 opening, without implementing World or economy mechanics.
+Goal: implement a pure, reproducible starting-World generator that creates the capital home region, exactly six unique adjacent hex regions, and the approved minimum starting contents without changing campaigns or saves.
 
-E03-T03 must:
+E03-T04 must:
 
-- define one authoritative Castle root, a reusable Tier-1 Village identity, Food/Wood/Stone sites, and only the accepted minimum home-ring terrain/location categories;
-- retain Dungeon identity for compatibility/reference while removing it from new-campaign selection;
-- preserve all stable Class, Vocation, skill, and tree IDs;
-- introduce only necessary family-specific reusable-definition ID types;
-- validate required definitions, uniqueness, references, compatibility, and deterministic catalog ordering through focused pure tests.
+- define the minimum pure axial-coordinate/key/adjacency model for one home region and its six first-ring neighbors;
+- derive the World stream from the accepted campaign-seed/domain-separation policy and expose the accepted generator authority/version;
+- deterministically place the Tier-1 Village reference, Food/Wood/Stone sites, regional Dungeon, inert ruin, and terrain-only content;
+- validate exact topology, uniqueness, approved contents, ordering, reproducibility, and dependency purity;
+- prove World generation does not consume, reroll, or modify the legacy Dungeon sequence or snapshot.
 
-E03-T03 must not generate World instances, cut over campaign version 5, migrate saves, add yields/economy/Road/building/unit/evolution mechanics, install dependencies, change database/hosting infrastructure, or deploy.
+E03-T04 must not cut over campaign version 5, modify existing campaigns, migrate saves, build a full World, add economy/Road/travel/building/unit/combat mechanics, install dependencies, change database/hosting infrastructure, or deploy.
 
 ## Epic registry
 

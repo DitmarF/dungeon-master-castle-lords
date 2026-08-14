@@ -149,7 +149,7 @@ test("identity injection preserves the current creation, setup, and load flow", 
   );
   const campaign = createNewGame(player.id, source, 654_321, createdAt);
   const completion = completeHeroSetup(campaign, {
-    faction: "dungeon",
+    faction: "castle",
     heroClass: "fighter",
     vocation: "general",
     freeAttributes: {

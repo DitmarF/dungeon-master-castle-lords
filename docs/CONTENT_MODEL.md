@@ -170,6 +170,21 @@ A catalog should provide, as relevant:
 
 One catalog API does not require one physical file. Content may be split into maintainable modules and assembled at a controlled boundary.
 
+### Minimum Castle-opening catalogs
+
+**Accepted and implemented (E03-T03):** `src/game/openingContent.ts` is the typed authority for the minimum reusable definitions needed by the accepted Castle/Village opening:
+
+- root factions: stable `castle` and `dungeon` IDs, with Castle the sole playable new-campaign family and Dungeon retained as compatibility-only;
+- settlement: `village`, owned by Castle and identified as Tier 1;
+- regional resource sites: `food-site`, `wood-site`, and `stone-site`;
+- regional locations: the explorable `regional-dungeon` and inert `ruin`;
+- terrain: `home-ring-terrain`, a neutral reference that deliberately chooses no biome and defines no gameplay effect;
+- the ordered six-item home-ring content reference set approved by DMCL-P34.
+
+The module uses family-specific reusable-definition ID types. Its discriminated home-ring references preserve the site/location/terrain family distinction; they are not a global `ContentId`. Coordinates, generated regions, settlement/site/location instances, campaign IDs, ownership, discovery, quantities, and progress remain outside these catalogs.
+
+Catalog validation rejects duplicate family IDs, missing required definitions, broken or family-incompatible references, incompatible Castle/Dungeon availability, incompatible required location roles, and non-deterministic catalog ordering. The catalogs contain no yields, costs, buildings, effects, generated World state, or campaign schema.
+
 ## Rules and effects
 
 **Observed:** Current skill descriptions imply mechanics, but there is no general effect-execution system. The current Hero path attribute bonuses are a small typed selector mapping, not general executable effects.

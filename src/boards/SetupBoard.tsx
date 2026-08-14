@@ -13,6 +13,7 @@ import {
   type SkillId,
 } from "../game/model";
 import { skillBelongsToTree } from "../game/skillTrees";
+import { ROOT_FACTION_DEFINITIONS } from "../game/openingContent";
 import {
   selectHeroAttributes,
   selectHeroClassAttributeBonus,
@@ -26,26 +27,6 @@ import { GameIcon, type IconName } from "../ui/GameIcon";
 import { ActionButton, ProgressBar } from "../ui/GamePrimitives";
 import { SettingsSheet } from "../ui/SettingsSheet";
 import { SkillTreePicker } from "../ui/SkillTreePicker";
-
-const FACTIONS: {
-  id: FactionType;
-  name: string;
-  copy: string;
-  icon: IconName;
-}[] = [
-  {
-    id: "dungeon",
-    name: "Dungeon",
-    copy: "Monsters · dark dominion",
-    icon: "layers",
-  },
-  {
-    id: "castle",
-    name: "Castle",
-    copy: "Humanoids · light realm",
-    icon: "castle",
-  },
-];
 
 const CLASSES: {
   id: HeroClass;
@@ -258,26 +239,37 @@ export function SetupBoard() {
               </div>
             </header>
             <div className="faction-options">
-              {FACTIONS.map((item) => (
-                <button
-                  key={item.id}
-                  type="button"
-                  className={`choice-card choice-card--faction${
-                    faction === item.id ? " choice-card--selected" : ""
-                  }`}
-                  onClick={() => setFaction(item.id)}
-                  aria-pressed={faction === item.id}
-                >
-                  <span className="choice-card__icon">
-                    <GameIcon name={item.icon} size={23} />
-                  </span>
-                  <span>
-                    <strong>{item.name}</strong>
-                    <small>{item.copy}</small>
-                  </span>
-                  <i>{faction === item.id ? "Selected" : "Choose"}</i>
-                </button>
-              ))}
+              {ROOT_FACTION_DEFINITIONS.map((item) => {
+                const newCampaignPlayable =
+                  item.newCampaignAvailability === "playable";
+                return (
+                  <button
+                    key={item.id}
+                    type="button"
+                    className={`choice-card choice-card--faction${
+                      faction === item.id ? " choice-card--selected" : ""
+                    }`}
+                    onClick={() => setFaction(item.id)}
+                    disabled={!newCampaignPlayable}
+                    aria-pressed={faction === item.id}
+                  >
+                    <span className="choice-card__icon">
+                      <GameIcon name={item.presentation.icon} size={23} />
+                    </span>
+                    <span>
+                      <strong>{item.name}</strong>
+                      <small>{item.description}</small>
+                    </span>
+                    <i>
+                      {newCampaignPlayable
+                        ? faction === item.id
+                          ? "Selected"
+                          : "Choose"
+                        : "Unavailable"}
+                    </i>
+                  </button>
+                );
+              })}
             </div>
             </section>
 

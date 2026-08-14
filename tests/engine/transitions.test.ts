@@ -22,7 +22,7 @@ import {
 import { selectHeroAttributes } from "../../src/game/selectors.ts";
 
 const VALID_SELECTION: HeroSetupSelection = {
-  faction: "dungeon",
+  faction: "castle",
   heroClass: "fighter",
   vocation: "general",
   freeAttributes: {
@@ -123,6 +123,24 @@ test("Hero Setup rejects invalid existing constraints without changing state", (
   assert.deepEqual(completeHeroSetup(campaign, lockedSkill), {
     ok: false,
     code: "invalid-bonus-skill",
+  });
+  assert.deepEqual(campaign, createSetupCampaign());
+});
+
+test("Hero Setup rejects the retained Dungeon compatibility identity for new campaigns", () => {
+  const campaign = createSetupCampaign();
+  const dungeonSelection = {
+    ...VALID_SELECTION,
+    faction: "dungeon" as const,
+  };
+
+  assert.deepEqual(validateHeroSetupSelection(dungeonSelection), {
+    ok: false,
+    code: "unavailable-faction",
+  });
+  assert.deepEqual(completeHeroSetup(campaign, dungeonSelection), {
+    ok: false,
+    code: "unavailable-faction",
   });
   assert.deepEqual(campaign, createSetupCampaign());
 });
