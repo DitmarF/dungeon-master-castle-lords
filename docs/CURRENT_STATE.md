@@ -6,11 +6,11 @@ Audited checkout: `/Users/dimi/Projects/dungeon-master-castle-lords`
 
 Branch: `main`
 
-Source base inspected: `84130b72e91acfee7923aab8b9db6b98f48989c9` (`Add opening board summaries and inspection`) plus the E03-T08 Candidate audit/reconciliation diff
+Source base inspected: `7b47f3c4f5dba1e7350da02a7e0bb153cb505ea1` (`Harden campaign migration and recovery`) plus the E03-T08 acceptance/closure records
 
 ## Purpose and evidence labels
 
-This document records what the repository implements after the owner-accepted E03-T01–T07 work. It is implementation evidence, not approval of unresolved gameplay.
+This document records what the repository implements after the owner-accepted E03-T01–T08 work and EPIC 03 closure. It is implementation evidence, not approval of unresolved gameplay.
 
 - **Observed** — directly supported by source, configuration, or automated tests.
 - **Owner-confirmed** — manually reported by the project owner.
@@ -151,10 +151,10 @@ The presence of content identities, locked board modules, or explanatory placeho
 - Hero attribute totals remain the explicitly temporary `v4-path-bonus-1` compatibility snapshot through EPIC 05; EPIC 06 must migrate or retire it.
 - The seven-region World and Tier-1 Village are inspection/opening context only until EPIC 04 defines and implements economy/World mechanics.
 - Browser corruption/quota injection is not exposed as a player/developer toggle; those paths are verified through pure adapters and require prepared fixtures or a controlled browser environment for visual inspection.
-- Physical smartphone touch, safe-area, theme, reduced-motion, focus, and error-dialog acceptance remains an explicit owner action for the EPIC 03 exit Candidate.
+- The owner accepted the EPIC 03 manual/device exit evidence. Future physical-device regression remains part of each responsible task rather than an open EPIC 03 action.
 
 ## Verification status
 
-The E03-T08 exit record contains the exact final command results, fixture-to-criterion matrix, rendered checks, and owner manual QA checklist. Review of the first Candidate requested persistence/migration hardening; E03-T08 remains active as Changes requested while the revised Candidate is reviewed. The project owner reported E03-T07 accepted and its GitHub `Verify` run PASS; exact commit `84130b72e91acfee7923aab8b9db6b98f48989c9` is also saved as non-deployed Sites version 28. EPIC 03 is not Complete until the owner accepts the revised E03-T08 Exit Candidate and the matching workflow checkpoint is committed, pushed, independently verified, and saved as a non-deployed Sites version.
+The E03-T08 exit record contains the final command results, fixture-to-criterion matrix, rendered checks, and owner manual QA checklist. The project owner accepted the revised E03-T08 Candidate, approved all points and tests, reported GitHub `Verify` PASS for pushed implementation commit `7b47f3c4f5dba1e7350da02a7e0bb153cb505ea1`, and closed EPIC 03 on 2026-08-14. E04-T01 is the sole named next task and has not started.
 
 Deployment was not performed or authorized.

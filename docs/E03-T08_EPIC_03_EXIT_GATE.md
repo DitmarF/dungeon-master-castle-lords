@@ -1,6 +1,6 @@
 # Dungeon Master & Castle Lords — E03-T08 Compatibility and EPIC 03 exit gate
 
-Status: **Revised EPIC 03 Exit Candidate — PASS, E03-T08 remains Changes requested pending owner acceptance**
+Status: **Complete — revised Candidate accepted; EPIC 03 closed**
 
 ## Task ID and name
 
@@ -33,9 +33,9 @@ Perform the final compatibility, persistence, determinism, integration, document
 | Automated repository gate | **PASS** | `npm run verify`: token drift/lint PASS, engine 111/111 PASS, bounded build/artifact PASS, rendered HTML 1/1 PASS. |
 | Rendered desktop/portrait regression | **PASS** | Fresh Castle Setup, Settlement opening, seven-region World, contextual Dungeon, Save, reload/Continue, 390×844 and 1440×900 layouts, focus restoration, theme switch, and clean browser log verified. |
 | Accepted-checkpoint integrity | **PASS** | Exact T07 commit `84130b72e91acfee7923aab8b9db6b98f48989c9` is on GitHub and the configured Sites source branch and is saved as non-deployed Sites version 28. |
-| Owner physical smartphone and fixture-assisted failure/migration UI | **AWAITING OWNER** | [Manual QA checklist](./E03-T08_MANUAL_QA_CHECKLIST.md). |
+| Owner physical smartphone and fixture-assisted failure/migration UI | **PASS — OWNER ACCEPTED** | [Manual QA checklist](./E03-T08_MANUAL_QA_CHECKLIST.md). |
 
-No blocking policy gap, semantic-conversion defect, or checkpoint-integrity mismatch remains in the revised source. EPIC 03 and E03-T08 remain Current/Changes requested until the owner accepts this Candidate and the E03-T08 checkpoint workflow completes.
+No blocking policy gap, semantic-conversion defect, or checkpoint-integrity mismatch remains in the revised source. The owner accepted the revised Candidate and closed E03-T08 and EPIC 03 on 2026-08-14.
 
 ## Fixture and migration matrix
 
@@ -166,6 +166,4 @@ No campaign version, eligible migration meaning, gameplay rule, dependency, lock
 
 ## Checkpoint boundary
 
-This is a revised Candidate only, and E03-T08 remains Changes requested. Before explicit owner acceptance, do not mark EPIC 03 Complete, activate EPIC 04, commit/push the remediation, save a Sites version, or deploy.
-
-After acceptance, follow `WORKFLOW.md`: apply closure/next-task status, rerun affected verification, commit and push without force, confirm pushed HEAD and GitHub Actions, save the matching non-deployed Sites version, and report the SHA/version/next task. Do not begin EPIC 04 automatically.
+The owner accepted this revised Candidate on 2026-08-14 and closed EPIC 03. The matching closure checkpoint follows `WORKFLOW.md`: verified source, non-force push, GitHub Actions confirmation, and a matching non-deployed Sites version. E04-T01 is named next but is not started, and nothing is deployed.

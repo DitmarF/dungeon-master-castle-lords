@@ -1,6 +1,6 @@
 # E03-T08 — EPIC 03 owner manual QA checklist
 
-Status: **Revised Candidate checklist — owner execution required**
+Status: **Accepted — owner reported PASS**
 
 Use this checklist against the exact E03-T08 Candidate source. Record the browser/device, viewport, theme, input method, and any failure with a screenshot or short note. Do not deploy to perform these checks.
 
@@ -74,9 +74,9 @@ The application does not expose a corrupt-save or quota-failure developer toggle
 
 ## Owner result
 
-- Overall: [ ] PASS [ ] FAIL
-- Browser/device(s):
-- Candidate commit or source identifier:
-- Notes/screenshots:
-- Physical-smartphone acceptance: [ ] PASS [ ] FAIL
-- Approval to close EPIC 03: [ ] Yes [ ] No
+- Overall: [x] PASS [ ] FAIL
+- Browser/device(s): Owner-confirmed acceptance; exact device details not recorded in this file.
+- Candidate commit or source identifier: `7b47f3c4f5dba1e7350da02a7e0bb153cb505ea1`
+- Notes/screenshots: Owner approved all Candidate points and reported all tests and GitHub verification PASS on 2026-08-14.
+- Physical-smartphone acceptance: [x] PASS [ ] FAIL
+- Approval to close EPIC 03: [x] Yes [ ] No

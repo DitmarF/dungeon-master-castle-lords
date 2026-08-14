@@ -1,6 +1,6 @@
 # Dungeon Master & Castle Lords — Roadmap
 
-Status: Active Game Concept 2.0 roadmap; EPIC 03 Current; E03-T08 Changes requested
+Status: Active Game Concept 2.0 roadmap; EPIC 03 Complete; EPIC 04 next
 Last updated: 2026-08-14
 
 ## Purpose and authority
@@ -32,21 +32,21 @@ Owner acceptance on 2026-08-14:
 
 The acceptance establishes planning and transition authority only. E03-T01 changed no runtime code or saves, and deployment remains separately authorized work.
 
-## Current Epic
+## Completed Epic
 
 ### EPIC 03 — Game Concept 2.0 transition and campaign persistence
 
-Status: **Current — exit changes requested**
+Status: **Complete**
 
 Purpose: safely replace the version-4 Dungeon-first prototype foundation with the minimum Castle-only, Village-first campaign state while establishing deliberate local lifecycle, validation, migration, recovery, and board-entry behavior.
 
 EPIC 03 does not add an empty final-game schema. It adds only state and content required by the new opening: Castle authority, a capital Village, the controlled home ring, basic starting sites, regional Dungeon context, and approved retained legacy facts. Economy yields, Road construction, units, Combat, Gambits, Hero progression depth, and evolution effects remain with later Epics.
 
-## Exact current task
+## Completed exit task
 
 ### E03-T08 — Compatibility and EPIC 03 exit gate
 
-Status: **Current — Changes requested — exactly one**
+Status: **Complete**
 
 Goal: perform the final compatibility, persistence, determinism, integration, documentation, and manual-acceptance audit for EPIC 03 without adding gameplay.
 
@@ -60,7 +60,15 @@ E03-T08 must:
 
 E03-T08 must not add economy/yields, Roads, projects, units, Combat, Gambits, faction evolution, new Dungeon content, database/hosting infrastructure, begin EPIC 04, or deploy.
 
-The first Exit Candidate review requested hardening for nested malformed target data, decode-validated writes, campaign-level fault isolation/recovery, strict Hero compatibility validation, and one-step explicit fresh-Castle recovery. Those bounded corrections and regression evidence remain E03-T08 work. EPIC 04 stays Planned until the revised Exit Candidate passes owner QA, is explicitly accepted, and completes the checkpoint workflow.
+The first Exit Candidate review requested hardening for nested malformed target data, decode-validated writes, campaign-level fault isolation/recovery, strict Hero compatibility validation, and one-step explicit fresh-Castle recovery. The revised Candidate implemented and verified those corrections. The owner accepted E03-T08 and closed EPIC 03 on 2026-08-14.
+
+## Exact next task
+
+### E04-T01 — Tier 1 economy and Day decision packet
+
+Status: **Next — not started**
+
+Goal: obtain owner approval for the smallest executable Tier-1 economy and strategic-Day values before any EPIC 04 runtime implementation. Decide starting stockpile, base/improved yields, Road/Workshop/Farm/Quarry/Lumber Camp costs, project duration/capacity, Day phase order, minimum upkeep/shortage behavior, and connection/supply effects.
 
 ## Epic registry
 
@@ -71,8 +79,8 @@ The sequence column records dependency position, not permission to begin early. 
 | EPIC 00 — Project contract and development infrastructure | **Complete** | Establish the audit, product and technical contracts, decision log, roadmap, workflow, repository guidance, FS source, and project README. | Foundation |
 | EPIC 01 — UI shell and board architecture | **Complete** | Finish and generalize the existing mobile-first shell, FS integration, and modular board foundations. | After EPIC 00 |
 | EPIC 02 — Core game engine and state | **Complete** | Establish the shared game-engine and central campaign-state foundations needed by later boards and systems. | After EPIC 01 |
-| EPIC 03 — Game Concept 2.0 transition and campaign persistence | **Current** | Update lifecycle, versioned state, migration, Castle/Village opening, regional Dungeon context, and board entry safely. | After EPIC 02 |
-| EPIC 04 — Tier 1 World, Settlement, economy, and strategic Days | Planned | Implement Roads, connection, simple supply, projects, stockpile, core infrastructure, production, and both functional boards. | After EPIC 03 |
+| EPIC 03 — Game Concept 2.0 transition and campaign persistence | **Complete** | Update lifecycle, versioned state, migration, Castle/Village opening, regional Dungeon context, and board entry safely. | After EPIC 02 |
+| EPIC 04 — Tier 1 World, Settlement, economy, and strategic Days | **Next — not started** | Implement Roads, connection, simple supply, projects, stockpile, core infrastructure, production, and both functional boards. | After EPIC 03 |
 | EPIC 05 — Regional Dungeon integration and first vertical slice | Planned | Make the existing Dungeon a World-region location that returns a persistent consequence and completes the approved first slice. | After EPIC 04 |
 | MILESTONE A — New-concept strategic slice | Planned checkpoint | Prove Setup → Village → Road → improvement → Day → regional Dungeon consequence → Tier 2 preview. | After EPIC 05 |
 | EPIC 06 — Hero levels, attributes, Classes, Vocations, and Professions | Planned | Establish Level 1–20 progression, point budgets, all stable Hero identities, trees, and Profession unlocks. | After Milestone A |
@@ -194,6 +202,12 @@ E03-T07 established and verified:
 - portrait, desktop, pointer, keyboard/focus, theme, reduced-motion, reload, and resume evidence without fake later mechanics.
 
 The project owner accepted E03-T07 on 2026-08-14, approved all points and tests, and reported the pushed GitHub verification PASS. Its exact source commit `84130b72e91acfee7923aab8b9db6b98f48989c9` is saved as non-deployed Sites version 28. E03-T08 is the sole current audit task; EPIC 03 remains Current until the exit Candidate is explicitly accepted and checkpointed.
+
+## EPIC 03 and E03-T08 closure
+
+E03-T08 completed the compatibility, persistence, determinism, integration, documentation, and manual-acceptance exit gate. The revised Candidate hardened nested target validation, decode-validated persistence, campaign-level failure isolation, explicit source-safe recovery/reset, and one-step fresh-Castle replacement while preserving all accepted migration meanings and EPIC boundaries.
+
+The project owner accepted E03-T08 and closed EPIC 03 on 2026-08-14, approved all points and tests, and reported the pushed GitHub `Verify` result PASS. The closure checkpoint names E04-T01 as the sole next task without starting EPIC 04 and without deployment.
 
 ## E02-T01 closure
 
