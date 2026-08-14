@@ -1,6 +1,6 @@
 # Dungeon Master & Castle Lords — E03-T02 Safe local lifecycle and persistence behavior
 
-Status: **Candidate — awaiting owner acceptance**
+Status: **Complete**
 
 ## Task ID and name
 
@@ -81,13 +81,13 @@ E03-T01 is Complete and no required E03-T02 persistence decision remains unresol
 - Updated responsible contracts: `docs/GAME_STATE.md`, `docs/ARCHITECTURE.md`, and this task record.
 - Decision changes: none; E03-T02 implements already accepted DMCL-P27–DMCL-P32 and does not accept a new decision.
 - `CURRENT_STATE.md` audit required: no; no explicitly scoped new repository-wide audit is part of this task.
-- `ROADMAP.md`: unchanged until owner acceptance/checkpoint.
+- `ROADMAP.md`: updated at the accepted checkpoint to mark E03-T02 Complete and make E03-T03 the sole Next task.
 
 ## Checkpoint
 
 - Configured source branch: `main`
-- Commit/push authorized: only after explicit owner acceptance under `WORKFLOW.md`
-- Expected checkpoint contents: accepted E03-T02 implementation, tests, responsible docs, and acceptance-driven roadmap/task status update
+- Commit/push: accepted implementation and checkpoint reconciliation pushed to `main` under `WORKFLOW.md`
+- Checkpoint contents: accepted E03-T02 implementation, tests, responsible docs, and acceptance-driven roadmap/task status update
 - Deployment authorized: **No**
 
 ## Completion report
@@ -109,13 +109,13 @@ E03-T01 is Complete and no required E03-T02 persistence decision remains unresol
 
 ### User acceptance
 
-- Status: awaiting owner review.
-- Accepted by/date: pending.
+- Status: accepted by the project owner on 2026-08-14; all points and tests approved, with independent GitHub verification reported PASS.
+- Accepted by/date: project owner, 2026-08-14.
 
 ### Accepted checkpoint
 
-- Final commit SHA: pending acceptance.
-- Pushed source branch: pending acceptance.
-- Saved Sites version: pending acceptance.
-- Roadmap status: E03-T02 remains Candidate; E03-T03 has not started.
+- Final commit SHA: reported in the completion handoff to avoid a self-referential documentation commit.
+- Pushed source branch: `main`.
+- Saved Sites version: matching non-deployed version reported in the completion handoff.
+- Roadmap status: E03-T02 Complete; E03-T03 is the sole Next task.
 - Deployment: **Not performed**.

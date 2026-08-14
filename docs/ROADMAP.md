@@ -15,9 +15,9 @@ The owner accepted DMCL-P26, the E03-T01 decision packet DMCL-P27–DMCL-P39, an
 
 The implemented prototype remains:
 
-`local player → campaign → hero setup → deterministic dungeon exploration → dungeon-heart claim → placeholder settlement`
+`local player → safe verified local campaign lifecycle → hero setup → deterministic dungeon exploration → dungeon-heart claim → placeholder settlement`
 
-World strategy, region conquest, supply, meaningful management, tactical combat, executable skill effects, the new faction evolution, cloud saves, and multiplayer are not implemented. See CURRENT_STATE.md for evidence. The roadmap rebase and E03-T01 checkpoint change sequencing and accepted contracts, not implementation state.
+E03-T02 implements the accepted browser-local lifecycle, timestamp, failure, verified Save, and replacement/deletion contract. The Castle/Village opening, World strategy, region conquest, supply, meaningful management, tactical combat, executable skill effects, faction evolution, cloud saves, and multiplayer remain unimplemented. See CURRENT_STATE.md for the earlier repository-wide audit and the accepted E03 task records for newer bounded evidence.
 
 ## Accepted activation
 
@@ -44,22 +44,21 @@ EPIC 03 does not add an empty final-game schema. It adds only state and content 
 
 ## Exact next task
 
-### E03-T02 — Safe local lifecycle and persistence behavior
+### E03-T03 — Minimum Castle-opening content catalogs
 
 Status: **Next — exactly one**
 
-Goal: implement the accepted E03-T01 persistence/lifecycle contract so browser-local campaigns fail honestly and recoverably, without redesigning the campaign gameplay schema.
+Goal: create the smallest authoritative typed Castle, Tier-1 Village, starting-site, terrain, and regional-Dungeon content definitions required by the accepted Game Concept 2.0 opening, without implementing World or economy mechanics.
 
-E03-T02 must:
+E03-T03 must:
 
-- introduce the smallest explicit application-clock boundary required by the accepted timestamp semantics;
-- distinguish campaign modification from profile activity and implement verified manual Save behavior;
-- return typed persistence outcomes for absence, decode/validation/migration, storage availability, serialization, quota/write, and verification failures;
-- preserve the original payload and suppress destructive autosave after failed hydration or migration;
-- implement the accepted one-campaign replacement/deletion policy through explicit confirmed actions;
-- provide a pure in-memory persistence test boundary and focused success/failure lifecycle coverage.
+- define one authoritative Castle root, a reusable Tier-1 Village identity, Food/Wood/Stone sites, and only the accepted minimum home-ring terrain/location categories;
+- retain Dungeon identity for compatibility/reference while removing it from new-campaign selection;
+- preserve all stable Class, Vocation, skill, and tree IDs;
+- introduce only necessary family-specific reusable-definition ID types;
+- validate required definitions, uniqueness, references, compatibility, and deterministic catalog ordering through focused pure tests.
 
-E03-T02 must not cut over campaign version 5, implement World/Village/gameplay migration, add future gameplay slices, install dependencies, change database/hosting infrastructure, add cloud/authentication/multiplayer, or deploy.
+E03-T03 must not generate World instances, cut over campaign version 5, migrate saves, add yields/economy/Road/building/unit/evolution mechanics, install dependencies, change database/hosting infrastructure, or deploy.
 
 ## Epic registry
 
@@ -128,6 +127,20 @@ E03-T01 established and the project owner accepted:
 - bounded E03-T02–T08 contracts, the EPIC 03 exit gate, affected-file map, and explicit non-goals.
 
 The project owner accepted DMCL-P26 and all thirteen E03-T01 recommendations on 2026-08-14. This documentation-only checkpoint changes no runtime behavior, campaign/registry version, migration, generated World, gameplay rule, dependency, database, hosting, or deployment state. Its matching pushed/Sites checkpoint completes before E03-T02 begins.
+
+## E03-T02 closure
+
+E03-T02 established and verified:
+
+- one injected application clock separating immutable creation, campaign modification/resume context, and successful New/Continue profile activity;
+- explicit verified local writes and honest manual Save success/failure feedback;
+- typed absence, storage, parse, registry/campaign validation, migration, serialization, quota/write, and verification outcomes;
+- safe hydration that never overwrites failed input with an empty registry;
+- atomic one-campaign replacement/profile deletion behavior and retryable non-destructive write failures;
+- a pure in-memory persistence adapter with focused lifecycle, failure, timestamp, and cardinality coverage;
+- unchanged campaign version 4, gameplay rules, and conditional registry-version policy.
+
+The project owner accepted E03-T02 on 2026-08-14, approved all points and tests, and reported independent GitHub verification PASS. Its matching non-deployed source/Sites checkpoint completes before E03-T03 begins.
 
 ## E02-T01 closure
 
