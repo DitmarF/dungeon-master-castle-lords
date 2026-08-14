@@ -2,42 +2,35 @@
 
 import { useGame } from "../game/GameProvider";
 import { GameIcon } from "../ui/GameIcon";
-import { ActionButton, Slot } from "../ui/GamePrimitives";
+import { Slot } from "../ui/GamePrimitives";
 import { GameShell } from "../ui/GameShell";
 
 export function SettlementBoard() {
-  const { activeGame, navigateToBoard, selectedPlayer } = useGame();
+  const { activeGame, selectedPlayer } = useGame();
 
-  if (!activeGame?.hero || !selectedPlayer) return null;
-  const { dungeon, hero } = activeGame;
-  const settlementType =
-    hero.faction === "dungeon" ? "Dungeon stronghold" : "Castle seat";
+  if (!activeGame?.foundation || !selectedPlayer) return null;
+  const { capital, world } = activeGame.foundation;
 
   return (
     <GameShell
       className="settlement-view"
-      title="Main settlement"
-      subtitle={`${settlementType} · Foundation`}
+      title="Capital Village"
+      subtitle="Castle · Tier 1 foundation"
       icon="castle"
       stats={[
-        { label: "Day", value: dungeon.day, icon: "calendar" },
-        {
-          label: "Gold",
-          value: dungeon.treasury,
-          icon: "coin",
-          kind: "resource",
-        },
-        { label: "Level", value: dungeon.level, icon: "layers" },
+        { label: "Tier", value: capital.tier, icon: "layers" },
+        { label: "Regions", value: world.regions.length, icon: "world" },
+        { label: "Sites", value: world.sites.length, icon: "target" },
       ]}
     >
       <section className="settlement-board" aria-labelledby="settlement-title">
         <header className="board-summary">
           <div>
             <span className="section-kicker">First domain</span>
-            <h1 id="settlement-title">{settlementType}</h1>
+            <h1 id="settlement-title">Tier-1 Village</h1>
           </div>
           <span className="status-chip">
-            <span className="status-dot" /> Claimed
+            <span className="status-dot" /> Established
           </span>
         </header>
 
@@ -47,19 +40,12 @@ export function SettlementBoard() {
             <span className="settlement-empty__mark">
               <GameIcon name="castle" size={32} />
             </span>
-            <span className="section-kicker">Board unlocked</span>
-            <h2>Your first settlement is under control.</h2>
+            <span className="section-kicker">Village-first opening</span>
+            <h2>Your capital is established.</h2>
             <p>
-              This board is ready for the next prototype systems: rooms,
-              resources, population, and construction.
+              The Village and controlled home ring are campaign facts. Economy,
+              buildings, and projects remain later work.
             </p>
-            <ActionButton
-              variant="secondary"
-              startIcon={<GameIcon name="back" size={17} />}
-              onClick={() => navigateToBoard("dungeon")}
-            >
-              Return to exploration
-            </ActionButton>
           </div>
           <Slot label="Future district 01" className="future-slot future-slot--one" />
           <Slot label="Future district 02" className="future-slot future-slot--two" />

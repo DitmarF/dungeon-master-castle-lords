@@ -1,4 +1,9 @@
-import type { CampaignState, PlayerId } from "./campaignState.ts";
+import type {
+  CampaignState,
+  CampaignStateV4,
+  CampaignStateV5,
+  PlayerId,
+} from "./campaignState.ts";
 
 export { EMPTY_ATTRIBUTES } from "./campaignState.ts";
 export type {
@@ -23,6 +28,7 @@ export type {
   HeroClass,
   HeroSetupSelection,
   HeroState,
+  LegacyHeroSetupSelection,
   HeroExplorationContext,
   HeroAttributesCompatibilitySnapshot,
   HeroAttributesCompatibilityRuleVersion,
@@ -41,12 +47,28 @@ export interface PlayerProfile {
   lastPlayedAt: string | null;
 }
 
-export interface GameRegistry {
+export interface GameRegistryV1 {
   version: 1;
   players: PlayerProfile[];
-  games: Record<string, CampaignState>;
+  games: Record<string, CampaignStateV4>;
   lastActivePlayerId: PlayerId | null;
 }
+
+export interface GameRegistryV2 {
+  version: 2;
+  players: PlayerProfile[];
+  games: Record<string, CampaignStateV5>;
+  lastActivePlayerId: PlayerId | null;
+}
+
+export const EMPTY_REGISTRY_V2: GameRegistryV2 = {
+  version: 2,
+  players: [],
+  games: {},
+  lastActivePlayerId: null,
+};
+
+export type GameRegistry = GameRegistryV2;
 
 export type AppView = "players" | "game";
 
@@ -59,7 +81,7 @@ export interface RuntimeState {
 }
 
 export const EMPTY_REGISTRY: GameRegistry = {
-  version: 1,
+  version: 2,
   players: [],
   games: {},
   lastActivePlayerId: null,

@@ -110,7 +110,10 @@ export function createDungeonLevel(seed: CampaignSeed): DungeonState {
   };
 }
 
-export function isWalkable(dungeon: DungeonState, position: CellPosition): boolean {
+export function isWalkable(
+  dungeon: Readonly<Pick<DungeonState, "tiles">>,
+  position: CellPosition,
+): boolean {
   return dungeon.tiles[position.y]?.[position.x] === ".";
 }
 

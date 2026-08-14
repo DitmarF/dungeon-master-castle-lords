@@ -4,6 +4,7 @@ import test from "node:test";
 
 import type {
   CampaignState,
+  CampaignStateV4,
   GameSave,
   HeroAttributes,
 } from "../../src/game/campaignState.ts";
@@ -34,20 +35,18 @@ const ZERO_ATTRIBUTES: HeroAttributes = {
 
 function createCampaignState(): CampaignState {
   return {
-    version: 4,
+    version: 5,
     id: "game-fixture",
     playerId: "player-fixture",
     campaignSeed: 1_234_567,
     createdAt: "2026-08-01T10:00:00.000Z",
     updatedAt: "2026-08-01T11:00:00.000Z",
     activeBoardId: "setup",
-    setupComplete: false,
-    hero: null,
-    dungeon: createDungeonLevel(1_234_567),
+    foundation: null,
   };
 }
 
-test("CampaignState is the exact version-4 campaign boundary", () => {
+test("CampaignState is the exact version-5 campaign boundary", () => {
   const campaign = createCampaignState();
   const compatibleSave: GameSave = campaign;
 
@@ -56,15 +55,13 @@ test("CampaignState is the exact version-4 campaign boundary", () => {
     "activeBoardId",
     "campaignSeed",
     "createdAt",
-    "dungeon",
-    "hero",
+    "foundation",
     "id",
     "playerId",
-    "setupComplete",
     "updatedAt",
     "version",
   ]);
-  assert.equal(campaign.version, 4);
+  assert.equal(campaign.version, 5);
   assert.equal("players" in campaign, false);
   assert.equal("hydrated" in campaign, false);
   assert.equal("theme" in campaign, false);
@@ -74,23 +71,31 @@ test("CampaignState is the exact version-4 campaign boundary", () => {
 });
 
 test("a version-3 campaign adopts its Dungeon seed without regeneration", () => {
-  const campaign = createCampaignState();
-  const versionThree = structuredClone(campaign) as Partial<CampaignState> & {
+  const dungeon = createDungeonLevel(1_234_567);
+  const versionThree = {
+    version: 3,
+    id: "game-fixture",
+    playerId: "player-fixture",
+    createdAt: "2026-08-01T10:00:00.000Z",
+    updatedAt: "2026-08-01T11:00:00.000Z",
+    activeBoardId: "setup",
+    setupComplete: false,
+    hero: null,
+    dungeon,
+  } as Partial<CampaignStateV4> & {
     version: number;
   };
-  versionThree.version = 3;
-  delete versionThree.campaignSeed;
   const migrated = migrateLegacyGame(
     versionThree,
-    campaign.playerId,
+    "player-fixture",
     MIGRATION_ID_SOURCE,
     MIGRATION_SEED_SOURCE,
     "2026-08-14T10:00:00.000Z",
   );
 
   assert.equal(migrated.version, 4);
-  assert.equal(migrated.campaignSeed, campaign.dungeon.seed);
-  assert.deepEqual(migrated.dungeon, campaign.dungeon);
+  assert.equal(migrated.campaignSeed, dungeon.seed);
+  assert.deepEqual(migrated.dungeon, dungeon);
   assert.equal(migrated.hero, null);
 });
 

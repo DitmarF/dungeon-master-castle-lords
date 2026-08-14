@@ -1,6 +1,6 @@
-import type { CampaignState } from "./campaignState.ts";
+import type { CampaignStateV4 } from "./campaignState.ts";
 import { isCampaignSeed } from "./random.ts";
-import type { GameRegistry, PlayerProfile } from "./model.ts";
+import type { GameRegistryV1, PlayerProfile } from "./model.ts";
 
 export type StorageReadFailureCode =
   | "storage-unavailable"
@@ -63,16 +63,20 @@ const FAILURE_MESSAGES: Record<PersistenceFailureCode, string> = {
     "The campaign write could not be verified, so it was not reported as saved.",
 };
 
-function failure(code: PersistenceFailureCode): PersistenceFailure {
+export function createPersistenceFailure(
+  code: PersistenceFailureCode,
+): PersistenceFailure {
   return { code, message: FAILURE_MESSAGES[code] };
 }
 
+const failure = createPersistenceFailure;
+
 export interface RegistryMigrationDependencies {
-  migrateGame(value: unknown, playerId: string): CampaignState;
+  migrateGame(value: unknown, playerId: string): CampaignStateV4;
 }
 
 export type RegistryHydrationResult =
-  | { ok: true; status: "empty" | "loaded"; registry: GameRegistry }
+  | { ok: true; status: "empty" | "loaded"; registry: GameRegistryV1 }
   | { ok: false; failure: PersistenceFailure };
 
 export type RegistryWriteResult =
@@ -80,10 +84,10 @@ export type RegistryWriteResult =
   | { ok: false; failure: PersistenceFailure };
 
 export type RequiredRegistryCommitResult =
-  | { ok: true; registry: GameRegistry }
+  | { ok: true; registry: GameRegistryV1 }
   | {
       ok: false;
-      registry: GameRegistry;
+      registry: GameRegistryV1;
       failure: PersistenceFailure;
     };
 
@@ -256,13 +260,13 @@ export function decodeRegistry(
     return { ok: false, failure: failure("registry-validation-failed") };
   }
 
-  const games: Record<string, CampaignState> = {};
+  const games: Record<string, CampaignStateV4> = {};
   for (const [playerId, source] of Object.entries(parsed.games)) {
     if (!isCampaignEnvelope(source)) {
       return { ok: false, failure: failure("campaign-validation-failed") };
     }
 
-    let migrated: CampaignState;
+    let migrated: CampaignStateV4;
     try {
       migrated = dependencies.migrateGame(source, playerId);
     } catch {
@@ -288,7 +292,7 @@ export function decodeRegistry(
 export function hydrateRegistry(
   adapter: RegistryStorageAdapter,
   dependencies: RegistryMigrationDependencies,
-  emptyRegistry: GameRegistry,
+  emptyRegistry: GameRegistryV1,
 ): RegistryHydrationResult {
   const read = adapter.read();
   if (!read.ok) return { ok: false, failure: failure(read.code) };
@@ -312,7 +316,7 @@ function restorePreviousPayload(
 
 export function persistRegistry(
   adapter: RegistryStorageAdapter,
-  registry: GameRegistry,
+  registry: GameRegistryV1,
 ): RegistryWriteResult {
   const previous = adapter.read();
   if (!previous.ok) return { ok: false, failure: failure(previous.code) };
@@ -338,8 +342,8 @@ export function persistRegistry(
 
 export function commitRequiredRegistryChange(
   adapter: RegistryStorageAdapter,
-  current: GameRegistry,
-  candidate: GameRegistry,
+  current: GameRegistryV1,
+  candidate: GameRegistryV1,
 ): RequiredRegistryCommitResult {
   const result = persistRegistry(adapter, candidate);
   return result.ok

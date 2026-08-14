@@ -11,50 +11,51 @@ import {
   type ReactNode,
 } from "react";
 import {
-  createNewGame,
+  createNewGameV5,
   createPlayerProfile,
-  migrateLegacyGame,
 } from "./createGame";
 import { systemClock, type Clock } from "./clock";
 import {
-  activateCampaign,
-  addPlayerToRegistry,
-  removePlayerAndCampaign,
-  selectPlayerInRegistry,
-  stampCampaignModification,
-  storeCampaign,
-} from "./lifecycle";
-import type { RegisteredBoardId } from "./navigation";
+  activateCampaignV2,
+  addPlayerToRegistryV2,
+  removePlayerAndCampaignV2,
+  selectPlayerInRegistryV2,
+  stampCampaignModificationV5,
+  storeCampaignV2,
+} from "./lifecycleV2";
+import type { RegisteredBoardIdV5 } from "./navigationV5";
 import { systemIdSource } from "./systemIdSource";
 import { systemCampaignSeedSource } from "./systemCampaignSeedSource";
 import {
-  EMPTY_REGISTRY,
-  type GameRegistry,
-  type GameSave,
+  EMPTY_REGISTRY_V2,
+  type GameRegistryV2,
   type PlayerProfile,
   type PlayerId,
-  type RuntimeState,
-  type HeroSetupSelection,
 } from "./model";
 import {
-  commitRequiredRegistryChange,
-  hydrateRegistry,
-  persistRegistry,
   type PersistenceFailure,
   type RegistryStorageAdapter,
 } from "./persistence";
-import { gameStorage } from "./storage";
 import {
-  claimSettlement as transitionClaimSettlement,
-  completeHeroSetup as transitionCompleteHeroSetup,
-  moveHeroInDungeon as transitionMoveHeroInDungeon,
-  navigateToAvailableBoard,
-  type ClaimSettlementResult,
-  type CompleteHeroSetupResult,
-  type DungeonMoveDirection,
-  type MoveHeroInDungeonResult,
-  type NavigateToAvailableBoardResult,
-} from "./transitions";
+  hydratePreferredRegistryV2,
+  persistRegistryV2,
+} from "./registryCutover";
+import { gameStorageV2, legacyGameStorage } from "./storage";
+import {
+  claimSettlementFromDungeonHeart,
+  moveHeroInRegionalDungeon,
+  navigateToAvailableBoardV5,
+  type DungeonMoveDirectionV5,
+  type MoveHeroInDungeonResultV5,
+  type NavigateToAvailableBoardResultV5,
+  type RetiredSettlementClaimResult,
+} from "./campaignTransitionsV5";
+import type { CampaignStateV5 } from "./campaignState";
+import type { CastleHeroSetupSelection } from "./heroSetup";
+import {
+  completeVillageFirstHeroSetup,
+  type VillageFirstSetupResult,
+} from "./villageOpening";
 
 type ThemePreference = "system" | "light" | "dark";
 
@@ -77,34 +78,42 @@ function systemUsesDarkMode(): boolean {
 }
 
 type Action =
-  | { type: "hydrate"; registry: GameRegistry }
+  | { type: "hydrate"; registry: GameRegistryV2 }
   | {
       type: "setRegistry";
-      registry: GameRegistry;
+      registry: GameRegistryV2;
       selectedPlayerId: PlayerId | null;
     }
   | {
       type: "openGame";
       playerId: PlayerId;
-      game: GameSave;
-      registry: GameRegistry;
+      game: CampaignStateV5;
+      registry: GameRegistryV2;
     }
   | {
       type: "applyCampaignTransition";
-      game: GameSave;
-      registry: GameRegistry;
+      game: CampaignStateV5;
+      registry: GameRegistryV2;
     }
   | { type: "returnToPlayers" };
 
-const INITIAL_STATE: RuntimeState = {
+interface RuntimeStateV2 {
+  hydrated: boolean;
+  registry: GameRegistryV2;
+  selectedPlayerId: PlayerId | null;
+  activeGame: CampaignStateV5 | null;
+  view: "players" | "game";
+}
+
+const INITIAL_STATE: RuntimeStateV2 = {
   hydrated: false,
-  registry: EMPTY_REGISTRY,
+  registry: EMPTY_REGISTRY_V2,
   selectedPlayerId: null,
   activeGame: null,
   view: "players",
 };
 
-function reducer(state: RuntimeState, action: Action): RuntimeState {
+function reducer(state: RuntimeStateV2, action: Action): RuntimeStateV2 {
   switch (action.type) {
     case "hydrate": {
       const selectedPlayerId = action.registry.players.some(
@@ -169,9 +178,9 @@ interface GameContextValue {
   hydrated: boolean;
   players: PlayerProfile[];
   selectedPlayer: PlayerProfile | null;
-  selectedGame: GameSave | null;
-  activeGame: GameSave | null;
-  view: RuntimeState["view"];
+  selectedGame: CampaignStateV5 | null;
+  activeGame: CampaignStateV5 | null;
+  view: RuntimeStateV2["view"];
   darkMode: boolean;
   themePreference: ThemePreference;
   hydrationFailure: PersistenceFailure | null;
@@ -186,15 +195,15 @@ interface GameContextValue {
   saveGame: () => PersistenceActionResult;
   retryPersistence: () => PersistenceActionResult;
   completeHeroSetup: (
-    selection: HeroSetupSelection,
-  ) => CompleteHeroSetupResult | null;
+    selection: CastleHeroSetupSelection,
+  ) => VillageFirstSetupResult | null;
   moveHeroInDungeon: (
-    direction: DungeonMoveDirection,
-  ) => MoveHeroInDungeonResult | null;
-  claimSettlement: () => ClaimSettlementResult | null;
+    direction: DungeonMoveDirectionV5,
+  ) => MoveHeroInDungeonResultV5 | null;
+  claimSettlement: () => RetiredSettlementClaimResult;
   navigateToBoard: (
-    boardId: RegisteredBoardId,
-  ) => NavigateToAvailableBoardResult | null;
+    boardId: RegisteredBoardIdV5,
+  ) => NavigateToAvailableBoardResultV5 | null;
   returnToPlayers: () => void;
 }
 
@@ -204,12 +213,14 @@ interface GameProviderProps {
   children: ReactNode;
   clock?: Clock;
   storage?: RegistryStorageAdapter;
+  legacyStorage?: RegistryStorageAdapter;
 }
 
 export function GameProvider({
   children,
   clock = systemClock,
-  storage = gameStorage,
+  storage = gameStorageV2,
+  legacyStorage = legacyGameStorage,
 }: GameProviderProps) {
   const [state, dispatch] = useReducer(reducer, INITIAL_STATE);
   const [hydrationFailure, setHydrationFailure] =
@@ -245,20 +256,10 @@ export function GameProvider({
     let cancelled = false;
     queueMicrotask(() => {
       if (cancelled) return;
-      const hydratedAt = clock.now();
-      const result = hydrateRegistry(
+      const result = hydratePreferredRegistryV2(
         storage,
-        {
-          migrateGame: (value, playerId) =>
-            migrateLegacyGame(
-              value,
-              playerId,
-              systemIdSource,
-              systemCampaignSeedSource,
-              hydratedAt,
-            ),
-        },
-        EMPTY_REGISTRY,
+        legacyStorage,
+        EMPTY_REGISTRY_V2,
       );
 
       if (!result.ok) {
@@ -275,11 +276,11 @@ export function GameProvider({
     return () => {
       cancelled = true;
     };
-  }, [clock, storage]);
+  }, [legacyStorage, storage]);
 
   const writeRegistry = useCallback(
-    (registry: GameRegistry): PersistenceActionResult => {
-      const result = persistRegistry(storage, registry);
+    (registry: GameRegistryV2): PersistenceActionResult => {
+      const result = persistRegistryV2(storage, registry);
       if (!result.ok) {
         setPersistenceIssue(result.failure);
         return { ok: false, error: result.failure };
@@ -291,12 +292,8 @@ export function GameProvider({
   );
 
   const writeRequiredRegistry = useCallback(
-    (registry: GameRegistry): PersistenceActionResult => {
-      const result = commitRequiredRegistryChange(
-        storage,
-        state.registry,
-        registry,
-      );
+    (registry: GameRegistryV2): PersistenceActionResult => {
+      const result = persistRegistryV2(storage, registry);
       if (!result.ok) {
         setPersistenceIssue(result.failure);
         return { ok: false, error: result.failure };
@@ -304,25 +301,15 @@ export function GameProvider({
       setPersistenceIssue(null);
       return { ok: true };
     },
-    [state.registry, storage],
+    [storage],
   );
 
   const retryPersistence = useCallback((): PersistenceActionResult => {
     if (hydrationFailure) {
-      const hydratedAt = clock.now();
-      const result = hydrateRegistry(
+      const result = hydratePreferredRegistryV2(
         storage,
-        {
-          migrateGame: (value, playerId) =>
-            migrateLegacyGame(
-              value,
-              playerId,
-              systemIdSource,
-              systemCampaignSeedSource,
-              hydratedAt,
-            ),
-        },
-        EMPTY_REGISTRY,
+        legacyStorage,
+        EMPTY_REGISTRY_V2,
       );
       if (!result.ok) {
         setHydrationFailure(result.failure);
@@ -335,7 +322,7 @@ export function GameProvider({
       return { ok: true };
     }
     return writeRegistry(state.registry);
-  }, [clock, hydrationFailure, state.registry, storage, writeRegistry]);
+  }, [hydrationFailure, legacyStorage, state.registry, storage, writeRegistry]);
 
   const createPlayer = useCallback(
     (name: string, bannerColor: string): CreatePlayerResult => {
@@ -361,7 +348,7 @@ export function GameProvider({
         systemIdSource,
         createdAt,
       );
-      const registry = addPlayerToRegistry(state.registry, player);
+      const registry = addPlayerToRegistryV2(state.registry, player);
       const persistence = writeRequiredRegistry(registry);
       if (!persistence.ok) return persistence;
       dispatch({
@@ -376,7 +363,7 @@ export function GameProvider({
 
   const selectPlayer = useCallback(
     (playerId: PlayerId): PersistenceActionResult => {
-      const registry = selectPlayerInRegistry(state.registry, playerId);
+      const registry = selectPlayerInRegistryV2(state.registry, playerId);
       const persistence = writeRegistry(registry);
       dispatch({ type: "setRegistry", registry, selectedPlayerId: playerId });
       return persistence;
@@ -386,7 +373,7 @@ export function GameProvider({
 
   const deletePlayer = useCallback(
     (playerId: PlayerId): PersistenceActionResult => {
-      const registry = removePlayerAndCampaign(state.registry, playerId);
+      const registry = removePlayerAndCampaignV2(state.registry, playerId);
       const persistence = writeRequiredRegistry(registry);
       if (!persistence.ok) return persistence;
       const selectedPlayerId =
@@ -402,13 +389,13 @@ export function GameProvider({
   const startNewGame = useCallback(
     (playerId: PlayerId): PersistenceActionResult => {
       const createdAt = clock.now();
-      const game = createNewGame(
+      const game = createNewGameV5(
         playerId,
         systemIdSource,
         systemCampaignSeedSource.nextCampaignSeed(),
         createdAt,
       );
-      const registry = activateCampaign(
+      const registry = activateCampaignV2(
         state.registry,
         playerId,
         game,
@@ -426,7 +413,7 @@ export function GameProvider({
     (playerId: PlayerId): PersistenceActionResult => {
       const game = state.registry.games[playerId];
       if (!game) return { ok: false };
-      const registry = activateCampaign(
+      const registry = activateCampaignV2(
         state.registry,
         playerId,
         game,
@@ -445,9 +432,9 @@ export function GameProvider({
   }, [state.activeGame, state.registry, writeRegistry]);
 
   const commitCampaignTransition = useCallback(
-    (transitioned: GameSave): GameSave => {
-      const game = stampCampaignModification(transitioned, clock.now());
-      const registry = storeCampaign(state.registry, game);
+    (transitioned: CampaignStateV5): CampaignStateV5 => {
+      const game = stampCampaignModificationV5(transitioned, clock.now());
+      const registry = storeCampaignV2(state.registry, game);
       writeRegistry(registry);
       dispatch({ type: "applyCampaignTransition", game, registry });
       return game;
@@ -456,9 +443,9 @@ export function GameProvider({
   );
 
   const completeHeroSetup = useCallback(
-    (selection: HeroSetupSelection): CompleteHeroSetupResult | null => {
+    (selection: CastleHeroSetupSelection): VillageFirstSetupResult | null => {
       if (!state.activeGame) return null;
-      const result = transitionCompleteHeroSetup(state.activeGame, selection);
+      const result = completeVillageFirstHeroSetup(state.activeGame, selection);
       if (!result.ok) return result;
 
       const game = commitCampaignTransition(result.state);
@@ -468,9 +455,9 @@ export function GameProvider({
   );
 
   const moveHeroInDungeon = useCallback(
-    (direction: DungeonMoveDirection): MoveHeroInDungeonResult | null => {
+    (direction: DungeonMoveDirectionV5): MoveHeroInDungeonResultV5 | null => {
       if (!state.activeGame) return null;
-      const result = transitionMoveHeroInDungeon(state.activeGame, direction);
+      const result = moveHeroInRegionalDungeon(state.activeGame, direction);
       if (!result.ok) return result;
 
       const game = commitCampaignTransition(result.state);
@@ -479,21 +466,17 @@ export function GameProvider({
     [commitCampaignTransition, state.activeGame],
   );
 
-  const claimSettlement = useCallback((): ClaimSettlementResult | null => {
-    if (!state.activeGame) return null;
-    const result = transitionClaimSettlement(state.activeGame);
-    if (!result.ok) return result;
-
-    const game = commitCampaignTransition(result.state);
-    return { ...result, state: game };
-  }, [commitCampaignTransition, state.activeGame]);
+  const claimSettlement = useCallback(
+    (): RetiredSettlementClaimResult => claimSettlementFromDungeonHeart(),
+    [],
+  );
 
   const navigateToBoard = useCallback(
     (
-      boardId: RegisteredBoardId,
-    ): NavigateToAvailableBoardResult | null => {
+      boardId: RegisteredBoardIdV5,
+    ): NavigateToAvailableBoardResultV5 | null => {
       if (!state.activeGame) return null;
-      const result = navigateToAvailableBoard(state.activeGame, boardId);
+      const result = navigateToAvailableBoardV5(state.activeGame, boardId);
       if (!result.ok || result.state === state.activeGame) return result;
 
       const game = commitCampaignTransition(result.state);

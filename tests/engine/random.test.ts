@@ -53,10 +53,10 @@ test("the same explicit campaign-creation inputs reproduce gameplay state", () =
   );
 
   assert.deepEqual(second, first);
-  assert.equal(first.version, 4);
+  assert.equal(first.version, 5);
   assert.equal(first.campaignSeed, 123_456_789);
-  assert.equal(first.dungeon.seed, first.campaignSeed);
-  assert.deepEqual(first.dungeon, createDungeonLevel(first.campaignSeed));
+  assert.equal(first.foundation, null);
+  assert.equal(first.activeBoardId, "setup");
 });
 
 test("identity generation cannot advance the separate gameplay seed source", () => {

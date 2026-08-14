@@ -9,7 +9,7 @@ import {
 import type { CampaignStateV5 } from "../../src/game/campaignState.ts";
 import { generateStartingWorld } from "../../src/game/generateStartingWorld.ts";
 import { hydrateRegistry, MemoryRegistryStorage } from "../../src/game/persistence.ts";
-import type { GameRegistry } from "../../src/game/model.ts";
+import type { GameRegistryV1 } from "../../src/game/model.ts";
 import {
   FIXTURE_CAMPAIGN_ID,
   FIXTURE_CAMPAIGN_SEED,
@@ -238,7 +238,7 @@ test("malformed registry remains a separate typed hydration failure", () => {
       players: [],
       games: {},
       lastActivePlayerId: null,
-    } satisfies GameRegistry,
+    } satisfies GameRegistryV1,
   );
   assert.equal(result.ok, false);
   if (!result.ok) {

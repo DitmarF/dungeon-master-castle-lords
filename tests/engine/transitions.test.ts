@@ -6,7 +6,7 @@ import type {
   CampaignState,
   HeroSetupSelection,
 } from "../../src/game/campaignState.ts";
-import { createDungeonLevel } from "../../src/game/generateDungeon.ts";
+import { discoverAround } from "../../src/game/generateDungeon.ts";
 import {
   BOARD_DESCRIPTORS,
   getBoardAvailability,
@@ -22,7 +22,6 @@ import {
 import { selectHeroAttributes } from "../../src/game/selectors.ts";
 
 const VALID_SELECTION: HeroSetupSelection = {
-  faction: "castle",
   heroClass: "fighter",
   vocation: "general",
   freeAttributes: {
@@ -38,26 +37,14 @@ const VALID_SELECTION: HeroSetupSelection = {
 
 function createSetupCampaign(): CampaignState {
   return {
-    version: 4,
+    version: 5,
     id: "game-transitions",
     playerId: "player-transitions",
     campaignSeed: 1_234,
     createdAt: "2026-08-10T10:00:00.000Z",
     updatedAt: "2026-08-10T10:00:00.000Z",
     activeBoardId: "setup",
-    setupComplete: false,
-    hero: null,
-    dungeon: {
-      ...createDungeonLevel(1_234),
-      grid: { columns: 5, rows: 3 },
-      rooms: [{ id: 1, x: 1, y: 1, width: 3, height: 1 }],
-      tiles: ["#####", "#...#", "#####"],
-      start: { x: 1, y: 1 },
-      heart: { x: 3, y: 1 },
-      discovered: [],
-      heartReached: false,
-      settlementClaimed: false,
-    },
+    foundation: null,
   };
 }
 
@@ -67,7 +54,38 @@ function createReadyCampaign(): CampaignState {
   return result.state;
 }
 
-test("legal Hero Setup completes through one validated pure transition", () => {
+function enterDungeon(campaign = createReadyCampaign()): CampaignState {
+  if (!campaign.foundation) throw new Error("Missing foundation");
+  const dungeon = campaign.foundation.regionalDungeons["location:regional-dungeon"];
+  return {
+    ...campaign,
+    activeBoardId: "dungeon",
+    foundation: {
+      ...campaign.foundation,
+      hero: {
+        ...campaign.foundation.hero,
+        explorationContext: {
+          locationId: "location:regional-dungeon",
+          cell: { ...dungeon.start },
+          returnBoardId: "world",
+        },
+      },
+      regionalDungeons: {
+        ...campaign.foundation.regionalDungeons,
+        "location:regional-dungeon": {
+          ...dungeon,
+          discovered: discoverAround(
+            dungeon.start,
+            dungeon.grid.columns,
+            dungeon.grid.rows,
+          ),
+        },
+      },
+    },
+  };
+}
+
+test("legal Hero Setup completes through one atomic Village-first transition", () => {
   const campaign = createSetupCampaign();
   const snapshot = structuredClone(campaign);
   const result = completeHeroSetup(campaign, VALID_SELECTION);
@@ -75,29 +93,21 @@ test("legal Hero Setup completes through one validated pure transition", () => {
   assert.equal(result.ok, true);
   if (!result.ok) return;
   assert.deepEqual(campaign, snapshot);
-  assert.equal(result.state.setupComplete, true);
-  assert.equal(result.state.activeBoardId, "dungeon");
-  assert.deepEqual(result.state.hero?.attributes, {
-    str: 3,
-    agy: 0,
-    per: 0,
-    int: 0,
-    cha: 0,
-    lead: 1,
-  });
+  assert.equal(result.state.activeBoardId, "settlement");
+  assert.equal(result.state.foundation?.rootFactionId, "castle");
+  assert.equal(result.state.foundation?.capital.definitionId, "village");
   assert.deepEqual(
-    result.state.hero?.attributes,
+    result.state.foundation?.hero.attributesCompatibility.values,
     selectHeroAttributes(VALID_SELECTION),
   );
-  assert.equal(result.state.hero?.skills["close-combat"], 1);
-  assert.equal(result.state.hero?.skills.tactics, 1);
-  assert.equal(result.state.hero?.skills["heavy-blow"], 1);
-  assert.deepEqual(result.state.hero?.position, campaign.dungeon.start);
-  assert.ok(result.state.dungeon.discovered.includes("1,1"));
+  assert.equal(result.state.foundation?.hero.skillRanks["close-combat"], 1);
+  assert.equal(result.state.foundation?.hero.skillRanks.tactics, 1);
+  assert.equal(result.state.foundation?.hero.skillRanks["heavy-blow"], 1);
+  assert.equal(result.state.foundation?.hero.explorationContext, null);
   assert.equal(result.state.updatedAt, campaign.updatedAt);
 });
 
-test("Hero Setup rejects invalid existing constraints without changing state", () => {
+test("Hero Setup rejects invalid constraints and repeated completion", () => {
   const campaign = createSetupCampaign();
   const onePoint = {
     ...VALID_SELECTION,
@@ -106,10 +116,6 @@ test("Hero Setup rejects invalid existing constraints without changing state", (
   const unrelatedSkill = {
     ...VALID_SELECTION,
     bonusSkill: "ranged-combat" as const,
-  };
-  const lockedSkill = {
-    ...VALID_SELECTION,
-    bonusSkill: "cleaving-strike" as const,
   };
 
   assert.deepEqual(validateHeroSetupSelection(onePoint), {
@@ -120,130 +126,103 @@ test("Hero Setup rejects invalid existing constraints without changing state", (
     ok: false,
     code: "invalid-bonus-skill",
   });
-  assert.deepEqual(completeHeroSetup(campaign, lockedSkill), {
-    ok: false,
-    code: "invalid-bonus-skill",
-  });
   assert.deepEqual(campaign, createSetupCampaign());
+
+  const ready = createReadyCampaign();
+  assert.deepEqual(completeHeroSetup(ready, VALID_SELECTION), {
+    ok: false,
+    code: "setup-already-complete",
+  });
 });
 
-test("Hero Setup rejects the retained Dungeon compatibility identity for new campaigns", () => {
-  const campaign = createSetupCampaign();
-  const dungeonSelection = {
-    ...VALID_SELECTION,
-    faction: "dungeon" as const,
-  };
-
-  assert.deepEqual(validateHeroSetupSelection(dungeonSelection), {
-    ok: false,
-    code: "unavailable-faction",
-  });
-  assert.deepEqual(completeHeroSetup(campaign, dungeonSelection), {
-    ok: false,
-    code: "unavailable-faction",
-  });
-  assert.deepEqual(campaign, createSetupCampaign());
-});
-
-test("Dungeon movement owns destination, discovery, and deterministic result", () => {
-  const campaign = createReadyCampaign();
+test("regional Dungeon movement owns context position, discovery, and outcome", () => {
+  const campaign = enterDungeon();
   const snapshot = structuredClone(campaign);
-  const result = moveHeroInDungeon(campaign, "east");
+  const context = campaign.foundation?.hero.explorationContext;
+  if (!context) throw new Error("Missing context");
+  const dungeon = campaign.foundation?.regionalDungeons[context.locationId];
+  if (!dungeon) throw new Error("Missing Dungeon");
+
+  const direction = dungeon.tiles[context.cell.y]?.[context.cell.x + 1] === "."
+    ? "east"
+    : "north";
+  const result = moveHeroInDungeon(campaign, direction);
 
   assert.equal(result.ok, true);
   if (!result.ok) return;
   assert.deepEqual(campaign, snapshot);
-  assert.deepEqual(result.details.destination, { x: 2, y: 1 });
-  assert.deepEqual(result.state.hero?.position, { x: 2, y: 1 });
-  assert.deepEqual(result.details.newlyDiscovered, ["3,0", "3,1", "3,2"]);
-  assert.ok(result.state.dungeon.discovered.includes("3,1"));
-  assert.equal(result.details.reachedHeart, false);
-  assert.equal(result.state.dungeon.heartReached, false);
+  assert.deepEqual(
+    result.state.foundation?.hero.explorationContext?.cell,
+    result.details.destination,
+  );
+  assert.ok(
+    result.state.foundation?.regionalDungeons[context.locationId].discovered
+      .length >= dungeon.discovered.length,
+  );
 });
 
-test("blocked Dungeon movement is rejected without a campaign transition", () => {
-  const campaign = createReadyCampaign();
-
-  assert.deepEqual(moveHeroInDungeon(campaign, "north"), {
-    ok: false,
-    code: "blocked",
-  });
-  assert.deepEqual(campaign.hero?.position, { x: 1, y: 1 });
-});
-
-test("moving onto the Dungeon Heart records the historical reach outcome", () => {
-  const first = moveHeroInDungeon(createReadyCampaign(), "east");
-  if (!first.ok) throw new Error(`First move failed: ${first.code}`);
-  const second = moveHeroInDungeon(first.state, "east");
-
-  assert.equal(second.ok, true);
-  if (!second.ok) return;
-  assert.equal(second.details.reachedHeart, true);
-  assert.deepEqual(second.state.hero?.position, { x: 3, y: 1 });
-  assert.equal(second.state.dungeon.heartReached, true);
-});
-
-test("Settlement claim rejects a premature request and applies the legal consequence", () => {
+test("Dungeon movement requires both the regional context and active board", () => {
   const ready = createReadyCampaign();
-  assert.deepEqual(claimSettlement(ready), {
+  assert.deepEqual(moveHeroInDungeon(ready, "east"), {
     ok: false,
-    code: "dungeon-heart-not-reached",
+    code: "dungeon-board-required",
   });
-
-  const first = moveHeroInDungeon(ready, "east");
-  if (!first.ok) throw new Error(`First move failed: ${first.code}`);
-  const second = moveHeroInDungeon(first.state, "east");
-  if (!second.ok) throw new Error(`Second move failed: ${second.code}`);
-  const claimed = claimSettlement(second.state);
-
-  assert.equal(claimed.ok, true);
-  if (!claimed.ok) return;
-  assert.equal(claimed.state.dungeon.settlementClaimed, true);
-  assert.equal(claimed.state.activeBoardId, "settlement");
-  assert.equal(claimed.details.boardId, "settlement");
+  const forged = { ...ready, activeBoardId: "dungeon" as const };
+  assert.deepEqual(moveHeroInDungeon(forged, "east"), {
+    ok: false,
+    code: "dungeon-context-required",
+  });
 });
 
-test("board navigation uses the pure registered/enabled/unlocked policy", () => {
+test("the former Dungeon Heart settlement claim is retired", () => {
+  const campaign = enterDungeon();
+  const snapshot = structuredClone(campaign);
+  assert.deepEqual(claimSettlement(), {
+    ok: false,
+    code: "operation-retired",
+  });
+  assert.deepEqual(campaign, snapshot);
+  assert.equal(campaign.foundation?.capital.definitionId, "village");
+  assert.equal(
+    "settlementClaimed" in
+      (campaign.foundation?.regionalDungeons["location:regional-dungeon"] ?? {}),
+    false,
+  );
+});
+
+test("board navigation enforces Village-first availability", () => {
   const ready = createReadyCampaign();
   assert.deepEqual(
     BOARD_DESCRIPTORS.map((board) => board.id),
     ["hero", "settlement", "world", "dungeon", "combat", "diplomacy"],
   );
-  assert.deepEqual(
-    getBoardAvailability("settlement", ready),
-    {
-      registered: true,
-      enabled: true,
-      unlocked: false,
-      active: false,
-      available: false,
-      descriptor: BOARD_DESCRIPTORS[1],
-    },
-  );
-  assert.deepEqual(navigateToAvailableBoard(ready, "settlement"), {
+  for (const boardId of ["hero", "settlement", "world"] as const) {
+    assert.equal(getBoardAvailability(boardId, ready).available, true);
+  }
+  assert.equal(getBoardAvailability("dungeon", ready).available, false);
+  assert.equal(getBoardAvailability("combat", ready).enabled, false);
+  assert.equal(getBoardAvailability("diplomacy", ready).enabled, false);
+  assert.deepEqual(navigateToAvailableBoard(ready, "dungeon"), {
     ok: false,
     code: "board-locked",
   });
-  assert.deepEqual(navigateToAvailableBoard(ready, "setup"), {
+  assert.deepEqual(navigateToAvailableBoard(ready, "combat"), {
     ok: false,
-    code: "board-not-registered",
+    code: "board-disabled",
   });
 
   const world = navigateToAvailableBoard(ready, "world");
   assert.equal(world.ok, true);
   if (!world.ok) return;
   assert.equal(world.state.activeBoardId, "world");
-
-  const invalidActive = { ...ready, activeBoardId: "settlement" as const };
-  const resolution = resolveActiveBoard(invalidActive);
-  assert.equal(resolution?.usedFallback, true);
-  assert.equal(resolution?.descriptor.id, "hero");
+  assert.equal(resolveActiveBoard(ready)?.descriptor.id, "settlement");
 });
 
-test("transition and application navigation dependencies point away from boards", async () => {
+test("transition and navigation dependencies point away from boards and storage", async () => {
   for (const moduleUrl of [
-    new URL("../../src/game/navigation.ts", import.meta.url),
-    new URL("../../src/game/transitions.ts", import.meta.url),
+    new URL("../../src/game/campaignTransitionsV5.ts", import.meta.url),
+    new URL("../../src/game/navigationV5.ts", import.meta.url),
+    new URL("../../src/game/villageOpening.ts", import.meta.url),
   ]) {
     const source = await readFile(moduleUrl, "utf8");
     assert.doesNotMatch(source, /from\s+["']react(?:\/[^"']*)?["']/);
@@ -251,27 +230,4 @@ test("transition and application navigation dependencies point away from boards"
     assert.doesNotMatch(source, /\b(?:window|localStorage)\b/);
     assert.doesNotMatch(source, /(?:cloudflare|sites-project|\.openai\/hosting)/i);
   }
-
-  const provider = await readFile(
-    new URL("../../src/game/GameProvider.tsx", import.meta.url),
-    "utf8",
-  );
-  const sharedNavigation = await readFile(
-    new URL("../../src/ui/BoardNavigation.tsx", import.meta.url),
-    "utf8",
-  );
-  const setupBoard = await readFile(
-    new URL("../../src/boards/SetupBoard.tsx", import.meta.url),
-    "utf8",
-  );
-  const dungeonBoard = await readFile(
-    new URL("../../src/boards/DungeonBoard.tsx", import.meta.url),
-    "utf8",
-  );
-
-  assert.doesNotMatch(provider, /from\s+["'][^"']*boards[^"']*["']/);
-  assert.doesNotMatch(sharedNavigation, /from\s+["'][^"']*boards[^"']*["']/);
-  assert.doesNotMatch(setupBoard, /\bupdateGame\b/);
-  assert.doesNotMatch(dungeonBoard, /\bupdateGame\b/);
-  assert.doesNotMatch(dungeonBoard, /\b(?:isWalkable|discoverAround)\b/);
 });

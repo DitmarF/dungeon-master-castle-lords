@@ -11,7 +11,7 @@ import {
 } from "react";
 import { cellKey } from "../game/generateDungeon";
 import { useGame } from "../game/GameProvider";
-import type { DungeonMoveDirection } from "../game/transitions";
+import type { DungeonMoveDirectionV5 } from "../game/campaignTransitionsV5";
 import { GameIcon } from "../ui/GameIcon";
 import {
   ActionButton,
@@ -65,10 +65,26 @@ function clamp(value: number, minimum: number, maximum: number): number {
 export function DungeonBoard() {
   const {
     activeGame,
-    claimSettlement,
     moveHeroInDungeon,
     selectedPlayer,
   } = useGame();
+  const foundation = activeGame?.foundation;
+  const explorationContext = foundation?.hero.explorationContext;
+  const dungeon = explorationContext
+    ? foundation?.regionalDungeons["location:regional-dungeon"]
+    : null;
+  const hero = useMemo(
+    () =>
+      foundation && explorationContext
+        ? {
+            ...foundation.hero,
+            faction: foundation.rootFactionId,
+            position: explorationContext.cell,
+            visionRadius: 1,
+          }
+        : null,
+    [explorationContext, foundation],
+  );
   const [heartPromptOpen, setHeartPromptOpen] = useState(false);
   const [moveNote, setMoveNote] = useState("Use the arrows or WASD to explore.");
   const [mapView, setMapView] = useState<MapView>({ zoom: 1, x: 0, y: 0 });
@@ -79,8 +95,8 @@ export function DungeonBoard() {
   const baseScaleRef = useRef(baseScale);
   const minimumZoomRef = useRef(minimumZoom);
   const worldSizeRef = useRef({
-    width: (activeGame?.dungeon.grid.columns ?? 20) * CELL_SIZE,
-    height: (activeGame?.dungeon.grid.rows ?? 12) * CELL_SIZE,
+    width: (dungeon?.grid.columns ?? 20) * CELL_SIZE,
+    height: (dungeon?.grid.rows ?? 12) * CELL_SIZE,
   });
   const positionedMapRef = useRef(false);
   const pointersRef = useRef(new Map<number, ScreenPoint>());
@@ -120,13 +136,13 @@ export function DungeonBoard() {
 
   useEffect(() => {
     worldSizeRef.current = {
-      width: (activeGame?.dungeon.grid.columns ?? 20) * CELL_SIZE,
-      height: (activeGame?.dungeon.grid.rows ?? 12) * CELL_SIZE,
+      width: (dungeon?.grid.columns ?? 20) * CELL_SIZE,
+      height: (dungeon?.grid.rows ?? 12) * CELL_SIZE,
     };
     positionedMapRef.current = false;
   }, [
-    activeGame?.dungeon.grid.columns,
-    activeGame?.dungeon.grid.rows,
+    dungeon?.grid.columns,
+    dungeon?.grid.rows,
   ]);
 
   useEffect(() => {
@@ -150,10 +166,10 @@ export function DungeonBoard() {
       setBaseScale(nextBaseScale);
       setMinimumZoom(nextMinimumZoom);
 
-      if (!positionedMapRef.current && activeGame?.hero) {
+      if (!positionedMapRef.current && hero) {
         positionedMapRef.current = true;
-        const heroCenterX = (activeGame.hero.position.x + 0.5) * CELL_SIZE;
-        const heroCenterY = (activeGame.hero.position.y + 0.5) * CELL_SIZE;
+        const heroCenterX = (hero.position.x + 0.5) * CELL_SIZE;
+        const heroCenterY = (hero.position.y + 0.5) * CELL_SIZE;
         commitMapView({
           zoom: 1,
           x: -(heroCenterX - width / 2) * nextBaseScale,
@@ -166,11 +182,10 @@ export function DungeonBoard() {
     });
     observer.observe(viewport);
     return () => observer.disconnect();
-  }, [activeGame?.hero, commitMapView]);
+  }, [hero, commitMapView]);
 
   useEffect(() => {
     const viewport = mapViewportRef.current;
-    const hero = activeGame?.hero;
     if (!viewport || !hero || !positionedMapRef.current) return;
 
     const rect = viewport.getBoundingClientRect();
@@ -202,7 +217,7 @@ export function DungeonBoard() {
     if (Math.abs(nextX - current.x) > 0.5 || Math.abs(nextY - current.y) > 0.5) {
       commitMapView({ ...current, x: nextX, y: nextY });
     }
-  }, [activeGame?.hero, commitMapView]);
+  }, [hero, commitMapView]);
 
   const zoomAt = useCallback(
     (clientPoint: ScreenPoint, requestedZoom: number) => {
@@ -245,7 +260,6 @@ export function DungeonBoard() {
   );
 
   const resetMapView = useCallback(() => {
-    const hero = activeGame?.hero;
     const { width, height } = worldSizeRef.current;
     if (!hero) {
       commitMapView({ zoom: 1, x: 0, y: 0 });
@@ -259,7 +273,7 @@ export function DungeonBoard() {
       x: -(heroCenterX - width / 2) * baseScaleRef.current,
       y: -(heroCenterY - height / 2) * baseScaleRef.current,
     });
-  }, [activeGame?.hero, commitMapView]);
+  }, [hero, commitMapView]);
 
   const handleWheel = useCallback(
     (event: ReactWheelEvent<HTMLDivElement>) => {
@@ -372,7 +386,7 @@ export function DungeonBoard() {
   }
 
   const moveHero = useCallback(
-    (direction: DungeonMoveDirection) => {
+    (direction: DungeonMoveDirectionV5) => {
       const result = moveHeroInDungeon(direction);
       if (!result) return;
       if (!result.ok) {
@@ -420,13 +434,11 @@ export function DungeonBoard() {
   }, [heartPromptOpen, moveHero]);
 
   const discovered = useMemo(
-    () => new Set(activeGame?.dungeon.discovered ?? []),
-    [activeGame?.dungeon.discovered],
+    () => new Set(dungeon?.discovered ?? []),
+    [dungeon?.discovered],
   );
 
-  if (!activeGame?.hero || !selectedPlayer) return null;
-
-  const { dungeon, hero } = activeGame;
+  if (!dungeon || !hero || !selectedPlayer) return null;
   const discoveredFloorCount = dungeon.tiles.reduce(
     (count, row, y) =>
       count +
@@ -442,15 +454,8 @@ export function DungeonBoard() {
   const heartVisible = discovered.has(cellKey(dungeon.heart));
   const worldWidth = dungeon.grid.columns * CELL_SIZE;
   const worldHeight = dungeon.grid.rows * CELL_SIZE;
-  const locationTitle =
-    hero.faction === "dungeon" ? "Dungeon hollow" : "Abandoned castle hall";
-  const locationKicker =
-    hero.faction === "dungeon" ? "Buried hollow" : "Ruined keep";
-
-  function handleClaimSettlement() {
-    const result = claimSettlement();
-    if (result?.ok) setHeartPromptOpen(false);
-  }
+  const locationTitle = "Regional Dungeon";
+  const locationKicker = "Home-ring location";
 
   return (
     <GameShell
@@ -459,7 +464,7 @@ export function DungeonBoard() {
       subtitle={`Level ${dungeon.level} · ${locationKicker}`}
       icon="grid"
       stats={[
-        { label: "Day", value: dungeon.day, icon: "calendar" },
+        { label: "Level", value: dungeon.level, icon: "layers" },
         {
           label: "Found",
           value: `${discoveredFloorCount}/${floorCount}`,
@@ -487,12 +492,12 @@ export function DungeonBoard() {
             disabled={!dungeon.heartReached}
             aria-label={
               dungeon.heartReached
-                ? "Open the Dungeon Heart decision"
+                ? "Review the reached Dungeon Heart"
                 : "The Dungeon Heart has not been reached"
             }
           >
             <GameIcon name="heart" size={17} />
-            <span>{dungeon.heartReached ? "Decide" : "Unreached"}</span>
+            <span>{dungeon.heartReached ? "Reached" : "Unreached"}</span>
           </button>
         </header>
 
@@ -651,8 +656,9 @@ export function DungeonBoard() {
             <span className="section-kicker">Objective discovered</span>
             <h2 id="heart-title">The Dungeon Heart awakens.</h2>
             <p>
-              Its pulse binds this level to you. Claim it to establish your first
-              settlement, or continue exploring.
+              Its pulse marks a regional exploration outcome. Your capital
+              Village already exists; later Dungeon work will define this
+              Heart&apos;s consequence.
             </p>
             <div className="decision-facts">
               <span>
@@ -670,17 +676,10 @@ export function DungeonBoard() {
             </div>
             <div className="dialog-actions">
               <ActionButton
-                variant="ghost"
+                variant="primary"
                 onClick={() => setHeartPromptOpen(false)}
               >
-                Keep exploring
-              </ActionButton>
-              <ActionButton
-                variant="primary"
-                onClick={handleClaimSettlement}
-                endIcon={<GameIcon name="arrow" size={17} />}
-              >
-                Claim settlement
+                Continue exploring
               </ActionButton>
             </div>
           </section>

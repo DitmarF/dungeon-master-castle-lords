@@ -84,7 +84,7 @@ export function StartBoard() {
       <div className="start-content">
         <section className="start-copy" aria-labelledby="start-title">
           <span className="section-kicker">Campaign zero</span>
-          <h1 id="start-title">Choose a ruler.<br />Enter the dungeon.</h1>
+          <h1 id="start-title">Choose a ruler.<br />Found your Village.</h1>
           <p>
             Create a local player or continue a saved campaign. Your progress
             remains on this device.
@@ -235,8 +235,8 @@ export function StartBoard() {
                   <h2 id="campaign-title">{selectedPlayer.name}</h2>
                   <p>
                     {selectedGame
-                      ? selectedGame.setupComplete
-                        ? `Level ${selectedGame.dungeon.level} · Day ${selectedGame.dungeon.day}`
+                      ? selectedGame.foundation
+                        ? `Castle · Tier ${selectedGame.foundation.capital.tier} Village`
                         : "Hero setup in progress"
                       : "Ready for a new campaign"}
                   </p>

@@ -2,8 +2,8 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 
-import type { CampaignState } from "../../src/game/campaignState.ts";
-import { createNewGame, createPlayerProfile } from "../../src/game/createGame.ts";
+import type { CampaignStateV4 } from "../../src/game/campaignState.ts";
+import { createPlayerProfile } from "../../src/game/createGame.ts";
 import { createDungeonLevel } from "../../src/game/generateDungeon.ts";
 import type { IdSource } from "../../src/game/identity.ts";
 import {
@@ -12,7 +12,7 @@ import {
   selectPlayerInRegistry,
   stampCampaignModification,
 } from "../../src/game/lifecycle.ts";
-import type { GameRegistry } from "../../src/game/model.ts";
+import type { GameRegistryV1 } from "../../src/game/model.ts";
 import {
   commitRequiredRegistryChange,
   hydrateRegistry,
@@ -32,7 +32,7 @@ function idSource(playerId = "player-persistence", gameId = "game-persistence"):
   };
 }
 
-function createRegistry(): GameRegistry {
+function createRegistry(): GameRegistryV1 {
   const source = idSource();
   const player = createPlayerProfile(
     "Persistent Lord",
@@ -40,7 +40,18 @@ function createRegistry(): GameRegistry {
     source,
     CREATED_AT,
   );
-  const game = createNewGame(player.id, source, 123_456, CREATED_AT);
+  const game: CampaignStateV4 = {
+    version: 4,
+    id: "game-persistence",
+    playerId: player.id,
+    campaignSeed: 123_456,
+    createdAt: CREATED_AT,
+    updatedAt: CREATED_AT,
+    activeBoardId: "setup",
+    setupComplete: false,
+    hero: null,
+    dungeon: createDungeonLevel(123_456),
+  };
   return {
     version: 1,
     players: [player],
@@ -50,8 +61,8 @@ function createRegistry(): GameRegistry {
 }
 
 const passthroughMigration = {
-  migrateGame(value: unknown): CampaignState {
-    return structuredClone(value) as CampaignState;
+  migrateGame(value: unknown): CampaignStateV4 {
+    return structuredClone(value) as CampaignStateV4;
   },
 };
 
@@ -74,7 +85,7 @@ test("successful registry read returns validated campaign data", () => {
 
 test("legitimate empty storage is distinct from a failed read", () => {
   const adapter = new MemoryRegistryStorage();
-  const emptyRegistry: GameRegistry = {
+  const emptyRegistry: GameRegistryV1 = {
     version: 1,
     players: [],
     games: {},
@@ -202,7 +213,7 @@ test("manual Save and autosave failures preserve the previous durable payload", 
 
 test("serialization failure does not attempt a write", () => {
   const registry = createRegistry();
-  const cyclic = registry as GameRegistry & { cycle?: unknown };
+  const cyclic = registry as GameRegistryV1 & { cycle?: unknown };
   cyclic.cycle = cyclic;
   const adapter = new MemoryRegistryStorage(JSON.stringify(createRegistry()));
   const result = persistRegistry(adapter, cyclic);
@@ -258,12 +269,14 @@ test("created, modified, and profile-activity timestamps stay separate", () => {
 test("one campaign per profile replacement and confirmed deletion are atomic", () => {
   const current = createRegistry();
   const playerId = current.players[0].id;
-  const replacement = createNewGame(
-    playerId,
-    idSource("player-unused", "game-replacement"),
-    987_654,
-    ACTIVITY_AT,
-  );
+  const replacement: CampaignStateV4 = {
+    ...current.games[playerId],
+    id: "game-replacement",
+    campaignSeed: 987_654,
+    createdAt: ACTIVITY_AT,
+    updatedAt: ACTIVITY_AT,
+    dungeon: createDungeonLevel(987_654),
+  };
   const replacementRegistry = activateCampaign(
     current,
     playerId,
@@ -325,9 +338,10 @@ test("the provider uses the injected clock and explicit verified writes", async 
 
   assert.doesNotMatch(source, /new Date\(|Date\.now\(/);
   assert.match(source, /clock = systemClock/);
-  assert.match(source, /storage = gameStorage/);
-  assert.match(source, /hydrateRegistry\(/);
-  assert.match(source, /persistRegistry\(/);
+  assert.match(source, /storage = gameStorageV2/);
+  assert.match(source, /legacyStorage = legacyGameStorage/);
+  assert.match(source, /hydratePreferredRegistryV2\(/);
+  assert.match(source, /persistRegistryV2\(/);
   assert.match(source, /return writeRegistry\(state\.registry\)/);
   assert.doesNotMatch(
     source,

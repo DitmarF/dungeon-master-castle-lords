@@ -1,5 +1,5 @@
 import type { CSSProperties } from "react";
-import type { GameSave } from "../game/model";
+import type { CampaignStateV5 } from "../game/model";
 import {
   BOARD_DESCRIPTORS,
   getBoardAvailability,
@@ -8,7 +8,7 @@ import {
 import { GameIcon } from "./GameIcon";
 
 interface BoardNavigationProps {
-  game: GameSave;
+  game: CampaignStateV5;
   onSelect: (boardId: RegisteredBoardId) => void;
 }
 

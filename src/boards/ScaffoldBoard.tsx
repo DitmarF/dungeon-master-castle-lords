@@ -27,9 +27,9 @@ export function ScaffoldBoard({
   children,
 }: ScaffoldBoardProps) {
   const { activeGame } = useGame();
-  if (!activeGame?.hero) return null;
+  if (!activeGame?.foundation) return null;
 
-  const { hero } = activeGame;
+  const { hero, rootFactionId } = activeGame.foundation;
 
   return (
     <GameShell
@@ -38,7 +38,7 @@ export function ScaffoldBoard({
       subtitle="Board foundation · No gameplay yet"
       icon={icon}
       stats={[
-        { label: "Faction", value: displayLabel(hero.faction), icon: "flag" },
+        { label: "Faction", value: displayLabel(rootFactionId), icon: "flag" },
         { label: "Class", value: displayLabel(hero.heroClass), icon: "shield" },
         {
           label: "Vocation",

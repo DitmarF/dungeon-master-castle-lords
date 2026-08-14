@@ -18,10 +18,9 @@ export function GameApp() {
     returnToPlayers,
     view,
   } = useGame();
-  const boardResolution =
-    activeGame?.setupComplete && activeGame.hero
-      ? resolveActiveBoard(activeGame)
-      : null;
+  const boardResolution = activeGame?.foundation
+    ? resolveActiveBoard(activeGame)
+    : null;
   const fallbackBoardId = boardResolution?.usedFallback
     ? boardResolution.descriptor.id
     : null;
@@ -58,7 +57,7 @@ export function GameApp() {
   }
 
   if (view !== "game") return <StartBoard />;
-  if (!activeGame?.setupComplete || !activeGame.hero) return <SetupBoard />;
+  if (!activeGame?.foundation) return <SetupBoard />;
   if (!boardResolution) {
     return (
       <main className="loading-screen" role="alert">

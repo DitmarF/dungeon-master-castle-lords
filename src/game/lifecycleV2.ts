@@ -1,14 +1,10 @@
-import type {
-  GameRegistryV1,
-  PlayerId,
-  PlayerProfile,
-} from "./model.ts";
-import type { CampaignStateV4 } from "./campaignState.ts";
+import type { CampaignStateV5, PlayerId } from "./campaignState.ts";
+import type { GameRegistryV2, PlayerProfile } from "./model.ts";
 
-export function addPlayerToRegistry(
-  registry: GameRegistryV1,
+export function addPlayerToRegistryV2(
+  registry: GameRegistryV2,
   player: PlayerProfile,
-): GameRegistryV1 {
+): GameRegistryV2 {
   return {
     ...registry,
     players: [...registry.players, player],
@@ -16,19 +12,19 @@ export function addPlayerToRegistry(
   };
 }
 
-export function selectPlayerInRegistry(
-  registry: GameRegistryV1,
+export function selectPlayerInRegistryV2(
+  registry: GameRegistryV2,
   playerId: PlayerId,
-): GameRegistryV1 {
+): GameRegistryV2 {
   return { ...registry, lastActivePlayerId: playerId };
 }
 
-export function activateCampaign(
-  registry: GameRegistryV1,
+export function activateCampaignV2(
+  registry: GameRegistryV2,
   playerId: PlayerId,
-  game: CampaignStateV4,
+  game: CampaignStateV5,
   activityAt: string,
-): GameRegistryV1 {
+): GameRegistryV2 {
   return {
     ...registry,
     players: registry.players.map((player) =>
@@ -41,20 +37,20 @@ export function activateCampaign(
   };
 }
 
-export function storeCampaign(
-  registry: GameRegistryV1,
-  game: CampaignStateV4,
-): GameRegistryV1 {
+export function storeCampaignV2(
+  registry: GameRegistryV2,
+  game: CampaignStateV5,
+): GameRegistryV2 {
   return {
     ...registry,
     games: { ...registry.games, [game.playerId]: game },
   };
 }
 
-export function removePlayerAndCampaign(
-  registry: GameRegistryV1,
+export function removePlayerAndCampaignV2(
+  registry: GameRegistryV2,
   playerId: PlayerId,
-): GameRegistryV1 {
+): GameRegistryV2 {
   const players = registry.players.filter((player) => player.id !== playerId);
   const games = { ...registry.games };
   delete games[playerId];
@@ -62,14 +58,13 @@ export function removePlayerAndCampaign(
     registry.lastActivePlayerId === playerId
       ? players[0]?.id ?? null
       : registry.lastActivePlayerId;
-
   return { ...registry, players, games, lastActivePlayerId };
 }
 
-export function stampCampaignModification(
-  game: CampaignStateV4,
+export function stampCampaignModificationV5(
+  game: CampaignStateV5,
   modifiedAt: string,
-): CampaignStateV4 {
+): CampaignStateV5 {
   return game.updatedAt === modifiedAt
     ? game
     : { ...game, updatedAt: modifiedAt };

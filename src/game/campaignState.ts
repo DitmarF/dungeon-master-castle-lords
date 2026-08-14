@@ -45,14 +45,17 @@ export interface CellPosition {
 }
 
 export interface HeroSetupSelection {
-  faction: FactionType;
   heroClass: HeroClass;
   vocation: HeroVocation;
   freeAttributes: HeroAttributes;
   bonusSkill: SkillId;
 }
 
-export interface HeroState extends HeroSetupSelection {
+export interface LegacyHeroSetupSelection extends HeroSetupSelection {
+  faction: FactionType;
+}
+
+export interface HeroState extends LegacyHeroSetupSelection {
   attributes: HeroAttributes;
   skills: Record<SkillId, number>;
   position: CellPosition;
@@ -97,12 +100,6 @@ export interface CampaignStateV4 {
   hero: HeroState | null;
   dungeon: DungeonState;
 }
-
-/** Current application campaign until E03-T06 wires the version-5 opening. */
-export type CampaignState = CampaignStateV4;
-
-/** Current serialized version-4 compatibility name. */
-export type GameSave = CampaignStateV4;
 
 export type CampaignResumeBoardIdV5 =
   | "setup"
@@ -195,6 +192,12 @@ export interface CampaignStateV5 {
   activeBoardId: CampaignResumeBoardIdV5;
   foundation: CampaignFoundationV5 | null;
 }
+
+/** Current application campaign after the E03-T06 Village-first cutover. */
+export type CampaignState = CampaignStateV5;
+
+/** Current serialized version-5 compatibility name. */
+export type GameSave = CampaignStateV5;
 
 export const EMPTY_ATTRIBUTES: HeroAttributes = {
   str: 0,

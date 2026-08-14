@@ -24,10 +24,10 @@ test("the campaign inspector is development-gated and reuses the shared overlay"
   assert.match(inspectorSource, /aria-live="polite"/);
 });
 
-test("the inspector reads current campaign facts and the selector authority", async () => {
+test("the inspector reads current version-5 campaign facts and compatibility attributes", async () => {
   const source = await readFile(inspectorUrl, "utf8");
 
-  assert.match(source, /selectHeroAttributes\(activeGame\.hero\)/);
+  assert.match(source, /attributesCompatibility\.values/);
   assert.match(source, /JSON\.stringify\(activeGame, null, 2\)/);
 
   for (const label of [
@@ -35,17 +35,19 @@ test("the inspector reads current campaign facts and the selector authority", as
     "Campaign ID",
     "Owner / player ID",
     "Campaign seed",
+    "World seed",
     "Dungeon seed",
     "Active board",
     "Hero Setup",
     "Faction",
     "Hero class",
     "Hero vocation",
-    "Hero position",
+    "Strategic region",
+    "Exploration position",
     "Dungeon level",
     "Discovered cells",
     "Dungeon Heart",
-    "Settlement",
+    "Capital",
     "Derived Hero attributes",
     "Raw authoritative campaign JSON",
   ]) {

@@ -54,45 +54,45 @@ The word “normally” matters: a draft, camera position, notification, or deri
 
 ## Current persisted campaign
 
-**Observed:** The current `CampaignState` is schema version 4; `GameSave` remains its serialized compatibility alias. It contains:
+**Implemented Candidate in E03-T06:** The application-facing `CampaignState` and serialized `GameSave` are schema version 5. The minimum shape contains:
 
-- identity and lifecycle: game ID, player ID, campaign seed, created timestamp, updated timestamp;
-- navigation/progress: active board ID and whether hero setup is complete;
-- completed hero state, or `null` before setup;
-- one dungeon state.
+- identity and lifecycle: campaign ID, player ID, campaign seed, immutable creation timestamp, modification/resume timestamp, and active board;
+- `foundation: null` before Setup, with no durable Setup draft;
+- after Setup, one Castle-owned foundation containing the completed Hero, one Tier-1 capital Village, the authoritative seven-region opening World snapshot, and one regional Dungeon snapshot;
+- separate Hero strategic-region and optional exploration-location/cell context.
 
-### Current hero state
+Version 4 remains a protected legacy compatibility shape used only by strict v2/v3/v4 migration. It is no longer the ordinary new-campaign or application runtime authority.
 
-**Observed:** Once setup completes, the save contains:
+### Current completed Hero state
 
-- faction, class, vocation, and the selected bonus skill;
+**Implemented Candidate in E03-T06:** Once Setup completes, the version-5 Hero contains:
+
+- class, vocation, and the selected bonus skill; root faction authority exists only on the campaign foundation as `castle`;
 - the player’s free-attribute allocation;
-- calculated total attributes;
-- ranks for all defined skills;
-- current grid position;
-- vision radius.
+- positive skill ranks for the accepted Level-1 grants;
+- the versioned `v4-path-bonus-1` attribute compatibility snapshot;
+- one strategic-region reference and an optional, separately typed regional-exploration context.
 
 The exact creation rules are summarized in `CURRENT_STATE.md`. This document does not redefine them.
 
-### Current dungeon state
+### Current regional Dungeon state
 
-**Observed:** The save contains:
+**Implemented Candidate in E03-T06:** The completed foundation stores one regional Dungeon snapshot containing:
 
-- level, day, and treasury counters;
+- level and deterministic seed;
 - grid dimensions and generation seed;
 - generated rooms and tile map;
 - start and dungeon-heart positions;
 - discovered cells;
-- whether the heart was reached;
-- whether the settlement was claimed.
+- whether the Heart was reached.
 
-This is the implemented prototype state, not an approved final dungeon, economy, time, or settlement schema.
+Converted legacy snapshots may additionally retain old Dungeon `day`, `treasury`, and `settlementClaimed` only inside `legacyPrototypeMetadata`. They never authorize strategic Day, Gold, capital ownership, or region control. New Village-first campaigns do not create those legacy fields.
 
 ### Current persistence container
 
-**Observed:** `GameRegistry` version 1 contains local player profiles, a games object keyed by player ID, and the last active player ID. The entire registry is serialized to browser `localStorage`.
+**Implemented Candidate in E03-T06:** `GameRegistry` version 2 contains local player profiles, at most one version-5 campaign per profile, and the last active player ID. The preferred container is stored at `dmcl.prototype.registry.v2` through the E03-T02 verified-write contract.
 
-The active in-memory game is also copied into this registry after updates. E03-T02 keeps that container and one-campaign-per-profile shape, but replaces implicit effect-driven writes with explicit verified persistence operations and typed hydration/write outcomes. Campaign version remains 4 and registry version remains 1; no gameplay-schema or container-version cutover occurs.
+On first successful legacy load, the application strictly decodes and migrates the version-1 source, writes and verifies the version-2 candidate, and leaves the original `dmcl.prototype.registry.v1` bytes untouched. A valid version-2 registry is preferred without consulting version 1. Failed decode, migration, write, or verification never substitutes an empty registry or overwrites the legacy source.
 
 ## Accepted EPIC 03 transition contract
 
@@ -112,7 +112,7 @@ The active in-memory game is also copied into this registry after updates. E03-T
 - migrated Dungeon `day`, `treasury`, and `settlementClaimed` are legacy prototype metadata only and never strategic Day, Gold/resources, capital/Village ownership, or region control;
 - through EPIC 05, Hero totals use the versioned `v4-path-bonus-1` stored compatibility snapshot; EPIC 06 must explicitly migrate or retire it.
 
-Campaign version `5` is accepted as the next campaign-schema number under DMCL-P40 but does not become the current persisted shape until E03-T05 implements and verifies the cutover. Registry version `2` remains conditional: if the registry cutover is required, the accepted target is a verified `dmcl.prototype.registry.v2` candidate while the original version-1 payload remains untouched throughout EPIC 03 with no automatic cleanup.
+Campaign version `5` is the accepted and implemented application schema. E03-T06 activates registry version `2` because the cutover requires a separate verified target container; the original version-1 payload remains untouched throughout EPIC 03 with no automatic cleanup.
 
 ### E03-T02 implemented lifecycle and persistence ownership
 
@@ -159,7 +159,17 @@ The returned snapshot is a pure generated value, not current version-4 campaign 
 
 The pure `migrateCampaignToV5` chain strictly validates its source, verifies the registry-owner relationship supplied by the caller, normalizes v2/v3/v4 through the protected v4 compatibility meaning, and then applies the accepted source-class policy. Completed Castle sources generate the opening once and attach the exact retained Dungeon snapshot. Incomplete sources preserve identity/seed/lifecycle with a null foundation. Dungeon-faction sources return a typed recoverable incompatibility and no Castle target.
 
-An already-version-5 payload follows strict target validation and cloning only: it does not call World or Dungeon generation, repair fields, duplicate instances, or change IDs. The migration module imports no React, storage, clock, entropy, browser, or hosting API and performs no write. The current application `CampaignState`/`GameSave`, provider, registry decoder, and playable Setup remain version 4 until E03-T06 can consume the target atomically; this avoids a half-integrated save whose Setup cannot complete. Registry version 2 remains inactive.
+An already-version-5 payload follows strict target validation and cloning only: it does not call World or Dungeon generation, repair fields, duplicate instances, or change IDs. The migration module imports no React, storage, clock, entropy, browser, or hosting API and performs no write. E03-T06 now consumes this target through the application-facing aliases and version-2 registry while retaining the version-1 source as recovery material.
+
+### E03-T06 Candidate Village-first opening and application cutover
+
+The pure `completeVillageFirstHeroSetup` operation validates the complete Setup selection before constructing any campaign fact. One successful call creates the Hero, Castle foundation, Tier-1 capital, generated seven-region snapshot, fresh regional Dungeon snapshot, home-region strategic position, null exploration context, and Settlement resume board as one replacement value. Invalid or repeated completion returns the unchanged source; no partial or duplicate foundation can exist.
+
+Castle is implicit in ordinary Setup and is not a Hero field. Current Class, Vocation, two-point allocation, legal root-or-tier-1 bonus skill, root grants, and `v4-path-bonus-1` snapshot behavior remain unchanged pending EPIC 06. The stable Dungeon faction ID remains only in compatibility content/migration and is not selectable for a new MVP campaign.
+
+The pure version-5 navigation policy makes Hero, Settlement, and World initially available. Dungeon requires a stored regional exploration context; Setup deliberately leaves that context null. Combat and Diplomacy remain disabled until future legal contexts exist. The former Heart claim operation returns `operation-retired`, has no capital or navigation effect, and is absent from the current Dungeon UI.
+
+The provider submits the complete transition through the verified version-2 persistence path. Successful persistence enters the Village-first campaign durably. A later write failure retains the complete in-memory campaign with explicit unsaved feedback and Save retry; it never reports durability or falls back to a partial campaign.
 
 ## Current non-campaign runtime state
 
@@ -177,16 +187,16 @@ The application’s player registry is persisted, but it is not campaign-owned. 
 
 ## Current value classification and EPIC 02 evolution
 
-**Current:** `CampaignState`/`GameSave` version 4 is the authoritative campaign payload. `RuntimeState.activeGame` is its application working copy and `GameRegistry.games[playerId]` is the mirrored registry copy that is serialized automatically. The duplication is application coordination, not two independent campaign authorities.
+**Current Candidate:** `CampaignState`/`GameSave` version 5 is the authoritative campaign payload. `RuntimeState.activeGame` is its application working copy and `GameRegistryV2.games[playerId]` is the mirrored registry copy serialized through explicit verified writes. The duplication is application coordination, not two independent campaign authorities.
 
-The current v4 payload classifies as follows:
+The current v5 payload classifies as follows:
 
 | Values | Classification |
 |---|---|
-| campaign/player reference, timestamps, campaign seed, active board, completed setup choices, hero position, learned ranks, dungeon counters/seed, discovery, heart outcome, and settlement claim | stored facts; E03-T02 defines lifecycle timestamp semantics while legacy counter meanings remain isolated by E03-T01 |
-| `setupComplete`, calculated hero attributes, the zero-filled skill-record shape, vision radius under current rules, and generated dungeon grid/rooms/tiles/start/heart | stored snapshots or redundant persisted values; preserve until a deliberate migration |
-| legal board availability, setup readiness/attribute preview, skill indexes, discovered-cell indexes/counts, and display summaries | derived values |
-| skill/board definitions and generator constants/rules | static definitions |
+| campaign/player reference, timestamps, campaign seed, active board, Castle authority, completed setup/build choices, positive skill ranks, capital, World snapshot/metadata, strategic region, optional exploration context, regional Dungeon seed/snapshot/discovery/Heart outcome | stored facts; lifecycle timestamps follow E03-T02 and legacy metadata has no strategic authority |
+| `v4-path-bonus-1` Hero attributes and optional converted `legacyPrototypeMetadata` | stored compatibility snapshots; preserved and explicitly isolated until their responsible later migrations |
+| legal board availability, Setup readiness/attribute preview, skill indexes, discovered-cell indexes/counts, coordinate adjacency, and display summaries | derived values |
+| Hero/Castle/Village/site/location/terrain/board definitions and generator constants/rules | static definitions |
 | hydration, selected player, active working copy, and players/game surface | application/session state |
 | theme, setup draft, overlays, prompts, notifications, pan/zoom, and gesture state | UI preference or UI-only state |
 

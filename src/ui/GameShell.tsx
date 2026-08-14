@@ -57,7 +57,7 @@ export function GameShell({
     return () => window.clearTimeout(timer);
   }, [saveResult]);
 
-  if (!activeGame?.hero || !selectedPlayer) return null;
+  if (!activeGame?.foundation || !selectedPlayer) return null;
 
   function handleSave() {
     setSaveResult(saveGame());
@@ -157,7 +157,7 @@ export function GameShell({
       <div className="game-shell__overlay-layer">
         {activeOverlay === "hero" ? (
           <HeroSheet
-            hero={activeGame.hero}
+            hero={activeGame.foundation.hero}
             playerName={selectedPlayer.name}
             onClose={() => setActiveOverlay(null)}
           />

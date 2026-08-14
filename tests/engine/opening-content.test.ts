@@ -25,7 +25,6 @@ import {
 } from "../../src/game/transitions.ts";
 
 const VALID_CASTLE_SELECTION: HeroSetupSelection = {
-  faction: "castle",
   heroClass: "fighter",
   vocation: "general",
   freeAttributes: {
@@ -82,13 +81,7 @@ test("Castle is the sole new-campaign faction while Dungeon remains a stable com
     "compatibility-only",
   );
   assert.equal(getRootFactionDefinition("unknown"), null);
-  assert.deepEqual(
-    validateHeroSetupSelection({
-      ...VALID_CASTLE_SELECTION,
-      faction: "dungeon",
-    }),
-    { ok: false, code: "unavailable-faction" },
-  );
+  assert.equal("faction" in VALID_CASTLE_SELECTION, false);
 });
 
 test("catalog validation detects duplicate IDs and non-deterministic ordering", () => {
@@ -320,12 +313,12 @@ test("opening content stays pure and does not pull gameplay or instance state fo
   }
 });
 
-test("Hero Setup consumes the authoritative faction catalog and disables compatibility-only choices", async () => {
+test("Hero Setup treats Castle as implicit and exposes no Dungeon choice", async () => {
   const source = await readFile(
     new URL("../../src/boards/SetupBoard.tsx", import.meta.url),
     "utf8",
   );
-  assert.match(source, /ROOT_FACTION_DEFINITIONS\.map/);
-  assert.match(source, /disabled=\{!newCampaignPlayable\}/);
-  assert.doesNotMatch(source, /const FACTIONS/);
+  assert.match(source, /Castle is your campaign foundation/);
+  assert.match(source, /The sole playable root faction/);
+  assert.doesNotMatch(source, /ROOT_FACTION_DEFINITIONS\.map|setFaction|Dungeon/);
 });

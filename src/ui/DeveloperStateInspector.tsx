@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { useGame } from "../game/GameProvider";
-import { selectHeroAttributes } from "../game/selectors";
 import type { AttributeKey, HeroAttributes } from "../game/model";
 import { GameIcon } from "./GameIcon";
 import { ModalOverlay } from "./ModalOverlay";
@@ -57,9 +56,8 @@ export function DeveloperStateInspector({
   const { activeGame } = useGame();
   const [copyMessage, setCopyMessage] = useState<string | null>(null);
 
-  const heroAttributes = activeGame?.hero
-    ? selectHeroAttributes(activeGame.hero)
-    : null;
+  const heroAttributes =
+    activeGame?.foundation?.hero.attributesCompatibility.values ?? null;
   const stateJson = activeGame ? JSON.stringify(activeGame, null, 2) : "";
 
   useEffect(() => {
@@ -79,29 +77,31 @@ export function DeveloperStateInspector({
     }
   }
 
-  const hero = activeGame.hero;
+  const foundation = activeGame.foundation;
+  const hero = foundation?.hero;
+  const exploration = hero?.explorationContext;
+  const dungeon = foundation?.regionalDungeons["location:regional-dungeon"];
   const facts = [
     ["Schema version", activeGame.version],
     ["Campaign ID", activeGame.id],
     ["Owner / player ID", activeGame.playerId],
     ["Campaign seed", activeGame.campaignSeed],
-    ["Dungeon seed", activeGame.dungeon.seed],
+    ["World seed", foundation?.world.seed ?? "Not generated"],
+    ["Dungeon seed", dungeon?.seed ?? "Not generated"],
     ["Active board", activeGame.activeBoardId],
-    ["Hero Setup", activeGame.setupComplete ? "Complete" : "Incomplete"],
-    ["Faction", hero?.faction ?? "Not selected"],
+    ["Hero Setup", foundation ? "Complete" : "Incomplete"],
+    ["Faction", foundation?.rootFactionId ?? "Not selected"],
     ["Hero class", hero?.heroClass ?? "Not selected"],
     ["Hero vocation", hero?.vocation ?? "Not selected"],
-    ["Hero position", formatPosition(hero?.position)],
-    ["Dungeon level", activeGame.dungeon.level],
-    ["Discovered cells", activeGame.dungeon.discovered.length],
+    ["Strategic region", hero?.strategicRegionId ?? "Not created"],
+    ["Exploration position", formatPosition(exploration?.cell)],
+    ["Dungeon level", dungeon?.level ?? "Not generated"],
+    ["Discovered cells", dungeon?.discovered.length ?? 0],
     [
       "Dungeon Heart",
-      activeGame.dungeon.heartReached ? "Reached" : "Not reached",
+      dungeon?.heartReached ? "Reached" : "Not reached",
     ],
-    [
-      "Settlement",
-      activeGame.dungeon.settlementClaimed ? "Claimed" : "Unclaimed",
-    ],
+    ["Capital", foundation ? "Tier-1 Village" : "Not created"],
   ] as const;
 
   return (

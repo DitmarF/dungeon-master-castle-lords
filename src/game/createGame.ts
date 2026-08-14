@@ -2,6 +2,7 @@ import { createDungeonLevel } from "./generateDungeon.ts";
 import {
   type GameSave,
   type CampaignStateV4,
+  type CampaignStateV5,
   type PlayerProfile,
   type PlayerId,
 } from "./model.ts";
@@ -11,7 +12,7 @@ import {
   type CampaignId,
   type IdSource,
 } from "./identity.ts";
-import { CLASS_SKILL } from "./transitions.ts";
+import { CLASS_SKILL } from "./heroSetup.ts";
 import { selectHeroAttributes } from "./selectors.ts";
 import {
   isCampaignSeed,
@@ -45,19 +46,25 @@ export function createNewGame(
   campaignSeed: CampaignSeed,
   createdAt: string,
 ): GameSave {
-  const seed = requireCampaignSeed(campaignSeed);
+  return createNewGameV5(playerId, idSource, campaignSeed, createdAt);
+}
 
+export function createNewGameV5(
+  playerId: PlayerId,
+  idSource: IdSource,
+  campaignSeed: CampaignSeed,
+  createdAt: string,
+): CampaignStateV5 {
+  const seed = requireCampaignSeed(campaignSeed);
   return {
-    version: 4,
+    version: 5,
     id: createCampaignId(idSource),
     playerId,
     campaignSeed: seed,
     createdAt,
     updatedAt: createdAt,
     activeBoardId: "setup",
-    setupComplete: false,
-    hero: null,
-    dungeon: createDungeonLevel(seed),
+    foundation: null,
   };
 }
 
@@ -108,7 +115,7 @@ export function migrateLegacyGame(
   idSource: IdSource,
   campaignSeedSource: CampaignSeedSource,
   fallbackCreatedAt: string,
-): GameSave {
+): CampaignStateV4 {
   if (value && typeof value === "object") {
     const candidate = value as { version?: unknown; dungeon?: unknown };
     if (
@@ -134,12 +141,19 @@ export function migrateLegacyGame(
     // Legacy saves predate runtime ID validation. Retain their exact strings;
     // only newly generated identities must satisfy the current convention.
     const retainedPlayerId = (legacy.playerId ?? playerId) as PlayerId;
-    const migrated = createNewGame(
-      retainedPlayerId,
-      idSource,
-      campaignSeedSource.nextCampaignSeed(),
-      fallbackCreatedAt,
-    );
+    const fallbackSeed = campaignSeedSource.nextCampaignSeed();
+    const migrated: CampaignStateV4 = {
+      version: 4,
+      id: createCampaignId(idSource),
+      playerId: retainedPlayerId,
+      campaignSeed: fallbackSeed,
+      createdAt: fallbackCreatedAt,
+      updatedAt: fallbackCreatedAt,
+      activeBoardId: "setup",
+      setupComplete: false,
+      hero: null,
+      dungeon: createDungeonLevel(fallbackSeed),
+    };
     return {
       ...migrated,
       id: (legacy.id as CampaignId | undefined) ?? migrated.id,
@@ -154,10 +168,17 @@ export function migrateLegacyGame(
     };
   }
 
-  return createNewGame(
-    playerId as PlayerId,
-    idSource,
-    campaignSeedSource.nextCampaignSeed(),
-    fallbackCreatedAt,
-  );
+  const fallbackSeed = campaignSeedSource.nextCampaignSeed();
+  return {
+    version: 4,
+    id: createCampaignId(idSource),
+    playerId: playerId as PlayerId,
+    campaignSeed: fallbackSeed,
+    createdAt: fallbackCreatedAt,
+    updatedAt: fallbackCreatedAt,
+    activeBoardId: "setup",
+    setupComplete: false,
+    hero: null,
+    dungeon: createDungeonLevel(fallbackSeed),
+  };
 }

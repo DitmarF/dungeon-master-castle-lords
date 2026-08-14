@@ -5,15 +5,13 @@ import { useGame } from "../game/GameProvider";
 import {
   EMPTY_ATTRIBUTES,
   type AttributeKey,
-  type FactionType,
   type HeroAttributes,
   type HeroClass,
-  type HeroSetupSelection,
   type HeroVocation,
   type SkillId,
 } from "../game/model";
 import { skillBelongsToTree } from "../game/skillTrees";
-import { ROOT_FACTION_DEFINITIONS } from "../game/openingContent";
+import type { CastleHeroSetupSelection } from "../game/heroSetup";
 import {
   selectHeroAttributes,
   selectHeroClassAttributeBonus,
@@ -21,7 +19,7 @@ import {
   selectHeroVocationAttributeBonus,
   type HeroAttributeBonus,
 } from "../game/selectors";
-import { validateHeroSetupSelection } from "../game/transitions";
+import { validateCastleHeroSetupSelection } from "../game/heroSetup";
 import { Crest } from "../ui/Crest";
 import { GameIcon, type IconName } from "../ui/GameIcon";
 import { ActionButton, ProgressBar } from "../ui/GamePrimitives";
@@ -106,7 +104,6 @@ export function SetupBoard() {
     selectedPlayer,
     returnToPlayers,
   } = useGame();
-  const [faction, setFaction] = useState<FactionType | null>(null);
   const [heroClass, setHeroClass] = useState<HeroClass | null>(null);
   const [vocation, setVocation] = useState<HeroVocation | null>(null);
   const [freeAttributes, setFreeAttributes] = useState<HeroAttributes>({
@@ -128,18 +125,18 @@ export function SetupBoard() {
     () => selectHeroAttributes({ freeAttributes, heroClass, vocation }),
     [freeAttributes, heroClass, vocation],
   );
-  const completedChoices = [faction, heroClass, vocation, bonusSkill].filter(
+  const completedChoices = [heroClass, vocation, bonusSkill].filter(
     Boolean,
   ).length;
-  const selection = useMemo<HeroSetupSelection | null>(
+  const selection = useMemo<CastleHeroSetupSelection | null>(
     () =>
-      faction && heroClass && vocation && bonusSkill
-        ? { faction, heroClass, vocation, freeAttributes, bonusSkill }
+      heroClass && vocation && bonusSkill
+        ? { heroClass, vocation, freeAttributes, bonusSkill }
         : null,
-    [faction, heroClass, vocation, freeAttributes, bonusSkill],
+    [heroClass, vocation, freeAttributes, bonusSkill],
   );
   const ready = selection
-    ? validateHeroSetupSelection(selection).ok
+    ? validateCastleHeroSetupSelection(selection).ok
     : false;
 
   if (!activeGame || !selectedPlayer) return null;
@@ -213,18 +210,18 @@ export function SetupBoard() {
           <div>
             <span className="section-kicker">Campaign foundation</span>
             <h1>Build your founding hero.</h1>
-            <p>Choose a faction, two paths, two attributes, and one skill-tree advance.</p>
+            <p>Castle is your campaign foundation. Choose two paths, two attributes, and one skill-tree advance.</p>
             <ProgressBar
               className="setup-progress"
               label="Hero setup choices completed"
               value={completedChoices}
-              max={4}
-              valueText={`${completedChoices} of 4 choices completed`}
+              max={3}
+              valueText={`${completedChoices} of 3 choices completed`}
             />
           </div>
           <span className={`readiness-chip${ready ? " readiness-chip--ready" : ""}`}>
             <span className="status-dot" />
-            {ready ? "Ready" : `${completedChoices}/4 choices`}
+            {ready ? "Ready" : `${completedChoices}/3 choices`}
           </span>
         </header>
 
@@ -239,37 +236,16 @@ export function SetupBoard() {
               </div>
             </header>
             <div className="faction-options">
-              {ROOT_FACTION_DEFINITIONS.map((item) => {
-                const newCampaignPlayable =
-                  item.newCampaignAvailability === "playable";
-                return (
-                  <button
-                    key={item.id}
-                    type="button"
-                    className={`choice-card choice-card--faction${
-                      faction === item.id ? " choice-card--selected" : ""
-                    }`}
-                    onClick={() => setFaction(item.id)}
-                    disabled={!newCampaignPlayable}
-                    aria-pressed={faction === item.id}
-                  >
-                    <span className="choice-card__icon">
-                      <GameIcon name={item.presentation.icon} size={23} />
-                    </span>
-                    <span>
-                      <strong>{item.name}</strong>
-                      <small>{item.description}</small>
-                    </span>
-                    <i>
-                      {newCampaignPlayable
-                        ? faction === item.id
-                          ? "Selected"
-                          : "Choose"
-                        : "Unavailable"}
-                    </i>
-                  </button>
-                );
-              })}
+              <div className="choice-card choice-card--faction choice-card--selected">
+                <span className="choice-card__icon">
+                  <GameIcon name="castle" size={23} />
+                </span>
+                <span>
+                  <strong>Castle</strong>
+                  <small>The sole playable root faction for new MVP campaigns.</small>
+                </span>
+                <i>Campaign</i>
+              </div>
             </div>
             </section>
 
@@ -419,7 +395,7 @@ export function SetupBoard() {
           onClick={beginCampaign}
           endIcon={<GameIcon name="arrow" size={17} />}
         >
-          Enter level
+          Enter Village
         </ActionButton>
       </footer>
 

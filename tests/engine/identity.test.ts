@@ -18,6 +18,7 @@ import {
   migrateLegacyGame,
 } from "../../src/game/createGame.ts";
 import { completeHeroSetup } from "../../src/game/transitions.ts";
+import { migrateCampaignToV5 } from "../../src/game/campaignMigration.ts";
 import { systemIdSource } from "../../src/game/systemIdSource.ts";
 import type { CampaignSeedSource } from "../../src/game/random.ts";
 
@@ -149,7 +150,6 @@ test("identity injection preserves the current creation, setup, and load flow", 
   );
   const campaign = createNewGame(player.id, source, 654_321, createdAt);
   const completion = completeHeroSetup(campaign, {
-    faction: "castle",
     heroClass: "fighter",
     vocation: "general",
     freeAttributes: {
@@ -164,26 +164,25 @@ test("identity injection preserves the current creation, setup, and load flow", 
   });
   if (!completion.ok) throw new Error(`Setup failed: ${completion.code}`);
   const completed = completion.state;
-  const loaded = migrateLegacyGame(
-    structuredClone(completed),
-    player.id,
-    sequenceIdSource({
-      player: ["player-unused"],
-      campaign: ["game-unused"],
-    }),
-    MIGRATION_SEED_SOURCE,
-    "2026-08-14T10:00:00.000Z",
-  );
+  const normalized = migrateCampaignToV5(structuredClone(completed), player.id);
+  if (!normalized.ok) throw new Error(normalized.message);
+  const loaded = normalized.state;
 
   assert.equal(loaded.id, "game-regression");
   assert.equal(loaded.playerId, "player-regression");
-  assert.equal(loaded.setupComplete, true);
-  assert.equal(loaded.activeBoardId, "dungeon");
-  assert.deepEqual(loaded.hero?.position, loaded.dungeon.start);
-  assert.deepEqual(loaded.dungeon.tiles, campaign.dungeon.tiles);
-  assert.equal(loaded.dungeon.seed, campaign.dungeon.seed);
+  assert.equal(loaded.foundation !== null, true);
+  assert.equal(loaded.activeBoardId, "settlement");
+  assert.equal(loaded.foundation?.hero.strategicRegionId, "region:0,0");
+  assert.equal(loaded.foundation?.hero.explorationContext, null);
+  assert.equal(
+    loaded.foundation?.regionalDungeons["location:regional-dungeon"].seed,
+    campaign.campaignSeed,
+  );
   assert.equal(loaded.campaignSeed, campaign.campaignSeed);
-  assert.ok(loaded.dungeon.discovered.length > 0);
+  assert.deepEqual(
+    loaded.foundation?.regionalDungeons["location:regional-dungeon"].discovered,
+    [],
+  );
 });
 
 test("the system source uses crypto identity entropy with no gameplay RNG dependency", async () => {

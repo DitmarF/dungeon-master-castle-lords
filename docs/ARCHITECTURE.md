@@ -39,16 +39,16 @@ The architecture should support fast prototype iteration without allowing UI com
 - versioned campaign data persisted to browser `localStorage`;
 - platform entry, optional storage scaffolding, and Sites configuration at repository edges.
 
-The current evidence hierarchy and limitations are documented in `CURRENT_STATE.md`. The application uses named validated transitions, a pure board-navigation policy, an injected application clock, and pure lifecycle/persistence helpers, while one provider still coordinates runtime/session concerns. Active/registry mirroring and one global stylesheet remain observed implementation choices. E03-T02 implements the accepted browser-local one-campaign lifecycle target described below without changing the campaign schema.
+The current evidence hierarchy and limitations are documented in `CURRENT_STATE.md`. The application uses named validated transitions, a pure board-navigation policy, an injected application clock, and pure lifecycle/persistence helpers, while one provider still coordinates runtime/session concerns. Active/registry mirroring and one global stylesheet remain observed implementation choices. E03-T06 applies those boundaries to the version-5 Village-first runtime and version-2 local registry.
 
 ## Current core-engine architecture
 
-**Accepted and implemented through EPIC 02.** The authoritative pure campaign type is `CampaignState`; `GameSave` is its version-4 serialized compatibility alias. Version 4 adds only the persisted campaign RNG seed to the earlier v3 shape. `CampaignState` contains current justified campaign facts and compatibility snapshots. `PlayerProfile`, `GameRegistry`, `RuntimeState`, theme/hydration, and board-local presentation state remain outside it.
+**Implemented Candidate through E03-T06.** The authoritative pure campaign type is `CampaignState`; `GameSave` is its version-5 serialized alias. Version 4 remains an explicit legacy compatibility type behind the strict migration boundary. `CampaignState` contains only the accepted Castle opening facts and compatibility snapshots. `PlayerProfile`, `GameRegistry`, `RuntimeState`, theme/hydration, and board-local presentation state remain outside it.
 
 The current engine surface is:
 
 - named application operations for the current campaign intents;
-- pure validated transitions for hero setup, dungeon movement/discovery/heart outcome, settlement claim, and board navigation as each bounded task extracts them;
+- pure validated transitions for atomic Village-first Hero Setup, regional Dungeon movement/discovery/Heart outcome, and legal board navigation, with the former settlement claim explicitly retired;
 - concrete selectors for current derived reads such as board availability and shared hero/dungeon calculations;
 - explicit application/infrastructure inputs for player/campaign identity, lifecycle time, and new gameplay seeds, with identity entropy, wall-clock time, and deterministic rule RNG kept separate;
 - browser `localStorage` at the infrastructure edge behind a raw string adapter, with pure staged decode/validation/migration and verified registry-write orchestration inward of that adapter;
@@ -110,7 +110,15 @@ The module imports no React, board, provider, storage, clock, identity entropy, 
 
 World generation occurs only while converting an eligible completed Castle source. The resulting snapshot becomes stored authority. The legacy Dungeon is structurally copied under its deterministic regional location without calling `createDungeonLevel`; its cell position remains exploration context rather than becoming strategic coordinates. Dungeon-faction input produces no Castle state. Source mutation and platform dependencies are prohibited and tested.
 
-The application-facing `CampaignState`/`GameSave` alias, provider, navigation, and Setup transition remain version 4 at the accepted E03-T05 checkpoint because E03-T06 owns the atomic new-campaign/application cutover. E03-T05 supplies the complete target and migration boundary without creating a temporarily unplayable or half-created campaign. E03-T07 remains responsible for player-facing migrated-state presentation.
+At the accepted E03-T05 checkpoint the application-facing alias remained version 4 so the target could not become half-integrated. E03-T06 now moves the aliases, provider, navigation, and ordinary Setup to version 5 as one bounded cutover. E03-T07 remains responsible for fuller player-facing migrated-state presentation and recovery choices.
+
+### E03-T06 Candidate Village-first application boundary
+
+`src/game/heroSetup.ts`, `villageOpening.ts`, `navigationV5.ts`, and `campaignTransitionsV5.ts` form the pure version-5 rule/application-policy surface. Setup validates the complete selection before constructing one immutable foundation value. It uses the existing explicit campaign seed for the approved World generator and a separate fresh Dungeon generator invocation without changing any retained migrated Dungeon snapshot. The resulting Hero begins at the World home region with no exploration context and resumes at Settlement.
+
+`src/game/lifecycleV2.ts` and `registryCutover.ts` keep container transaction policy outside React and browser APIs. Hydration prefers a strict valid version-2 registry; otherwise it reads the legacy version-1 payload, delegates each campaign to the pure migration chain, persists and verifies a version-2 candidate, and never deletes or rewrites the source key. Typed failure prevents empty-registry autosave. `storage.ts` owns the two concrete local-storage keys at the platform edge.
+
+`GameProvider` remains the application coordinator: it supplies clock/identity/seed/storage ports, invokes named pure operations, stamps successful campaign changes, performs verified writes, and exposes bounded player-visible persistence status. It has no authority to create a partial foundation. The UI consumes the pure navigation policy; the former Dungeon Heart claim remains a compatibility-shaped provider operation returning `operation-retired`, and no board can use it to create or unlock the capital.
 
 ### E02-T07 developer inspector boundary
 
