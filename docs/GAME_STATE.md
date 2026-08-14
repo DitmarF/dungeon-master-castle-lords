@@ -54,7 +54,7 @@ The word “normally” matters: a draft, camera position, notification, or deri
 
 ## Current persisted campaign
 
-**Implemented Candidate in E03-T06:** The application-facing `CampaignState` and serialized `GameSave` are schema version 5. The minimum shape contains:
+**Accepted and implemented in E03-T06:** The application-facing `CampaignState` and serialized `GameSave` are schema version 5. The minimum shape contains:
 
 - identity and lifecycle: campaign ID, player ID, campaign seed, immutable creation timestamp, modification/resume timestamp, and active board;
 - `foundation: null` before Setup, with no durable Setup draft;
@@ -65,7 +65,7 @@ Version 4 remains a protected legacy compatibility shape used only by strict v2/
 
 ### Current completed Hero state
 
-**Implemented Candidate in E03-T06:** Once Setup completes, the version-5 Hero contains:
+**Accepted and implemented in E03-T06:** Once Setup completes, the version-5 Hero contains:
 
 - class, vocation, and the selected bonus skill; root faction authority exists only on the campaign foundation as `castle`;
 - the player’s free-attribute allocation;
@@ -77,7 +77,7 @@ The exact creation rules are summarized in `CURRENT_STATE.md`. This document doe
 
 ### Current regional Dungeon state
 
-**Implemented Candidate in E03-T06:** The completed foundation stores one regional Dungeon snapshot containing:
+**Accepted and implemented in E03-T06:** The completed foundation stores one regional Dungeon snapshot containing:
 
 - level and deterministic seed;
 - grid dimensions and generation seed;
@@ -90,7 +90,7 @@ Converted legacy snapshots may additionally retain old Dungeon `day`, `treasury`
 
 ### Current persistence container
 
-**Implemented Candidate in E03-T06:** `GameRegistry` version 2 contains local player profiles, at most one version-5 campaign per profile, and the last active player ID. The preferred container is stored at `dmcl.prototype.registry.v2` through the E03-T02 verified-write contract.
+**Accepted and implemented in E03-T06:** `GameRegistry` version 2 contains local player profiles, at most one version-5 campaign per profile, and the last active player ID. The preferred container is stored at `dmcl.prototype.registry.v2` through the E03-T02 verified-write contract.
 
 On first successful legacy load, the application strictly decodes and migrates the version-1 source, writes and verifies the version-2 candidate, and leaves the original `dmcl.prototype.registry.v1` bytes untouched. A valid version-2 registry is preferred without consulting version 1. Failed decode, migration, write, or verification never substitutes an empty registry or overwrites the legacy source.
 
@@ -161,7 +161,7 @@ The pure `migrateCampaignToV5` chain strictly validates its source, verifies the
 
 An already-version-5 payload follows strict target validation and cloning only: it does not call World or Dungeon generation, repair fields, duplicate instances, or change IDs. The migration module imports no React, storage, clock, entropy, browser, or hosting API and performs no write. E03-T06 now consumes this target through the application-facing aliases and version-2 registry while retaining the version-1 source as recovery material.
 
-### E03-T06 Candidate Village-first opening and application cutover
+### E03-T06 accepted Village-first opening and application cutover
 
 The pure `completeVillageFirstHeroSetup` operation validates the complete Setup selection before constructing any campaign fact. One successful call creates the Hero, Castle foundation, Tier-1 capital, generated seven-region snapshot, fresh regional Dungeon snapshot, home-region strategic position, null exploration context, and Settlement resume board as one replacement value. Invalid or repeated completion returns the unchanged source; no partial or duplicate foundation can exist.
 
@@ -187,7 +187,7 @@ The application’s player registry is persisted, but it is not campaign-owned. 
 
 ## Current value classification and EPIC 02 evolution
 
-**Current Candidate:** `CampaignState`/`GameSave` version 5 is the authoritative campaign payload. `RuntimeState.activeGame` is its application working copy and `GameRegistryV2.games[playerId]` is the mirrored registry copy serialized through explicit verified writes. The duplication is application coordination, not two independent campaign authorities.
+**Current:** `CampaignState`/`GameSave` version 5 is the authoritative campaign payload. `RuntimeState.activeGame` is its application working copy and `GameRegistryV2.games[playerId]` is the mirrored registry copy serialized through explicit verified writes. The duplication is application coordination, not two independent campaign authorities.
 
 The current v5 payload classifies as follows:
 

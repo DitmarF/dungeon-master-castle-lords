@@ -43,7 +43,7 @@ The current evidence hierarchy and limitations are documented in `CURRENT_STATE.
 
 ## Current core-engine architecture
 
-**Implemented Candidate through E03-T06.** The authoritative pure campaign type is `CampaignState`; `GameSave` is its version-5 serialized alias. Version 4 remains an explicit legacy compatibility type behind the strict migration boundary. `CampaignState` contains only the accepted Castle opening facts and compatibility snapshots. `PlayerProfile`, `GameRegistry`, `RuntimeState`, theme/hydration, and board-local presentation state remain outside it.
+**Accepted and implemented through E03-T06.** The authoritative pure campaign type is `CampaignState`; `GameSave` is its version-5 serialized alias. Version 4 remains an explicit legacy compatibility type behind the strict migration boundary. `CampaignState` contains only the accepted Castle opening facts and compatibility snapshots. `PlayerProfile`, `GameRegistry`, `RuntimeState`, theme/hydration, and board-local presentation state remain outside it.
 
 The current engine surface is:
 
@@ -112,7 +112,7 @@ World generation occurs only while converting an eligible completed Castle sourc
 
 At the accepted E03-T05 checkpoint the application-facing alias remained version 4 so the target could not become half-integrated. E03-T06 now moves the aliases, provider, navigation, and ordinary Setup to version 5 as one bounded cutover. E03-T07 remains responsible for fuller player-facing migrated-state presentation and recovery choices.
 
-### E03-T06 Candidate Village-first application boundary
+### E03-T06 accepted Village-first application boundary
 
 `src/game/heroSetup.ts`, `villageOpening.ts`, `navigationV5.ts`, and `campaignTransitionsV5.ts` form the pure version-5 rule/application-policy surface. Setup validates the complete selection before constructing one immutable foundation value. It uses the existing explicit campaign seed for the approved World generator and a separate fresh Dungeon generator invocation without changing any retained migrated Dungeon snapshot. The resulting Hero begins at the World home region with no exploration context and resumes at Settlement.
 

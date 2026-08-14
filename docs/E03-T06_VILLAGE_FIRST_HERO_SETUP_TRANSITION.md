@@ -1,6 +1,6 @@
 # Dungeon Master & Castle Lords — E03-T06 Village-first Hero Setup transition
 
-Status: **Candidate — awaiting owner acceptance**
+Status: **Complete**
 
 ## Task ID and name
 
@@ -64,9 +64,9 @@ The former Dungeon-first waking/conquest opening remains a possible later tutori
 
 ### Automated
 
-- `npm run test:engine` — expected: focused transition/navigation/persistence/migration tests PASS.
-- `npm run verify` — expected: token, lint, engine, build/artifact, and rendered-HTML gates PASS.
-- `git diff --check` — expected: PASS.
+- `npm run test:engine` — PASS, 98/98 focused transition/navigation/persistence/migration tests.
+- `npm run verify` — PASS: token, lint, 98/98 engine tests, build/artifact, and rendered-HTML gates.
+- `git diff --check` — PASS.
 
 ### Behavior/manual
 
@@ -88,7 +88,7 @@ The former Dungeon-first waking/conquest opening remains a possible later tutori
 ## Checkpoint
 
 - Configured source branch: `main`
-- Commit/push authorized: no, awaiting owner acceptance
+- Commit/push: accepted implementation and checkpoint reconciliation pushed to `main` under `WORKFLOW.md`
 - Expected checkpoint contents: accepted E03-T06 transition/persistence integration, focused tests, responsible docs, and acceptance-driven roadmap update
 - Deployment authorized: **No**
 
@@ -96,4 +96,18 @@ The former Dungeon-first waking/conquest opening remains a possible later tutori
 
 Candidate implementation now moves ordinary campaign creation, Setup, application state, navigation, inspector, and verified local persistence to version 5/registry version 2. Focused pure coverage verifies atomicity, deterministic identity, exact temporary Hero grants, migration/source preservation, board availability, retired Heart claim, and successful/failed persistence behavior.
 
-The rendered behavior pass covers the portrait layout, pointer completion, keyboard text input and native focusable-control semantics, successful Settlement entry, immediate Hero/World navigation, return/Continue, reload/resume, disabled future boards, and manual Save feedback. The browser controller did not synthesize the native default click for Enter on a focused button, so an end-to-end keyboard-only activation remains an explicit manual owner check rather than a claimed automated PASS. Full command results and screenshots are recorded in the owner-review Candidate report; no source checkpoint or deployment has been made.
+The rendered behavior pass covers the portrait layout, pointer completion, keyboard text input and native focusable-control semantics, successful Settlement entry, immediate Hero/World navigation, return/Continue, reload/resume, disabled future boards, and manual Save feedback. The browser controller did not synthesize the native default click for Enter on a focused button, so an end-to-end keyboard-only activation remains an explicit manual owner check rather than a claimed automated PASS. Full command results and screenshots were recorded in the owner-review Candidate report. No deployment was performed.
+
+### User acceptance
+
+- Status: accepted by the project owner; all points and tests approved, with independent GitHub verification reported PASS
+- Accepted by/date: project owner, 2026-08-14
+
+### Accepted checkpoint
+
+- Final commit SHA: reported in the completion handoff to avoid a self-referential documentation commit
+- Pushed source branch: `main`
+- Saved Sites version: matching non-deployed version reported in the completion handoff
+- Roadmap status: E03-T06 Complete; E03-T07 is the sole Next task
+- Next task: `E03-T07 — Opening boards, summaries, and inspection`
+- Deployment: **Not performed**

@@ -15,9 +15,9 @@ The owner accepted DMCL-P26, the E03-T01 decision packet DMCL-P27–DMCL-P39, an
 
 The implemented prototype now includes:
 
-`local player → safe verified local campaign lifecycle → Castle-only hero setup → pure deterministic Village/home-ring generation capability → pure version-5 migration capability → deterministic dungeon exploration → dungeon-heart claim → placeholder settlement`
+`local player → safe verified version-2 local registry → Castle-only Hero Setup → atomic version-5 Village/home-ring opening → deterministic regional Dungeon snapshot/context → Settlement/Hero/World access`
 
-E03-T02 implements the accepted browser-local lifecycle, timestamp, failure, verified Save, and replacement/deletion contract. E03-T03 implements the minimum Castle/Village opening content catalogs and makes Castle the sole new-campaign faction while retaining Dungeon compatibility identity. E03-T04 implements the pure deterministic seven-region opening generator. E03-T05 implements the accepted version-5 target model and strict v2/v3/v4-to-v5 migration capability without yet switching the playable application from its version-4 Setup boundary. The atomic Village-first Setup/application cutover, region conquest, supply, meaningful management, tactical combat, executable skill effects, faction evolution, cloud saves, and multiplayer remain unimplemented. See CURRENT_STATE.md for the earlier repository-wide audit and the accepted E03 task records for newer bounded evidence.
+E03-T02 implements the accepted browser-local lifecycle, timestamp, failure, verified Save, and replacement/deletion contract. E03-T03 implements the minimum Castle/Village opening content catalogs and makes Castle the sole new-campaign faction while retaining Dungeon compatibility identity. E03-T04 implements the pure deterministic seven-region opening generator. E03-T05 implements the accepted version-5 target model and strict v2/v3/v4-to-v5 migration capability. E03-T06 switches the playable application to that model, activates the verified version-2 registry cutover while retaining the version-1 source, and creates the complete Village-first foundation atomically. Player-facing opening summaries/recovery, region conquest, supply, meaningful management, tactical combat, executable skill effects, faction evolution, cloud saves, and multiplayer remain unimplemented. See CURRENT_STATE.md for the earlier repository-wide audit and the accepted E03 task records for newer bounded evidence.
 
 ## Accepted activation
 
@@ -44,22 +44,24 @@ EPIC 03 does not add an empty final-game schema. It adds only state and content 
 
 ## Exact next task
 
-### E03-T06 — Village-first Hero Setup transition
+### E03-T07 — Opening boards, summaries, and inspection
 
 Status: **Next — exactly one**
 
-Goal: replace the old Dungeon-first Setup completion with one atomic Castle/Village-first campaign-opening transition over the accepted version-5 model.
+Goal: make the Castle/Village-first foundation understandable and inspectable without pretending later mechanics already exist.
 
-E03-T06 must:
+E03-T07 must:
 
-- make Castle implicit for ordinary new-MVP Setup while retaining legacy Dungeon compatibility identity;
-- preserve the accepted temporary Level-1 Class, Vocation, allocation, skill/root, bonus-skill, and attribute-snapshot behavior;
-- create the Hero, Castle authority, Tier-1 capital Village, seven controlled starting regions, approved sites/locations, regional Dungeon context, strategic position, and Settlement resume board atomically exactly once;
-- make Hero, Settlement, and World initially available; require valid regional exploration context for Dungeon; and keep Combat and Diplomacy unavailable;
-- retire the Dungeon Heart claim as a capital-creation or Settlement-availability authority;
-- persist successful Setup through the accepted verified local lifecycle and keep a failed write visibly recoverable.
+- present the approved New/Continue/replacement/deletion and typed persistence/migration recovery states honestly;
+- keep Castle implicit and preserve the accepted Setup choices without future progression claims;
+- render concise authoritative Hero, Tier-1 Village, and deterministic seven-region home-ring summaries;
+- make the regional Dungeon selectable/enterable only through valid World-region context while preserving its stored snapshot and exploration history;
+- keep strategic position distinct from Dungeon exploration position and keep legacy counters out of strategic/global status;
+- keep Hero/Settlement/World available, Dungeon contextual, and Combat/Diplomacy unavailable;
+- extend the read-only developer inspector with useful version-5 World, capital, context, retained-Dungeon, and compatibility evidence;
+- preserve portrait/touch/keyboard/theme/reduced-motion/accessibility behavior and FS token authority.
 
-E03-T06 must not add economy, Roads, strategic Day, buildings beyond opening identity, units, Combat, Gambits, faction evolution, new Hero progression, database/hosting infrastructure, or deployment.
+E03-T07 must not add economy/yields, Roads, projects, units, Combat, Gambits, faction evolution, new Dungeon content, database/hosting infrastructure, or deployment.
 
 ## Epic registry
 
@@ -155,6 +157,19 @@ E03-T05 established and verified:
 - deterministic/idempotent World attachment and byte-equivalent target round trips.
 
 The project owner accepted E03-T05 on 2026-08-14, approved all points and tests, and reported independent GitHub verification PASS. Its matching non-deployed source/Sites checkpoint completes before E03-T06 begins; the playable application/Setup cutover remains E03-T06.
+
+## E03-T06 closure
+
+E03-T06 established and verified:
+
+- Castle as the implicit ordinary new-campaign root with the accepted temporary Level-1 Hero grants;
+- one atomic version-5 Setup transition creating the complete Tier-1 Village, controlled seven-region World, approved sites/locations, regional Dungeon snapshot, and strategic home position;
+- Settlement as the opening board, with Hero/Settlement/World available, Dungeon context-gated, and Combat/Diplomacy unavailable;
+- retirement of Dungeon Heart claiming as a capital-creation or board-unlock authority;
+- the version-2 verified local registry cutover with the original version-1 payload retained untouched;
+- focused atomicity, navigation, persistence, migration/source-preservation, and save/reload coverage.
+
+The project owner accepted E03-T06 on 2026-08-14, approved all points and tests, and reported independent GitHub verification PASS. Its matching non-deployed source/Sites checkpoint completes before E03-T07 begins.
 
 ## E02-T01 closure
 
@@ -271,7 +286,7 @@ E00-T05 was accepted by the project owner on 2026-08-09, completing EPIC 00. Its
 ## Open decisions after E03-T01
 
 - DMCL-P27–DMCL-P39 resolve the MVP lifecycle, timestamp, storage-failure, campaign-count, legacy-save, opening-destination, starting-ring, and transition contract. Implementation remains bounded to the responsible E03 tasks.
-- Campaign version 5 is the accepted and implemented target/migration schema. The playable application remains on its version-4 Setup/persistence boundary until E03-T06 performs the atomic cutover. Registry version 2 remains conditional on the DMCL-P31 lifecycle/cutover need.
+- Campaign version 5 and registry version 2 are the accepted and implemented playable application boundaries. The original registry-version-1 payload remains retained throughout EPIC 03 under DMCL-P31.
 - Exact gameplay formulas, balance, thresholds, costs, progression values, content quantities, and later schema fields remain with their named Epic decision tasks.
 - Exact effect vocabulary remains deferred until EPIC 08 has concrete approved abilities.
 - Cloud/offline synchronization, authentication, multiplayer authority, localization, mods/content packs, and remote content remain outside the MVP.
