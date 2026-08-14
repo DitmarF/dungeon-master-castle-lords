@@ -1,6 +1,7 @@
 import { createDungeonLevel } from "./generateDungeon.ts";
 import {
   type GameSave,
+  type CampaignStateV4,
   type PlayerProfile,
   type PlayerId,
 } from "./model.ts";
@@ -60,6 +61,47 @@ export function createNewGame(
   };
 }
 
+export type SupportedLegacyCampaign = Omit<
+  CampaignStateV4,
+  "version" | "campaignSeed"
+> & {
+  version: 2 | 3 | 4;
+  campaignSeed?: unknown;
+};
+
+/**
+ * Protected v2/v3/v4 compatibility step. Callers must validate the source
+ * envelope before narrowing to this type. It never generates a replacement
+ * campaign or Dungeon.
+ */
+export function normalizeSupportedCampaignToV4(
+  current: SupportedLegacyCampaign,
+): CampaignStateV4 {
+  const campaignSeed = isCampaignSeed(current.campaignSeed)
+    ? current.campaignSeed
+    : requireCampaignSeed(current.dungeon.seed);
+  const normalized: CampaignStateV4 = {
+    ...current,
+    version: 4,
+    campaignSeed,
+  };
+  if (!normalized.hero) return normalized;
+
+  const bonusSkill = SKILL_BY_ID[normalized.hero.bonusSkill]
+    ? normalized.hero.bonusSkill
+    : CLASS_SKILL[normalized.hero.heroClass];
+
+  return {
+    ...normalized,
+    hero: {
+      ...normalized.hero,
+      bonusSkill,
+      attributes: selectHeroAttributes(normalized.hero),
+      skills: normalizeSkillRanks(normalized.hero.skills),
+    },
+  };
+}
+
 export function migrateLegacyGame(
   value: unknown,
   playerId: string,
@@ -77,36 +119,9 @@ export function migrateLegacyGame(
       typeof candidate.dungeon === "object" &&
       "tiles" in candidate.dungeon
     ) {
-      const current = value as Omit<GameSave, "version" | "campaignSeed"> & {
-        version: 2 | 3 | 4;
-        campaignSeed?: unknown;
-      };
-      const campaignSeed = isCampaignSeed(current.campaignSeed)
-        ? current.campaignSeed
-        : requireCampaignSeed(current.dungeon.seed);
-      const normalized: GameSave = {
-        ...current,
-        version: 4,
-        campaignSeed,
-      };
-      if (!normalized.hero) return normalized;
-
-      const bonusSkill = SKILL_BY_ID[normalized.hero.bonusSkill]
-        ? normalized.hero.bonusSkill
-        : CLASS_SKILL[normalized.hero.heroClass];
-
-      // Rebuild derived attributes from the saved choices so rules fixes also
-      // repair existing campaigns, while the skill normalizer adds the new
-      // branch nodes without changing already learned ranks.
-      return {
-        ...normalized,
-        hero: {
-          ...normalized.hero,
-          bonusSkill,
-          attributes: selectHeroAttributes(normalized.hero),
-          skills: normalizeSkillRanks(normalized.hero.skills),
-        },
-      };
+      return normalizeSupportedCampaignToV4(
+        value as SupportedLegacyCampaign,
+      );
     }
 
     const legacy = value as {

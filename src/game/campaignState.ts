@@ -1,6 +1,16 @@
 import type { SkillId } from "./skillTrees.ts";
 import type { CampaignId, PlayerId } from "./identity.ts";
 import type { CampaignSeed } from "./random.ts";
+import type {
+  GeneratedCapitalSnapshot,
+  GeneratedLocationSnapshot,
+  GeneratedRegionSnapshot,
+  GeneratedSiteSnapshot,
+  LocationId,
+  RegionId,
+  WorldGeneratorVersion,
+  WorldSeed,
+} from "./generateStartingWorld.ts";
 
 export type { SkillId } from "./skillTrees.ts";
 export type { CampaignId, PlayerId } from "./identity.ts";
@@ -75,7 +85,7 @@ export interface DungeonState {
   settlementClaimed: boolean;
 }
 
-export interface CampaignState {
+export interface CampaignStateV4 {
   version: 4;
   id: CampaignId;
   playerId: PlayerId;
@@ -88,8 +98,103 @@ export interface CampaignState {
   dungeon: DungeonState;
 }
 
-/** Serialized version-4 compatibility name. */
-export type GameSave = CampaignState;
+/** Current application campaign until E03-T06 wires the version-5 opening. */
+export type CampaignState = CampaignStateV4;
+
+/** Current serialized version-4 compatibility name. */
+export type GameSave = CampaignStateV4;
+
+export type CampaignResumeBoardIdV5 =
+  | "setup"
+  | "hero"
+  | "settlement"
+  | "world"
+  | "dungeon";
+
+export type HeroAttributesCompatibilityRuleVersion = "v4-path-bonus-1";
+
+export interface HeroAttributesCompatibilitySnapshot {
+  ruleVersion: HeroAttributesCompatibilityRuleVersion;
+  values: HeroAttributes;
+}
+
+export interface HeroExplorationContext {
+  locationId: LocationId;
+  cell: CellPosition;
+  returnBoardId: "world" | "settlement";
+}
+
+export interface CampaignHeroStateV5 {
+  heroClass: HeroClass;
+  vocation: HeroVocation;
+  freeAttributes: HeroAttributes;
+  bonusSkillId: SkillId;
+  skillRanks: Partial<Record<SkillId, number>>;
+  attributesCompatibility: HeroAttributesCompatibilitySnapshot;
+  strategicRegionId: RegionId;
+  explorationContext: HeroExplorationContext | null;
+}
+
+export type CampaignCapitalStateV5 = GeneratedCapitalSnapshot;
+
+export interface CampaignWorldStateV5 {
+  generatorVersion: WorldGeneratorVersion;
+  seed: WorldSeed;
+  homeRegionId: RegionId;
+  regions: readonly GeneratedRegionSnapshot[];
+  sites: readonly GeneratedSiteSnapshot[];
+  locations: readonly GeneratedLocationSnapshot[];
+}
+
+export interface LegacyPrototypeMetadata {
+  dungeonDay: number;
+  dungeonTreasury: number;
+  settlementClaimed: boolean;
+}
+
+export interface RegionalDungeonStateV5 {
+  dungeonDefinitionId: "regional-dungeon";
+  seed: CampaignSeed;
+  level: number;
+  grid: {
+    columns: number;
+    rows: number;
+  };
+  rooms: DungeonRoom[];
+  tiles: string[];
+  start: CellPosition;
+  heart: CellPosition;
+  discovered: string[];
+  heartReached: boolean;
+  legacyPrototypeMetadata?: LegacyPrototypeMetadata;
+}
+
+export interface CampaignFoundationV5 {
+  rootFactionId: "castle";
+  hero: CampaignHeroStateV5;
+  capital: CampaignCapitalStateV5;
+  world: CampaignWorldStateV5;
+  regionalDungeons: Record<
+    "location:regional-dungeon",
+    RegionalDungeonStateV5
+  >;
+}
+
+/**
+ * Accepted EPIC 03 target payload. E03-T05 owns this schema and its pure
+ * migration; E03-T06 owns switching new-game Setup/application transitions to
+ * this shape.
+ */
+export interface CampaignStateV5 {
+  version: 5;
+  id: CampaignId;
+  playerId: PlayerId;
+  campaignSeed: CampaignSeed;
+  createdAt: string;
+  updatedAt: string;
+  activeBoardId: CampaignResumeBoardIdV5;
+  foundation: CampaignFoundationV5 | null;
+}
 
 export const EMPTY_ATTRIBUTES: HeroAttributes = {
   str: 0,

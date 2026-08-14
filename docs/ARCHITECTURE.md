@@ -102,6 +102,16 @@ The generator returns one Tier-1 Village capital reference, one home region plus
 
 The module imports no React, board, provider, storage, clock, identity entropy, browser, crypto, or hosting API. It does not accept or mutate a Dungeon snapshot and does not call `createDungeonLevel`; fixed tests protect the legacy Dungeon bytes and structure. The persistable result types are not part of `CampaignState` version 4. E03-T05 alone owns adding the authoritative snapshot to version 5 and migration/load behavior.
 
+### E03-T05 Candidate target-state and migration boundary
+
+`src/game/campaignState.ts` now contains an explicit `CampaignStateV5` target contract beside the current application-facing version-4 compatibility type. It contains only the accepted Castle foundation, Hero compatibility/build facts, capital Village, authoritative seven-region World snapshot, regional Dungeon snapshot/context, and lifecycle/resume metadata. Reusable definitions remain in the content catalogs, generated placement remains owned by the E03-T04 generator, and no economy or future gameplay slice is present.
+
+`src/game/campaignMigration.ts` is the pure strict decode/migration boundary. It accepts untrusted campaign data plus the expected registry-owner reference; returns a typed success, validation failure, unsupported-version failure, incompatible-faction result, or deterministic-generation failure; and never reads or writes persistence. Supported v2/v3 sources pass through the exported protected v4 normalizer in `createGame.ts` before class-specific v5 conversion. Target v5 input is validated and cloned without generator calls, making ordinary target normalization idempotent.
+
+World generation occurs only while converting an eligible completed Castle source. The resulting snapshot becomes stored authority. The legacy Dungeon is structurally copied under its deterministic regional location without calling `createDungeonLevel`; its cell position remains exploration context rather than becoming strategic coordinates. Dungeon-faction input produces no Castle state. Source mutation and platform dependencies are prohibited and tested.
+
+The application-facing `CampaignState`/`GameSave` alias, provider, navigation, and Setup transition remain version 4 in this Candidate because E03-T06 owns the atomic new-campaign/application cutover. This task supplies the complete target and migration boundary without creating a temporarily unplayable or half-created campaign. E03-T07 remains responsible for player-facing migrated-state presentation.
+
 ### E02-T07 developer inspector boundary
 
 E02-T07 adds one view-layer `DeveloperStateInspector` behind `import.meta.env.DEV` in the existing Settings sheet. Settings is already reachable from Hero Setup and every in-campaign `GameShell`, so no debug board, navigation entry, provider operation, or second overlay architecture is introduced. Production Settings does not render the entry.

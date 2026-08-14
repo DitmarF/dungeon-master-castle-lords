@@ -143,7 +143,23 @@ The pure `generateStartingWorld` boundary now implements the explicitly accepted
 - the result contains the Tier-1 Village capital reference, seven controlled neutral-terrain regions, Food/Wood/Stone sites, the regional Dungeon, and the inert ruin; the one unattached neighbor is derived as terrain-only;
 - validation checks metadata, exact topology/order, coordinate and ID uniqueness, control, catalog references, distinct placements, and the one terrain-only remainder.
 
-The returned snapshot is a pure generated value, not current campaign truth. E03-T05 owns version-5 persistence/migration and must store the generated result as authoritative rather than regenerating it during ordinary load. `createDungeonLevel`, existing stored Dungeon snapshots, and the current version-4 schema are unchanged.
+The returned snapshot is a pure generated value, not current version-4 campaign truth. E03-T05 owns the version-5 target and pure migration result, which stores the generated result as authoritative rather than regenerating it during target normalization. `createDungeonLevel` and existing stored Dungeon snapshots remain unchanged.
+
+### E03-T05 Candidate version-5 state and migration boundary
+
+`CampaignStateV5` now defines the accepted minimum target payload independently from the current application-facing version-4 alias:
+
+- identity, campaign seed, immutable creation/best-available modification timestamps, and a bounded Setup/Hero/Settlement/World/Dungeon resume destination remain top-level;
+- `foundation: null` is the only pre-Setup form and cannot contain a Hero, draft, Village, World, or retained exploration context;
+- a completed foundation owns the sole `castle` root-faction fact, one Hero, one Tier-1 capital Village, the authoritative E03-T04 World snapshot, and one regional Dungeon keyed by `location:regional-dungeon`;
+- the target Hero stores valid Class/Vocation/allocation/bonus-skill/positive-rank facts plus the `v4-path-bonus-1` compatibility snapshot; it has no faction field;
+- `strategicRegionId` is a World-region reference, while `explorationContext.locationId/cell` retains Dungeon placement without reusing it as a hex coordinate;
+- the World stores generator version, effective seed, seven controlled regions, three sites, and two locations; the capital is stored once beside it rather than duplicated inside the World state;
+- the regional Dungeon retains level, seed, grid, rooms, tiles, start, Heart, discovery, and Heart history; old day, treasury, and claim survive only in optional `legacyPrototypeMetadata`.
+
+The pure `migrateCampaignToV5` chain strictly validates its source, verifies the registry-owner relationship supplied by the caller, normalizes v2/v3/v4 through the protected v4 compatibility meaning, and then applies the accepted source-class policy. Completed Castle sources generate the opening once and attach the exact retained Dungeon snapshot. Incomplete sources preserve identity/seed/lifecycle with a null foundation. Dungeon-faction sources return a typed recoverable incompatibility and no Castle target.
+
+An already-version-5 payload follows strict target validation and cloning only: it does not call World or Dungeon generation, repair fields, duplicate instances, or change IDs. The migration module imports no React, storage, clock, entropy, browser, or hosting API and performs no write. The current application `CampaignState`/`GameSave`, provider, registry decoder, and playable Setup remain version 4 until E03-T06 can consume the target atomically; this avoids a half-integrated save whose Setup cannot complete. Registry version 2 remains inactive.
 
 ## Current non-campaign runtime state
 
