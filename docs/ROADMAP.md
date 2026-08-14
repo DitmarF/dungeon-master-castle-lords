@@ -1,6 +1,6 @@
 # Dungeon Master & Castle Lords — Roadmap
 
-Status: Active Game Concept 2.0 roadmap; EPIC 03 Current
+Status: Active Game Concept 2.0 roadmap; EPIC 03 Current; E03-T08 Changes requested
 Last updated: 2026-08-14
 
 ## Purpose and authority
@@ -36,7 +36,7 @@ The acceptance establishes planning and transition authority only. E03-T01 chang
 
 ### EPIC 03 — Game Concept 2.0 transition and campaign persistence
 
-Status: **Current**
+Status: **Current — exit changes requested**
 
 Purpose: safely replace the version-4 Dungeon-first prototype foundation with the minimum Castle-only, Village-first campaign state while establishing deliberate local lifecycle, validation, migration, recovery, and board-entry behavior.
 
@@ -46,7 +46,7 @@ EPIC 03 does not add an empty final-game schema. It adds only state and content 
 
 ### E03-T08 — Compatibility and EPIC 03 exit gate
 
-Status: **Current — exactly one**
+Status: **Current — Changes requested — exactly one**
 
 Goal: perform the final compatibility, persistence, determinism, integration, documentation, and manual-acceptance audit for EPIC 03 without adding gameplay.
 
@@ -59,6 +59,8 @@ E03-T08 must:
 - present an EPIC 03 Exit Candidate and wait for explicit owner acceptance before closure checkpoint work.
 
 E03-T08 must not add economy/yields, Roads, projects, units, Combat, Gambits, faction evolution, new Dungeon content, database/hosting infrastructure, begin EPIC 04, or deploy.
+
+The first Exit Candidate review requested hardening for nested malformed target data, decode-validated writes, campaign-level fault isolation/recovery, strict Hero compatibility validation, and one-step explicit fresh-Castle recovery. Those bounded corrections and regression evidence remain E03-T08 work. EPIC 04 stays Planned until the revised Exit Candidate passes owner QA, is explicitly accepted, and completes the checkpoint workflow.
 
 ## Epic registry
 

@@ -12,7 +12,6 @@ import {
   decodeRegistryV2,
   hydratePreferredRegistryV2,
   persistRegistryV2,
-  replaceIncompatibleLegacyRegistry,
 } from "../../src/game/registryCutover.ts";
 import { completeVillageFirstHeroSetup } from "../../src/game/villageOpening.ts";
 import {
@@ -109,34 +108,131 @@ test("an existing valid v2 registry is preferred without consulting v1", () => {
   assert.equal(primary.writes, 0);
 });
 
-test("incompatible Dungeon campaigns do not create or replace a v2 payload", () => {
+test("incompatible Dungeon campaigns are isolated without creating a v2 payload", () => {
   const legacyRaw = JSON.stringify(legacyRegistry(completedV4DungeonFixture()));
   const legacy = new MemoryRegistryStorage(legacyRaw);
   const primary = new MemoryRegistryStorage();
   const result = hydratePreferredRegistryV2(primary, legacy, EMPTY_V2);
 
-  assert.equal(result.ok, false);
-  if (!result.ok) {
-    assert.equal(result.failure.code, "incompatible-legacy-campaign");
-  }
+  assert.equal(result.ok, true);
+  if (!result.ok) return;
+  assert.equal(result.status, "loaded-with-campaign-errors");
+  assert.deepEqual(result.registry.games, {});
+  assert.deepEqual(result.campaignIssues, [
+    {
+      playerId: FIXTURE_PLAYER_ID,
+      failure: {
+        code: "incompatible-legacy-campaign",
+        message:
+          "A Dungeon-faction campaign cannot be converted into a Castle campaign. The original save was kept.",
+      },
+    },
+  ]);
   assert.equal(primary.value, null);
   assert.equal(primary.writes, 0);
   assert.equal(legacy.value, legacyRaw);
   assert.equal(legacy.writes, 0);
 });
 
-test("confirmed incompatible replacement verifies v2 while retaining legacy bytes", () => {
+test("an explicit fresh Castle replacement verifies v2 while retaining legacy bytes", () => {
   const legacyRaw = JSON.stringify(legacyRegistry(completedV4DungeonFixture()));
   const legacy = new MemoryRegistryStorage(legacyRaw);
   const primary = new MemoryRegistryStorage();
-  const result = replaceIncompatibleLegacyRegistry(primary, legacy);
+  const hydrated = hydratePreferredRegistryV2(primary, legacy, EMPTY_V2);
+  assert.equal(hydrated.ok, true);
+  if (!hydrated.ok) return;
+  const freshCampaign = {
+    version: 5,
+    id: "game-fresh-castle-replacement",
+    playerId: FIXTURE_PLAYER_ID,
+    campaignSeed: 17,
+    createdAt: "2026-08-14T12:00:00.000Z",
+    updatedAt: "2026-08-14T12:00:00.000Z",
+    activeBoardId: "setup",
+    foundation: null,
+  } as const;
+  const registry: GameRegistryV2 = {
+    ...hydrated.registry,
+    games: { [FIXTURE_PLAYER_ID]: freshCampaign },
+  };
+  const result = persistRegistryV2(primary, registry);
+
+  assert.deepEqual(result, { ok: true });
+  assert.equal(primary.value, JSON.stringify(registry));
+  assert.equal(decodeRegistryV2(primary.value ?? "").ok, true);
+  assert.equal(legacy.value, legacyRaw);
+  assert.equal(legacy.writes, 0);
+});
+
+test("a malformed campaign is isolated while unaffected profiles remain loadable", () => {
+  const validPlayer = profile();
+  const invalidPlayer: PlayerProfile = {
+    ...profile(),
+    id: "player-invalid-campaign",
+    name: "Broken Lord",
+  };
+  const validCampaign = completedVillageCampaign();
+  const malformedCampaign = structuredClone(validCampaign) as unknown as {
+    playerId: string;
+    foundation: { world: { locations: unknown[] } };
+  };
+  malformedCampaign.playerId = invalidPlayer.id;
+  malformedCampaign.foundation.world.locations[0] = null;
+  const raw = JSON.stringify({
+    version: 2,
+    players: [validPlayer, invalidPlayer],
+    games: {
+      [validPlayer.id]: validCampaign,
+      [invalidPlayer.id]: malformedCampaign,
+    },
+    lastActivePlayerId: validPlayer.id,
+  });
+  const primary = new MemoryRegistryStorage(raw);
+  const result = hydratePreferredRegistryV2(
+    primary,
+    new MemoryRegistryStorage(),
+    EMPTY_V2,
+  );
 
   assert.equal(result.ok, true);
   if (!result.ok) return;
-  assert.deepEqual(result.registry.players, [profile()]);
-  assert.deepEqual(result.registry.games, {});
-  assert.equal(result.registry.lastActivePlayerId, FIXTURE_PLAYER_ID);
-  assert.equal(primary.value, JSON.stringify(result.registry));
+  assert.equal(result.status, "loaded-with-campaign-errors");
+  assert.deepEqual(Object.keys(result.registry.games), [validPlayer.id]);
+  assert.deepEqual(result.registry.games[validPlayer.id], validCampaign);
+  assert.deepEqual(result.campaignIssues.map((issue) => issue.playerId), [
+    invalidPlayer.id,
+  ]);
+  assert.equal(result.campaignIssues[0].failure.code, "campaign-validation-failed");
+  assert.equal(primary.value, raw);
+  assert.equal(primary.writes, 0);
+});
+
+test("verified persistence rejects a registry that cannot be decoded", () => {
+  const invalidRegistry = {
+    version: 2,
+    players: [],
+    games: { "player-orphan": {} },
+    lastActivePlayerId: null,
+  } as unknown as GameRegistryV2;
+  const primary = new MemoryRegistryStorage();
+  const result = persistRegistryV2(primary, invalidRegistry);
+
+  assert.equal(result.ok, false);
+  if (!result.ok) {
+    assert.equal(result.failure.code, "registry-validation-failed");
+  }
+  assert.equal(primary.value, null);
+  assert.equal(primary.writes, 0);
+});
+
+test("explicit unreadable-registry reset verifies an empty v2 replacement", () => {
+  const primary = new MemoryRegistryStorage("{malformed-v2");
+  const legacyRaw = JSON.stringify(legacyRegistry(completedV4CastleFixture()));
+  const legacy = new MemoryRegistryStorage(legacyRaw);
+  const result = persistRegistryV2(primary, EMPTY_V2);
+
+  assert.deepEqual(result, { ok: true });
+  assert.equal(primary.value, JSON.stringify(EMPTY_V2));
   assert.equal(decodeRegistryV2(primary.value ?? "").ok, true);
   assert.equal(legacy.value, legacyRaw);
   assert.equal(legacy.writes, 0);

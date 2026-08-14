@@ -324,6 +324,63 @@ test("malformed target campaigns fail validation without regeneration or repair"
         issue.message.includes("competing fields"),
     ),
   );
+
+  const malformedLocation = requireSuccess(
+    completedV4CastleFixture(),
+  ) as unknown as {
+    foundation: { world: { locations: unknown[] } };
+  };
+  malformedLocation.foundation.world.locations[0] = null;
+  assert.doesNotThrow(() => validateCampaignStateV5(malformedLocation));
+  assert.ok(
+    validateCampaignStateV5(malformedLocation).some(
+      (issue) =>
+        issue.path === "foundation.world" &&
+        issue.message.includes("exact approved"),
+    ),
+  );
+});
+
+test("target validation rejects contradictory Hero facts and future state", () => {
+  const target = requireSuccess(completedV4CastleFixture()) as unknown as {
+    foundation: {
+      hero: {
+        bonusSkillId: string;
+        skillRanks: Record<string, number>;
+        attributesCompatibility: { values: { str: number } };
+      };
+      world: { sites: Array<Record<string, unknown>> };
+    };
+  };
+  target.foundation.hero.bonusSkillId = "mage-combat";
+  target.foundation.hero.skillRanks = {};
+  target.foundation.hero.attributesCompatibility.values.str = 999;
+  target.foundation.world.sites[0].yield = 999;
+
+  const issues = validateCampaignStateV5(target);
+  assert.ok(
+    issues.some(
+      (issue) =>
+        issue.path === "foundation.hero.bonusSkillId" &&
+        issue.message.includes("does not belong"),
+    ),
+  );
+  assert.ok(
+    issues.some((issue) => issue.path.includes("foundation.hero.skillRanks")),
+  );
+  assert.ok(
+    issues.some(
+      (issue) =>
+        issue.path === "foundation.hero.attributesCompatibility.values",
+    ),
+  );
+  assert.ok(
+    issues.some(
+      (issue) =>
+        issue.path === "foundation.world" &&
+        issue.message.includes("exact approved"),
+    ),
+  );
 });
 
 test("resume mapping preserves legal target boards and repairs unsupported scaffolds", () => {

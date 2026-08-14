@@ -17,12 +17,12 @@ export function GameApp() {
     hydrationFailure,
     persistenceIssue,
     navigateToBoard,
-    replaceIncompatibleLegacy,
+    resetUnreadableRegistry,
     retryPersistence,
     returnToPlayers,
     view,
   } = useGame();
-  const [replacementOpen, setReplacementOpen] = useState(false);
+  const [resetOpen, setResetOpen] = useState(false);
   const boardResolution = activeGame?.foundation
     ? resolveActiveBoard(activeGame)
     : null;
@@ -35,14 +35,18 @@ export function GameApp() {
   }, [fallbackBoardId, navigateToBoard]);
 
   if (hydrationFailure) {
-    const incompatible =
-      hydrationFailure.code === "incompatible-legacy-campaign";
     const presentation = describeHydrationFailure(hydrationFailure);
+    const canReset = [
+      "parse-failed",
+      "registry-validation-failed",
+      "campaign-validation-failed",
+      "migration-failed",
+    ].includes(hydrationFailure.code);
     return (
       <main className="recovery-view">
         <section className="recovery-card" role="alert" aria-labelledby="recovery-title">
           <span className="recovery-card__mark">
-            <GameIcon name={incompatible ? "grid" : "save"} size={30} />
+            <GameIcon name="save" size={30} />
           </span>
           <span className="section-kicker">{presentation.kicker}</span>
           <h1 id="recovery-title">{presentation.title}</h1>
@@ -56,36 +60,35 @@ export function GameApp() {
             >
               Retry opening saves
             </button>
-            {incompatible ? (
+            {canReset ? (
               <button
                 type="button"
-                className="button button--primary"
-                onClick={() => setReplacementOpen(true)}
+                className="button button--danger"
+                onClick={() => setResetOpen(true)}
               >
-                Start a Castle campaign
+                Reset unreadable saves
               </button>
             ) : null}
           </div>
         </section>
 
-        {replacementOpen ? (
+        {resetOpen ? (
           <ModalOverlay
             panelClassName="confirm-dialog"
-            labelledBy="legacy-replacement-title"
-            onClose={() => setReplacementOpen(false)}
+            labelledBy="registry-reset-title"
+            onClose={() => setResetOpen(false)}
           >
-            <span className="dialog-icon">
-              <GameIcon name="castle" size={23} />
+            <span className="dialog-icon dialog-icon--danger">
+              <GameIcon name="trash" size={23} />
             </span>
-            <h2 id="legacy-replacement-title">Use the Castle-only campaign path?</h2>
+            <h2 id="registry-reset-title">Reset unreadable local saves?</h2>
             <p>
-              Incompatible Dungeon campaigns will be removed from the preferred
-              registry after a verified write. Player profiles and compatible
-              campaigns stay available, and the original legacy payload remains
-              untouched as recovery evidence.
+              This explicit recovery replaces the unreadable preferred registry
+              only after a verified write. Any original version-1 legacy payload
+              remains untouched, but an unreadable version-2 registry will be
+              replaced.
             </p>
-            {persistenceIssue &&
-            persistenceIssue.code !== "incompatible-legacy-campaign" ? (
+            {persistenceIssue ? (
               <p className="dialog-error" role="alert">
                 {persistenceIssue.message}
               </p>
@@ -94,19 +97,19 @@ export function GameApp() {
               <button
                 type="button"
                 className="button button--ghost"
-                onClick={() => setReplacementOpen(false)}
+                onClick={() => setResetOpen(false)}
               >
-                Keep legacy campaign
+                Keep stored data
               </button>
               <button
                 type="button"
-                className="button button--primary"
+                className="button button--danger"
                 onClick={() => {
-                  const result = replaceIncompatibleLegacy();
-                  if (result.ok) setReplacementOpen(false);
+                  const result = resetUnreadableRegistry();
+                  if (result.ok) setResetOpen(false);
                 }}
               >
-                Confirm fresh start
+                Confirm reset
               </button>
             </div>
           </ModalOverlay>

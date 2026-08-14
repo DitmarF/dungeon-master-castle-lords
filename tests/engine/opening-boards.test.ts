@@ -126,8 +126,14 @@ test("recovery and confirmations use typed outcomes and the shared focus-managed
   ]) {
     assert.match(app, new RegExp(code));
   }
-  assert.match(app, /replaceIncompatibleLegacy/);
-  assert.match(app, /original legacy payload remains/i);
+  assert.match(app, /resetUnreadableRegistry/);
+  assert.match(app, /version-1 legacy payload/);
   assert.match(start, /<ModalOverlay/);
-  assert.match(provider, /replaceIncompatibleLegacyRegistry/);
+  assert.match(start, /Start fresh Castle campaign/);
+  assert.match(start, /ordinary writes are paused to protect the source/);
+  assert.match(provider, /recoverCampaignIssues/);
+  assert.match(provider, /campaignIssues\.length > 0/);
+  assert.match(provider, /createNewGameV5\(/);
+  assert.match(provider, /type: "openGame"/);
+  assert.match(provider, /setCampaignIssues\(\[\]\)/);
 });

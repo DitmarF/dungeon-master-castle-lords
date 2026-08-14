@@ -841,6 +841,10 @@ button.game-slot {
   margin-top: var(--space-md);
 }
 
+.campaign-actions--single {
+  grid-template-columns: minmax(0, 1fr);
+}
+
 .storage-note {
   display: flex;
   align-items: center;

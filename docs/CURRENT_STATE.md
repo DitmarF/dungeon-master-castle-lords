@@ -91,12 +91,13 @@ Profiles and the registry remain outside campaign truth. Hydration state, select
 
 - Hydration distinguishes absence, unavailable/read failure, parse failure, registry validation, campaign validation, migration failure, and incompatible legacy campaign.
 - Failed hydration/migration performs no automatic write and cannot become a legitimate empty registry.
-- Candidate writes serialize, write, read back exactly, and report success only after verification; verification failure attempts rollback.
+- Campaign-level validation, migration, and incompatibility failures are isolated by profile; unaffected profiles/campaigns remain loadable, while ordinary writes pause so the filtered working registry cannot overwrite the source.
+- Candidate writes validate before serialization, write, read back exactly, decode and validate the readback, and report success only after the complete verification; failure attempts rollback.
 - Serialization, ordinary write, quota-like, and verification failures have typed bounded player messages rather than raw exceptions.
 - Later non-destructive autosave failure keeps the in-memory campaign marked unsaved and retryable.
 - Manual Save performs the immediate verified write and changes no campaign/profile timestamp.
 - Campaign `createdAt` is immutable; `updatedAt` changes only with campaign truth or stored resume context; profile `lastPlayedAt` changes only on successful New/Continue activation.
-- Each profile has at most one campaign. Replacement and profile deletion are confirmed, verified transactions; failure retains the previous in-memory and durable registry. No campaign-only delete or extra save slot exists.
+- Each profile has at most one campaign. Replacement and profile deletion are confirmed, verified transactions; failure retains the previous in-memory and durable registry. Explicit issue recovery creates a fresh pre-Setup Castle campaign for each affected profile in one verified transaction; hard unreadable-container reset is also explicit. No campaign-only delete or extra save slot exists.
 
 ## Migration and compatibility evidence
 
@@ -106,14 +107,14 @@ Profiles and the registry remain outside campaign truth. Hydration state, select
 | Supported v3 | Protected v3→v4 normalization, then the same deterministic v5 class policy. |
 | v4 before Setup | Preserve campaign/profile IDs, seed, and lifecycle; `foundation: null`; blank disposable Castle Setup. |
 | Completed v4 Castle | Preserve approved Hero/build/ID/seed/timestamps and exact Dungeon structure/progress; add the deterministic Village/home ring. |
-| Completed v4 Dungeon | Typed recoverable incompatibility; no Castle target; source retained until explicit verified replacement. |
-| Malformed registry | Typed registry failure; no preferred write or empty fallback. |
-| Malformed campaign/target | Typed campaign/migration failure; no repair, regeneration, or source mutation. |
+| Completed v4 Dungeon | Isolated typed incompatibility; no Castle conversion; explicit confirmed recovery creates a fresh Castle Setup campaign only after a verified preferred write, while the version-1 source remains untouched. |
+| Malformed registry | Typed hard registry failure; no automatic preferred write or empty fallback; explicit reset requires confirmation and verified persistence. |
+| Malformed campaign/target | Typed isolated campaign failure with no throw, repair, regeneration, or source mutation; unaffected campaigns remain loadable and ordinary writes pause until explicit recovery. |
 | Current v5 | Strict validation and clone/round trip; stored World/Dungeon snapshots and IDs remain authoritative. |
 | Retained Dungeon snapshot | Attached to `location:regional-dungeon` without regeneration; exploration cell remains square-grid context. |
 | Old day/treasury/claim | Optional `legacyPrototypeMetadata` only; no strategic Day, Gold, capital, or control effect. |
 
-The focused fixtures assert deterministic repeated conversion, target idempotence, byte-equivalent serialization round trip, stable IDs/references, unchanged source bytes, unchanged retained Dungeon structure, and no World reroll after a target snapshot exists.
+The focused fixtures assert deterministic repeated conversion, target idempotence, byte-equivalent serialization round trip, stable IDs/references, unchanged source bytes, unchanged retained Dungeon structure, no World reroll after a target snapshot exists, safe nested malformed-data handling, strict Hero compatibility facts, campaign isolation, decode-validated writes, and explicit verified recovery/reset.
 
 ## Opening and board behavior
 
@@ -149,11 +150,11 @@ The presence of content identities, locked board modules, or explanatory placeho
 - `GameProvider` still coordinates several application concerns and active/registry mirroring; no broader state-library/provider rewrite is justified by EPIC 03.
 - Hero attribute totals remain the explicitly temporary `v4-path-bonus-1` compatibility snapshot through EPIC 05; EPIC 06 must migrate or retire it.
 - The seven-region World and Tier-1 Village are inspection/opening context only until EPIC 04 defines and implements economy/World mechanics.
-- Browser corruption/quota injection is not exposed as a player/developer toggle; those paths are verified through pure adapters and require optional manual browser setup for visual inspection.
+- Browser corruption/quota injection is not exposed as a player/developer toggle; those paths are verified through pure adapters and require prepared fixtures or a controlled browser environment for visual inspection.
 - Physical smartphone touch, safe-area, theme, reduced-motion, focus, and error-dialog acceptance remains an explicit owner action for the EPIC 03 exit Candidate.
 
 ## Verification status
 
-The E03-T08 exit record contains the exact final command results, fixture-to-criterion matrix, rendered checks, and owner manual QA checklist. The project owner reported E03-T07 accepted and its GitHub `Verify` run PASS; exact commit `84130b72e91acfee7923aab8b9db6b98f48989c9` is also saved as non-deployed Sites version 28. EPIC 03 is not Complete until the owner accepts the E03-T08 Exit Candidate and the matching workflow checkpoint is committed, pushed, independently verified, and saved as a non-deployed Sites version.
+The E03-T08 exit record contains the exact final command results, fixture-to-criterion matrix, rendered checks, and owner manual QA checklist. Review of the first Candidate requested persistence/migration hardening; E03-T08 remains active as Changes requested while the revised Candidate is reviewed. The project owner reported E03-T07 accepted and its GitHub `Verify` run PASS; exact commit `84130b72e91acfee7923aab8b9db6b98f48989c9` is also saved as non-deployed Sites version 28. EPIC 03 is not Complete until the owner accepts the revised E03-T08 Exit Candidate and the matching workflow checkpoint is committed, pushed, independently verified, and saved as a non-deployed Sites version.
 
 Deployment was not performed or authorized.

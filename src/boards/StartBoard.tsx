@@ -25,6 +25,7 @@ export function StartBoard() {
     campaignPlayerIds,
     selectedPlayer,
     selectedGame,
+    campaignIssues,
     createPlayer,
     selectPlayer,
     deletePlayer,
@@ -32,6 +33,7 @@ export function StartBoard() {
     loadGame,
     persistenceIssue,
     retryPersistence,
+    recoverCampaignIssues,
   } = useGame();
   const [isCreating, setIsCreating] = useState(players.length === 0);
   const [name, setName] = useState("");
@@ -39,6 +41,12 @@ export function StartBoard() {
   const [formError, setFormError] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<PlayerProfile | null>(null);
   const [replaceTarget, setReplaceTarget] = useState<PlayerProfile | null>(null);
+  const [recoveryTarget, setRecoveryTarget] = useState<PlayerProfile | null>(
+    null,
+  );
+  const selectedCampaignIssue = campaignIssues.find(
+    (issue) => issue.playerId === selectedPlayer?.id,
+  );
 
   function handleCreate(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -99,6 +107,22 @@ export function StartBoard() {
         </section>
 
         <div className="start-sheets">
+          {campaignIssues.length > 0 ? (
+            <div className="persistence-alert" role="alert">
+              <span>
+                {campaignIssues.length === 1
+                  ? "One saved campaign needs explicit recovery. Valid profiles remain available, but ordinary writes are paused to protect the source."
+                  : `${campaignIssues.length} saved campaigns need explicit recovery. Valid profiles remain available, but ordinary writes are paused to protect the source.`}
+              </span>
+              <button
+                type="button"
+                className="button button--ghost"
+                onClick={retryPersistence}
+              >
+                Retry
+              </button>
+            </div>
+          ) : null}
           {persistenceIssue ? (
             <div className="persistence-alert" role="alert">
               <span>{persistenceIssue.message}</span>
@@ -192,6 +216,9 @@ export function StartBoard() {
                   {players.map((player) => {
                     const selected = player.id === selectedPlayer?.id;
                     const hasSave = campaignPlayerIds.includes(player.id);
+                    const campaignIssue = campaignIssues.find(
+                      (issue) => issue.playerId === player.id,
+                    );
                     return (
                       <button
                         type="button"
@@ -208,7 +235,14 @@ export function StartBoard() {
                           <small>{formatLastPlayed(player)}</small>
                         </span>
                         <span className="player-card__state">
-                          {hasSave ? "Campaign" : "No campaign"}
+                          {campaignIssue
+                            ? campaignIssue.failure.code ===
+                              "incompatible-legacy-campaign"
+                              ? "Legacy incompatible"
+                              : "Campaign problem"
+                            : hasSave
+                              ? "Campaign"
+                              : "No campaign"}
                         </span>
                       </button>
                     );
@@ -238,6 +272,11 @@ export function StartBoard() {
                       ? selectedGame.foundation
                         ? `Castle · Tier ${selectedGame.foundation.capital.tier} Village`
                         : "Hero setup in progress"
+                      : selectedCampaignIssue
+                        ? selectedCampaignIssue.failure.code ===
+                          "incompatible-legacy-campaign"
+                          ? "Dungeon campaign · explicit fresh start required"
+                          : "Unreadable campaign · explicit recovery required"
                       : "Ready for a new campaign"}
                   </p>
                 </span>
@@ -252,24 +291,36 @@ export function StartBoard() {
                 </button>
               </header>
 
-              <div className="campaign-actions">
-                <button
-                  type="button"
-                  className="button button--secondary"
-                  onClick={handleNewGame}
-                >
-                  <GameIcon name="plus" size={18} /> New campaign
-                </button>
-                <button
-                  type="button"
-                  className="button button--primary"
-                  onClick={() => loadGame(selectedPlayer.id)}
-                  disabled={!selectedGame}
-                >
-                  {selectedGame ? "Continue campaign" : "No campaign yet"}
-                  {selectedGame ? <GameIcon name="arrow" size={18} /> : null}
-                </button>
-              </div>
+              {selectedCampaignIssue ? (
+                <div className="campaign-actions campaign-actions--single">
+                  <button
+                    type="button"
+                    className="button button--primary"
+                    onClick={() => setRecoveryTarget(selectedPlayer)}
+                  >
+                    <GameIcon name="castle" size={18} /> Start fresh Castle campaign
+                  </button>
+                </div>
+              ) : (
+                <div className="campaign-actions">
+                  <button
+                    type="button"
+                    className="button button--secondary"
+                    onClick={handleNewGame}
+                  >
+                    <GameIcon name="plus" size={18} /> New campaign
+                  </button>
+                  <button
+                    type="button"
+                    className="button button--primary"
+                    onClick={() => loadGame(selectedPlayer.id)}
+                    disabled={!selectedGame}
+                  >
+                    {selectedGame ? "Continue campaign" : "No campaign yet"}
+                    {selectedGame ? <GameIcon name="arrow" size={18} /> : null}
+                  </button>
+                </div>
+              )}
             </section>
           ) : null}
 
@@ -359,6 +410,52 @@ export function StartBoard() {
                 Start new game
               </button>
             </div>
+        </ModalOverlay>
+      ) : null}
+
+      {recoveryTarget ? (
+        <ModalOverlay
+          panelClassName="confirm-dialog"
+          labelledBy="campaign-recovery-title"
+          onClose={() => setRecoveryTarget(null)}
+        >
+          <span className="dialog-icon dialog-icon--danger">
+            <GameIcon name="castle" size={23} />
+          </span>
+          <h2 id="campaign-recovery-title">Start fresh Castle campaign?</h2>
+          <p>
+            {campaignIssues.length === 1
+              ? `${recoveryTarget.name}'s incompatible or unreadable campaign will be replaced with a new Castle Setup campaign only after a verified write.`
+              : `All ${campaignIssues.length} incompatible or unreadable campaign entries will be replaced with fresh Castle Setup campaigns after one verified write. Compatible campaigns remain unchanged.`}
+          </p>
+          <p>
+            Any original version-1 legacy payload remains untouched as recovery
+            evidence. This action does not convert Dungeon history into Castle.
+          </p>
+          {persistenceIssue ? (
+            <p className="dialog-error" role="alert">
+              {persistenceIssue.message}
+            </p>
+          ) : null}
+          <div className="dialog-actions">
+            <button
+              type="button"
+              className="button button--ghost"
+              onClick={() => setRecoveryTarget(null)}
+            >
+              Keep stored campaign
+            </button>
+            <button
+              type="button"
+              className="button button--danger"
+              onClick={() => {
+                const result = recoverCampaignIssues(recoveryTarget.id);
+                if (result.ok) setRecoveryTarget(null);
+              }}
+            >
+              Confirm fresh start
+            </button>
+          </div>
         </ModalOverlay>
       ) : null}
     </main>

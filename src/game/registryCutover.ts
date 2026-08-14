@@ -12,10 +12,21 @@ import {
 export type RegistryV2HydrationResult =
   | {
       ok: true;
-      status: "empty" | "loaded" | "legacy-cutover";
+      status:
+        | "empty"
+        | "loaded"
+        | "loaded-with-campaign-errors"
+        | "legacy-cutover";
       registry: GameRegistryV2;
+      campaignIssues: readonly RegistryCampaignIssue[];
+      source: "empty" | "primary" | "legacy";
     }
   | { ok: false; failure: PersistenceFailure };
+
+export interface RegistryCampaignIssue {
+  playerId: string;
+  failure: PersistenceFailure;
+}
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return Boolean(value) && typeof value === "object" && !Array.isArray(value);
@@ -25,9 +36,24 @@ function isTimestamp(value: unknown): value is string {
   return typeof value === "string" && Number.isFinite(Date.parse(value));
 }
 
+function hasOnlyKeys(
+  value: Record<string, unknown>,
+  allowed: readonly string[],
+): boolean {
+  const allowedKeys = new Set(allowed);
+  return Object.keys(value).every((key) => allowedKeys.has(key));
+}
+
 function isPlayerProfile(value: unknown): value is PlayerProfile {
   return (
     isRecord(value) &&
+    hasOnlyKeys(value, [
+      "id",
+      "name",
+      "bannerColor",
+      "createdAt",
+      "lastPlayedAt",
+    ]) &&
     typeof value.id === "string" &&
     value.id.length > 0 &&
     typeof value.name === "string" &&
@@ -48,6 +74,12 @@ function validateContainer(
 } {
   if (
     !isRecord(value) ||
+    !hasOnlyKeys(value, [
+      "version",
+      "players",
+      "games",
+      "lastActivePlayerId",
+    ]) ||
     value.version !== version ||
     !Array.isArray(value.players) ||
     !value.players.every(isPlayerProfile) ||
@@ -90,23 +122,35 @@ export function decodeRegistryV2(raw: string): RegistryV2HydrationResult {
     };
   }
 
+  const games: GameRegistryV2["games"] = {};
+  const campaignIssues: RegistryCampaignIssue[] = [];
   for (const [playerId, campaign] of Object.entries(parsed.value.games)) {
     if (
       validateCampaignStateV5(campaign).length > 0 ||
       !isRecord(campaign) ||
       campaign.playerId !== playerId
     ) {
-      return {
-        ok: false,
+      campaignIssues.push({
+        playerId,
         failure: createPersistenceFailure("campaign-validation-failed"),
-      };
+      });
+      continue;
     }
+    games[playerId] = structuredClone(campaign) as GameRegistryV2["games"][string];
   }
 
   return {
     ok: true,
-    status: "loaded",
-    registry: structuredClone(parsed.value) as GameRegistryV2,
+    status:
+      campaignIssues.length > 0 ? "loaded-with-campaign-errors" : "loaded",
+    registry: {
+      version: 2,
+      players: structuredClone(parsed.value.players),
+      games,
+      lastActivePlayerId: parsed.value.lastActivePlayerId,
+    } as GameRegistryV2,
+    campaignIssues,
+    source: "primary",
   };
 }
 
@@ -123,117 +167,40 @@ export function decodeLegacyRegistryForV2(
   }
 
   const games: GameRegistryV2["games"] = {};
+  const campaignIssues: RegistryCampaignIssue[] = [];
   for (const [playerId, source] of Object.entries(parsed.value.games)) {
     const migrated = migrateCampaignToV5(source, playerId);
     if (!migrated.ok) {
-      return {
-        ok: false,
+      campaignIssues.push({
+        playerId,
         failure: createPersistenceFailure(
           migrated.failure.code === "incompatible-faction"
             ? "incompatible-legacy-campaign"
-            : "migration-failed",
+            : migrated.failure.code === "invalid-campaign"
+              ? "campaign-validation-failed"
+              : "migration-failed",
         ),
-      };
+      });
+      continue;
     }
     games[playerId] = migrated.state;
   }
 
   return {
     ok: true,
-    status: "legacy-cutover",
+    status:
+      campaignIssues.length > 0
+        ? "loaded-with-campaign-errors"
+        : "legacy-cutover",
     registry: {
       version: 2,
       players: structuredClone(parsed.value.players),
       games,
       lastActivePlayerId: parsed.value.lastActivePlayerId,
     } as GameRegistryV2,
+    campaignIssues,
+    source: "legacy",
   };
-}
-
-export type IncompatibleLegacyReplacementResult =
-  | { ok: true; registry: GameRegistryV2 }
-  | { ok: false; failure: PersistenceFailure };
-
-/**
- * Explicit recovery for the accepted clean-break policy. Compatible campaigns
- * and every profile are retained; only campaigns proven to be Dungeon-faction
- * incompatible are omitted from the verified v2 candidate. The legacy adapter
- * is read-only here, so the original v1 bytes remain recovery material.
- */
-export function replaceIncompatibleLegacyRegistry(
-  primary: RegistryStorageAdapter,
-  legacy: RegistryStorageAdapter,
-): IncompatibleLegacyReplacementResult {
-  const primaryRead = primary.read();
-  if (!primaryRead.ok) {
-    return {
-      ok: false,
-      failure: createPersistenceFailure(primaryRead.code),
-    };
-  }
-  if (primaryRead.value !== null) {
-    return {
-      ok: false,
-      failure: createPersistenceFailure("registry-validation-failed"),
-    };
-  }
-
-  const legacyRead = legacy.read();
-  if (!legacyRead.ok) {
-    return {
-      ok: false,
-      failure: createPersistenceFailure(legacyRead.code),
-    };
-  }
-  if (legacyRead.value === null) {
-    return {
-      ok: false,
-      failure: createPersistenceFailure("migration-failed"),
-    };
-  }
-
-  const parsed = parse(legacyRead.value);
-  if (!parsed.ok) return parsed;
-  if (!validateContainer(parsed.value, 1)) {
-    return {
-      ok: false,
-      failure: createPersistenceFailure("registry-validation-failed"),
-    };
-  }
-
-  let foundIncompatibleCampaign = false;
-  const games: GameRegistryV2["games"] = {};
-  for (const [playerId, source] of Object.entries(parsed.value.games)) {
-    const migrated = migrateCampaignToV5(source, playerId);
-    if (migrated.ok) {
-      games[playerId] = migrated.state;
-      continue;
-    }
-    if (migrated.failure.code === "incompatible-faction") {
-      foundIncompatibleCampaign = true;
-      continue;
-    }
-    return {
-      ok: false,
-      failure: createPersistenceFailure("migration-failed"),
-    };
-  }
-
-  if (!foundIncompatibleCampaign) {
-    return {
-      ok: false,
-      failure: createPersistenceFailure("migration-failed"),
-    };
-  }
-
-  const registry: GameRegistryV2 = {
-    version: 2,
-    players: structuredClone(parsed.value.players),
-    games,
-    lastActivePlayerId: parsed.value.lastActivePlayerId,
-  } as GameRegistryV2;
-  const persisted = persistRegistryV2(primary, registry);
-  return persisted.ok ? { ok: true, registry } : persisted;
 }
 
 function preservePrimaryPayload(
@@ -266,6 +233,15 @@ export function persistRegistryV2(
     };
   }
 
+  const candidate = decodeRegistryV2(serialized);
+  if (!candidate.ok) return candidate;
+  if (candidate.campaignIssues.length > 0) {
+    return {
+      ok: false,
+      failure: candidate.campaignIssues[0].failure,
+    };
+  }
+
   const write = adapter.write(serialized);
   if (!write.ok) {
     return {
@@ -274,7 +250,16 @@ export function persistRegistryV2(
     };
   }
   const verification = adapter.read();
-  if (!verification.ok || verification.value !== serialized) {
+  const verifiedRegistry =
+    verification.ok && verification.value === serialized
+      ? decodeRegistryV2(verification.value)
+      : null;
+  if (
+    !verification.ok ||
+    verification.value !== serialized ||
+    !verifiedRegistry?.ok ||
+    verifiedRegistry.campaignIssues.length > 0
+  ) {
     preservePrimaryPayload(adapter, previous.value);
     return {
       ok: false,
@@ -310,11 +295,14 @@ export function hydratePreferredRegistryV2(
       ok: true,
       status: "empty",
       registry: structuredClone(emptyRegistry),
+      campaignIssues: [],
+      source: "empty",
     };
   }
 
   const decoded = decodeLegacyRegistryForV2(legacyRead.value);
   if (!decoded.ok) return decoded;
+  if (decoded.campaignIssues.length > 0) return decoded;
   const persisted = persistRegistryV2(primary, decoded.registry);
   if (!persisted.ok) return persisted;
   return decoded;

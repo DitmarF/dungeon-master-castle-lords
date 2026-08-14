@@ -1,6 +1,6 @@
 # E03-T08 — EPIC 03 owner manual QA checklist
 
-Status: **Candidate checklist — owner execution required**
+Status: **Revised Candidate checklist — owner execution required**
 
 Use this checklist against the exact E03-T08 Candidate source. Record the browser/device, viewport, theme, input method, and any failure with a screenshot or short note. Do not deploy to perform these checks.
 
@@ -39,15 +39,17 @@ The application does not expose a corrupt-save or quota-failure developer toggle
 - [ ] Load a prepared completed v4 Dungeon-faction fixture.
 - [ ] Confirm the UI explains that the campaign is incompatible and does not show a converted Castle campaign.
 - [ ] Cancel replacement and confirm the original legacy source remains unchanged.
-- [ ] If testing replacement, explicitly confirm it and verify the new Castle campaign appears only after the preferred write succeeds.
+- [ ] If testing replacement, explicitly confirm it and verify one action creates the fresh Castle campaign and enters Setup only after the preferred write succeeds; no second New Campaign action should be required.
 - [ ] Confirm the original version-1 source remains retained after successful replacement.
 
 ## E. Corrupt or malformed storage
 
-- [ ] Load prepared malformed JSON, malformed registry, and malformed campaign cases separately.
+- [ ] Load prepared malformed JSON, malformed registry, and malformed campaign cases separately, including a nested `null` World location.
 - [ ] Confirm each produces a visible recoverable error rather than “no campaign.”
 - [ ] Reload and confirm no automatic empty/new registry overwrote the source.
-- [ ] Confirm ordinary New/Continue remains blocked until an explicit safe recovery action is chosen.
+- [ ] For a registry containing one valid and one malformed campaign, confirm the valid profile remains loadable and the affected profile is clearly marked.
+- [ ] Confirm ordinary destructive writes remain blocked until an explicit safe recovery action is chosen.
+- [ ] Confirm campaign recovery enters fresh Castle Setup only after the verified write; for hard parse/container corruption, confirm Reset is explicit and never reports success if the write fails.
 
 ## F. Failed write
 

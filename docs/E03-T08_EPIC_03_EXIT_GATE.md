@@ -1,6 +1,6 @@
 # Dungeon Master & Castle Lords — E03-T08 Compatibility and EPIC 03 exit gate
 
-Status: **EPIC 03 Exit Candidate — PASS, awaiting owner acceptance**
+Status: **Revised EPIC 03 Exit Candidate — PASS, E03-T08 remains Changes requested pending owner acceptance**
 
 ## Task ID and name
 
@@ -12,11 +12,12 @@ Perform the final compatibility, persistence, determinism, integration, document
 
 ## Context
 
-- Stable source base: clean synchronized `main` at `84130b72e91acfee7923aab8b9db6b98f48989c9`.
+- Remediation source base: synchronized `main` at the first Exit Candidate commit `a4616b52cfe6819d3102a8a94c048279f31979dc`; the current changes are intentionally uncommitted pending revised owner acceptance.
 - Accepted dependencies: E03-T01–T07 and DMCL-P27–DMCL-P41; DMCL-029 records the accepted single Hero-information surface.
 - Current persisted boundaries: campaign version 5 and registry version 2; version 4 and registry version 1 remain protected legacy/source-recovery boundaries.
 - Sites project: `appgprj_6a762ab98b2c819181682817b758d7f8`; D1/R2 inactive.
 - Deployment authorization: **No**.
+- First-Candidate review found nested malformed-target throws, byte-only write verification, whole-registry campaign failure, insufficient target semantic validation, and a two-step incompatible-campaign replacement flow. The revised Candidate fixes each finding and adds regression coverage without changing gameplay.
 
 ## Candidate assessment
 
@@ -26,15 +27,15 @@ Perform the final compatibility, persistence, determinism, integration, document
 | Dungeon/World determinism | **PASS** | Fixed Dungeon bytes, separate World seed/stream, deterministic migration, target idempotence, stored snapshot round trip. |
 | Atomic opening | **PASS** | Valid Setup creates one complete foundation; invalid/repeated completion leaves source unchanged with no duplicates. |
 | Context/navigation | **PASS** | Settlement opens first; Hero/Settlement/World available; Dungeon contextual; Combat/Diplomacy disabled; Heart claim retired. |
-| Persistence safety | **PASS** | Typed absence/read/parse/validation/migration/serialization/write/quota/verification outcomes, verified writes, rollback/source retention. |
+| Persistence safety | **PASS** | Nested malformed data cannot escape as a raw throw; candidate and readback both decode/validate; campaign failures isolate by profile; ordinary writes pause; explicit recovery/reset remains verified and source-safe. |
 | Stable authority | **PASS** | Campaign/profile/content/region/site/location references remain stable; Hero faction and strategic/exploration positions are not duplicated. |
 | Epic boundary | **PASS** | No economy, Roads, projects, units, Combat, Gambits, evolution, later Hero progression, database, cloud, or deployment. |
-| Automated repository gate | **PASS** | `npm run verify`: token drift/lint PASS, engine 107/107 PASS, bounded build/artifact PASS, rendered HTML 1/1 PASS. |
+| Automated repository gate | **PASS** | `npm run verify`: token drift/lint PASS, engine 111/111 PASS, bounded build/artifact PASS, rendered HTML 1/1 PASS. |
 | Rendered desktop/portrait regression | **PASS** | Fresh Castle Setup, Settlement opening, seven-region World, contextual Dungeon, Save, reload/Continue, 390×844 and 1440×900 layouts, focus restoration, theme switch, and clean browser log verified. |
 | Accepted-checkpoint integrity | **PASS** | Exact T07 commit `84130b72e91acfee7923aab8b9db6b98f48989c9` is on GitHub and the configured Sites source branch and is saved as non-deployed Sites version 28. |
 | Owner physical smartphone and fixture-assisted failure/migration UI | **AWAITING OWNER** | [Manual QA checklist](./E03-T08_MANUAL_QA_CHECKLIST.md). |
 
-No blocking policy gap, semantic-conversion defect, or checkpoint-integrity mismatch remains. EPIC 03 remains Current until the owner accepts this Candidate and the E03-T08 checkpoint workflow completes.
+No blocking policy gap, semantic-conversion defect, or checkpoint-integrity mismatch remains in the revised source. EPIC 03 and E03-T08 remain Current/Changes requested until the owner accepts this Candidate and the E03-T08 checkpoint workflow completes.
 
 ## Fixture and migration matrix
 
@@ -45,11 +46,11 @@ No blocking policy gap, semantic-conversion defect, or checkpoint-integrity mism
 | v4 before Setup | `preSetupV4Fixture` | Identity/seed/lifecycle retained; null foundation; no fabricated draft/Hero. |
 | completed v4 Castle | `completedV4CastleFixture` | Hero/build/ID/seed/timestamps and exact Dungeon retained; one deterministic opening added. |
 | completed v4 Dungeon | `completedV4DungeonFixture` | Recoverable incompatibility; no Castle target; source unchanged. |
-| malformed registry | `MALFORMED_REGISTRY_FIXTURE` plus persistence/cutover adapters | Typed container failure; zero writes. |
-| malformed campaign/target | `malformedCampaignFixture` plus strict target corruption cases | Typed failure; no repair/regeneration/source mutation. |
+| malformed registry | `MALFORMED_REGISTRY_FIXTURE` plus persistence/cutover adapters | Typed container failure; zero automatic writes; explicit reset requires a verified valid replacement. |
+| malformed campaign/target | `malformedCampaignFixture`, nested-null, illegal bonus/grants/snapshot, and unknown-field cases | No raw throw; affected profile isolated; valid campaigns load; ordinary writes pause; no repair/regeneration/source mutation. |
 | current v5 round trip | migrated and fresh Village-first fixtures | Exact serialized target reload; no World reroll or duplicate instance. |
 | retained Dungeon snapshot | completed Castle fixture plus fixed seed `987654321` bytes | No regeneration; rooms/tiles/start/Heart/discovery/position preserved. |
-| persistence read/write failures | `MemoryRegistryStorage` failure controls | Unavailable/read, parse, validation, migration, serialization, write, quota, and verification behavior. |
+| persistence read/write failures | `MemoryRegistryStorage` failure controls | Unavailable/read, parse, validation, migration, serialization, write, quota, exact-readback, decode/validation verification, rollback, and explicit reset behavior. |
 
 ## Exit-criterion evidence
 
@@ -60,8 +61,8 @@ No blocking policy gap, semantic-conversion defect, or checkpoint-integrity mism
 - Context separation: `strategicRegionId` is a World region; Dungeon cell lives only in `explorationContext`.
 - Semantic isolation: old Dungeon day/treasury/claim exist only under `legacyPrototypeMetadata`, are absent from strategic UI/rules, and cannot create the capital.
 - Dungeon non-conversion: explicit `incompatible-faction`/`incompatible-legacy-campaign` outcomes and confirmed verified replacement only.
-- Source safety: failed hydration/migration performs no write; cutover never writes the legacy adapter; verification failure restores/removes the prior preferred payload.
-- Honest Save: success follows exact write/readback verification; failure remains failure and changes no timestamp.
+- Source safety: failed hydration/migration performs no write; isolated campaign failures pause ordinary writes; cutover never writes the legacy adapter; verification failure restores/removes the prior preferred payload.
+- Honest Save: success follows candidate validation, write, exact readback, and readback decode/validation; failure remains failure and changes no timestamp.
 - Legal boards: Settlement opens first; Hero/Settlement/World available; Dungeon requires regional context; Combat/Diplomacy disabled.
 
 ## Persistence failure evidence
@@ -70,8 +71,8 @@ No blocking policy gap, semantic-conversion defect, or checkpoint-integrity mism
 |---|---|---|
 | No data | Legitimate empty registry | No write during hydration. |
 | Storage unavailable/read | Typed bounded error | No empty replacement. |
-| Parse/registry/campaign validation | Distinct typed error | Raw payload retained; zero writes. |
-| Migration/incompatible faction | Distinct typed error/recovery | No silent target and no source write. |
+| Parse/registry validation | Distinct typed hard error with explicit reset | Raw payload retained until a confirmed verified reset; zero automatic writes. |
+| Campaign validation/migration/incompatible faction | Profile-scoped issue and explicit fresh-Castle recovery | Valid entries remain usable; ordinary writes pause; no silent conversion; source changes only after confirmed verified recovery. |
 | Serialization | Save failure before adapter write | Prior payload retained. |
 | Write/quota | Save/autosave failure; current non-destructive session may remain unsaved | Prior durable payload retained. |
 | Readback mismatch | Verification failure with rollback | Previous payload restored where adapter permits. |
@@ -93,14 +94,17 @@ The minimum site/location/settlement definitions, stored opening instances, and 
 
 ## Candidate changes
 
-- Add this exit-gate record and the owner manual QA checklist.
-- Refresh `CURRENT_STATE.md` from current E03 implementation evidence.
+- Harden the first exit-gate Candidate and update the owner manual QA checklist for the requested regressions.
+- Strictly validate nested version-5 records and Hero compatibility facts without letting malformed data throw.
+- Isolate campaign-level failures by profile and pause ordinary writes until explicit recovery.
+- Validate both persistence candidates and readback payloads; make corrupt reset and fresh-Castle recovery explicit, verified one-step actions.
+- Refresh `CURRENT_STATE.md`, `GAME_STATE.md`, and `ARCHITECTURE.md` from current E03 implementation evidence.
 - Reconcile accepted T07, roadmap, decision, concept, state, architecture, and implementation-plan wording without accepting EPIC 03 closure early.
 - Correct locked placeholder copy to the accepted EPIC 07 Combat and EPIC 09 Diplomacy owners; add a source-contract assertion.
 - Correct available sub-skill borders/fills to inherit the selected parent tree accent: Fighter/General vermilion, Ranger/Spy green, and Mage/Diplomat violet.
 - Stack New Campaign and Continue Campaign as full-width, single-line touch targets at the smallest phone breakpoint while retaining the wider two-column layout.
 
-No campaign schema, migration behavior, gameplay rule, dependency, lockfile, database, Worker, hosting configuration, or deployment is changed.
+No campaign version, eligible migration meaning, gameplay rule, dependency, lockfile, database, Worker, hosting configuration, or deployment is changed.
 
 ## Affected-file map
 
@@ -117,9 +121,16 @@ No campaign schema, migration behavior, gameplay rule, dependency, lockfile, dat
 | `docs/MVP_IMPLEMENTATION_PLAN.md` | Current schema/task boundary and completed-transition history. |
 | `docs/E03-T07_OPENING_BOARDS_SUMMARIES_AND_INSPECTION.md` | Record the accepted commit and reconciled non-deployed Sites version 28 checkpoint. |
 | `app/globals.css` | Make available sub-skills inherit their parent tree accent and make smallest-phone campaign actions readable full-width touch targets. |
+| `src/game/campaignMigration.ts` | Defensive exact-shape and semantic target validation with typed non-throwing outcomes. |
+| `src/game/registryCutover.ts` | Campaign isolation plus candidate/readback decode validation and source-safe verified writes. |
+| `src/game/GameProvider.tsx` | Write pause and explicit verified campaign-recovery/unreadable-reset transactions. |
+| `src/game/GameApp.tsx` | Accessible explicit hard-corruption recovery UI. |
+| `src/boards/StartBoard.tsx` | Profile-scoped campaign problem presentation and one-step fresh-Castle recovery. |
 | `src/boards/CombatBoard.tsx` | Correct locked placeholder ownership from obsolete EPIC 11 to accepted EPIC 07. |
 | `src/boards/DiplomacyBoard.tsx` | Name accepted EPIC 09 as the locked placeholder owner. |
-| `tests/engine/opening-boards.test.ts` | Protect future-board ownership, parent-tree sub-skill color inheritance, and smallest-phone campaign action layout against drift. |
+| `tests/engine/campaign-migration-v5.test.ts` | Protect nested malformed handling and strict Hero/snapshot/minimal-shape semantics. |
+| `tests/engine/registry-cutover.test.ts` | Protect campaign isolation, source retention, validated writes, and explicit recovery/reset candidates. |
+| `tests/engine/opening-boards.test.ts` | Protect recovery UI contracts, future-board ownership, parent-tree sub-skill color inheritance, and smallest-phone campaign action layout against drift. |
 
 `CONTENT_MODEL.md` was inspected and requires no change because E03-T08 adds no content definition or authority.
 
@@ -127,8 +138,8 @@ No campaign schema, migration behavior, gameplay rule, dependency, lockfile, dat
 
 ### Automated
 
-- `npm run test:engine` — baseline PASS: 104/104 before the Candidate reconciliation.
-- `npm run verify` — **PASS**: FS token adapter synchronized; ESLint PASS; engine 107/107 PASS; bounded Vinext build and Sites artifact validation PASS; rendered-HTML 1/1 PASS.
+- `npm run test:engine` — included in the full remediation gate: 111/111 PASS.
+- `npm run verify` — **PASS**: FS token adapter synchronized; ESLint PASS; engine 111/111 PASS; bounded Vinext build and Sites artifact validation PASS; rendered-HTML 1/1 PASS.
 - Build emitted the existing Node `punycode` deprecation warning from the toolchain; no build or test failed.
 - `git diff --check` — **PASS**.
 - Local Markdown-link check for both new E03-T08 records — **PASS**.
@@ -138,7 +149,7 @@ No campaign schema, migration behavior, gameplay rule, dependency, lockfile, dat
 ### Rendered/manual
 
 - Accepted E03-T07 evidence covers fresh 390×844 and 1280×800 flows, Setup, Settlement, continuous home-ring map, regional Dungeon context, Save/reload/Continue, pointer, keyboard/focus, theme, reduced motion, and clean console.
-- E03-T08 representative rendered regression — **PASS**: created a separate `E03 Exit QA` profile; completed implicit-Castle Fighter/General Setup; entered the Tier-1 Village; observed exactly seven World cells with Food/Wood/Stone/Dungeon/ruin/terrain-only contents; verified regional Dungeon entry, successful Save feedback, return/reload/Continue resume, disabled Combat/Diplomacy, Hero/Settlement/World availability, portrait 390×844 and desktop 1440×900 World layouts, dark/light switching with restoration, dialog Escape/focus restoration, and zero browser warnings/errors.
+- Revised E03-T08 representative rendered regression — **PASS**: created a separate `E03 Remediation QA` profile; completed implicit-Castle Fighter/General Setup; entered the Tier-1 Village; observed exactly seven World cells with Food/Wood/Stone/Dungeon/ruin/terrain-only contents; verified regional Dungeon entry, successful Save feedback, return/reload/Continue resume, disabled Combat/Diplomacy, Hero/Settlement/World availability, the 320×667 smallest-phone action layout, and zero browser warnings/errors. Prior accepted T07/T08 evidence continues to cover desktop, theme, focus, and reduced-motion checks.
 - Skill-tree color correction — **PASS**: computed and rendered checks confirm available nodes inherit vermilion for Fighter/General, green for Ranger/Spy, and violet for Mage/Diplomat; locked and selected states remain distinct and the browser log is clean.
 - Smallest-phone campaign actions — **PASS**: at 320×667 and 375×667, both actions render stacked at full available width, remain single-line 44-pixel touch targets, Continue opens the saved campaign, New Campaign opens the verified-replacement dialog, and the browser log is clean.
 - The E03-T08 run did not inject corrupt/migrated/quota fixtures, emulate system theme/reduced motion, or replace physical-device testing; those remain explicit owner checks below.
@@ -147,7 +158,7 @@ No campaign schema, migration behavior, gameplay rule, dependency, lockfile, dat
 ## Known limitations and unresolved risks
 
 - Physical-smartphone acceptance remains owner-only.
-- The application has no safe built-in corrupt-storage/quota/migration fixture switch; those behaviors are pure-test evidence unless the owner supplies a controlled browser fixture.
+- The application has no built-in corrupt-storage/quota/migration fixture switch; those behaviors are pure-test evidence unless the owner supplies a controlled browser fixture.
 - Browser-local storage has no cloud, cross-device, export/import, or long-term cleanup guarantee.
 - Retaining the version-1 source deliberately duplicates local payload bytes.
 - Hero compatibility attributes remain temporary through EPIC 05 and require explicit EPIC 06 treatment.
@@ -155,6 +166,6 @@ No campaign schema, migration behavior, gameplay rule, dependency, lockfile, dat
 
 ## Checkpoint boundary
 
-This is a Candidate only. Before explicit owner acceptance, do not mark EPIC 03 Complete, activate EPIC 04, commit/push this Candidate, save a Sites version, or deploy.
+This is a revised Candidate only, and E03-T08 remains Changes requested. Before explicit owner acceptance, do not mark EPIC 03 Complete, activate EPIC 04, commit/push the remediation, save a Sites version, or deploy.
 
 After acceptance, follow `WORKFLOW.md`: apply closure/next-task status, rerun affected verification, commit and push without force, confirm pushed HEAD and GitHub Actions, save the matching non-deployed Sites version, and report the SHA/version/next task. Do not begin EPIC 04 automatically.

@@ -39,7 +39,7 @@ import {
 import {
   hydratePreferredRegistryV2,
   persistRegistryV2,
-  replaceIncompatibleLegacyRegistry,
+  type RegistryCampaignIssue,
 } from "./registryCutover";
 import { gameStorageV2, legacyGameStorage } from "./storage";
 import {
@@ -190,6 +190,7 @@ interface GameContextValue {
   themePreference: ThemePreference;
   hydrationFailure: PersistenceFailure | null;
   persistenceIssue: PersistenceFailure | null;
+  campaignIssues: readonly RegistryCampaignIssue[];
   setDarkMode: (enabled: boolean) => void;
   useSystemTheme: () => void;
   createPlayer: (name: string, bannerColor: string) => CreatePlayerResult;
@@ -199,7 +200,8 @@ interface GameContextValue {
   loadGame: (playerId: PlayerId) => PersistenceActionResult;
   saveGame: () => PersistenceActionResult;
   retryPersistence: () => PersistenceActionResult;
-  replaceIncompatibleLegacy: () => PersistenceActionResult;
+  recoverCampaignIssues: (focusPlayerId?: PlayerId) => PersistenceActionResult;
+  resetUnreadableRegistry: () => PersistenceActionResult;
   completeHeroSetup: (
     selection: CastleHeroSetupSelection,
   ) => VillageFirstSetupResult | null;
@@ -236,6 +238,9 @@ export function GameProvider({
     useState<PersistenceFailure | null>(null);
   const [persistenceIssue, setPersistenceIssue] =
     useState<PersistenceFailure | null>(null);
+  const [campaignIssues, setCampaignIssues] = useState<
+    readonly RegistryCampaignIssue[]
+  >([]);
   const [themePreference, setThemePreference] = useState<ThemePreference>(
     readThemePreference,
   );
@@ -272,12 +277,14 @@ export function GameProvider({
       );
 
       if (!result.ok) {
+        setCampaignIssues([]);
         setHydrationFailure(result.failure);
         setPersistenceIssue(result.failure);
         return;
       }
 
       setHydrationFailure(null);
+      setCampaignIssues(result.campaignIssues);
       setPersistenceIssue(null);
       dispatch({ type: "hydrate", registry: result.registry });
     });
@@ -289,6 +296,11 @@ export function GameProvider({
 
   const writeRegistry = useCallback(
     (registry: GameRegistryV2): PersistenceActionResult => {
+      if (campaignIssues.length > 0) {
+        const failure = campaignIssues[0].failure;
+        setPersistenceIssue(failure);
+        return { ok: false, error: failure };
+      }
       const result = persistRegistryV2(storage, registry);
       if (!result.ok) {
         setPersistenceIssue(result.failure);
@@ -297,7 +309,7 @@ export function GameProvider({
       setPersistenceIssue(null);
       return { ok: true };
     },
-    [storage],
+    [campaignIssues, storage],
   );
 
   const writeRequiredRegistry = useCallback(
@@ -314,45 +326,114 @@ export function GameProvider({
   );
 
   const retryPersistence = useCallback((): PersistenceActionResult => {
-    if (hydrationFailure) {
+    if (hydrationFailure || campaignIssues.length > 0) {
       const result = hydratePreferredRegistryV2(
         storage,
         legacyStorage,
         EMPTY_REGISTRY_V2,
       );
       if (!result.ok) {
+        setCampaignIssues([]);
         setHydrationFailure(result.failure);
         setPersistenceIssue(result.failure);
         return { ok: false, error: result.failure };
       }
       setHydrationFailure(null);
+      setCampaignIssues(result.campaignIssues);
       setPersistenceIssue(null);
       dispatch({ type: "hydrate", registry: result.registry });
-      return { ok: true };
+      return result.campaignIssues.length > 0
+        ? { ok: false, error: result.campaignIssues[0].failure }
+        : { ok: true };
     }
     return writeRegistry(state.registry);
-  }, [hydrationFailure, legacyStorage, state.registry, storage, writeRegistry]);
+  }, [
+    campaignIssues,
+    hydrationFailure,
+    legacyStorage,
+    state.registry,
+    storage,
+    writeRegistry,
+  ]);
 
-  const replaceIncompatibleLegacy = useCallback(
-    (): PersistenceActionResult => {
-      if (hydrationFailure?.code !== "incompatible-legacy-campaign") {
-        return { ok: false, error: hydrationFailure ?? undefined };
+  const recoverCampaignIssues = useCallback(
+    (focusPlayerId?: PlayerId): PersistenceActionResult => {
+      if (campaignIssues.length === 0) return { ok: false };
+
+      const recoveredAt = clock.now();
+      const recoveredGames = new Map<PlayerId, CampaignStateV5>();
+      let registry = state.registry;
+      for (const issue of campaignIssues) {
+        const playerId = issue.playerId as PlayerId;
+        const game = createNewGameV5(
+          playerId,
+          systemIdSource,
+          systemCampaignSeedSource.nextCampaignSeed(),
+          recoveredAt,
+        );
+        recoveredGames.set(playerId, game);
+        registry = storeCampaignV2(registry, game);
       }
-      const result = replaceIncompatibleLegacyRegistry(storage, legacyStorage);
-      if (!result.ok) {
-        setPersistenceIssue(result.failure);
-        return { ok: false, error: result.failure };
-      }
+
+      const focusId =
+        focusPlayerId && recoveredGames.has(focusPlayerId)
+          ? focusPlayerId
+          : (campaignIssues[0].playerId as PlayerId);
+      const focusGame = recoveredGames.get(focusId);
+      if (!focusGame) return { ok: false };
+      registry = activateCampaignV2(
+        registry,
+        focusId,
+        focusGame,
+        recoveredAt,
+      );
+
+      const persistence = writeRequiredRegistry(registry);
+      if (!persistence.ok) return persistence;
+      setCampaignIssues([]);
       setHydrationFailure(null);
       setPersistenceIssue(null);
-      dispatch({ type: "hydrate", registry: result.registry });
+      dispatch({
+        type: "openGame",
+        playerId: focusId,
+        game: focusGame,
+        registry,
+      });
       return { ok: true };
     },
-    [hydrationFailure, legacyStorage, storage],
+    [campaignIssues, clock, state.registry, writeRequiredRegistry],
   );
+
+  const resetUnreadableRegistry = useCallback((): PersistenceActionResult => {
+    if (
+      !hydrationFailure ||
+      ![
+        "parse-failed",
+        "registry-validation-failed",
+        "campaign-validation-failed",
+        "migration-failed",
+      ].includes(hydrationFailure.code)
+    ) {
+      return { ok: false, error: hydrationFailure ?? undefined };
+    }
+
+    const registry = structuredClone(EMPTY_REGISTRY_V2);
+    const persistence = writeRequiredRegistry(registry);
+    if (!persistence.ok) return persistence;
+    setHydrationFailure(null);
+    setCampaignIssues([]);
+    setPersistenceIssue(null);
+    dispatch({ type: "hydrate", registry });
+    return { ok: true };
+  }, [hydrationFailure, writeRequiredRegistry]);
 
   const createPlayer = useCallback(
     (name: string, bannerColor: string): CreatePlayerResult => {
+      if (campaignIssues.length > 0) {
+        const failure = campaignIssues[0].failure;
+        setPersistenceIssue(failure);
+        return { ok: false, error: failure };
+      }
       const trimmedName = name.trim();
       if (trimmedName.length < 2) {
         return { ok: false, message: "Use at least 2 characters." };
@@ -385,7 +466,7 @@ export function GameProvider({
       });
       return { ok: true };
     },
-    [clock, state.registry, writeRequiredRegistry],
+    [campaignIssues, clock, state.registry, writeRequiredRegistry],
   );
 
   const selectPlayer = useCallback(
@@ -400,6 +481,11 @@ export function GameProvider({
 
   const deletePlayer = useCallback(
     (playerId: PlayerId): PersistenceActionResult => {
+      if (campaignIssues.length > 0) {
+        const failure = campaignIssues[0].failure;
+        setPersistenceIssue(failure);
+        return { ok: false, error: failure };
+      }
       const registry = removePlayerAndCampaignV2(state.registry, playerId);
       const persistence = writeRequiredRegistry(registry);
       if (!persistence.ok) return persistence;
@@ -410,11 +496,21 @@ export function GameProvider({
       dispatch({ type: "setRegistry", registry, selectedPlayerId });
       return { ok: true };
     },
-    [state.registry, state.selectedPlayerId, writeRequiredRegistry],
+    [
+      campaignIssues,
+      state.registry,
+      state.selectedPlayerId,
+      writeRequiredRegistry,
+    ],
   );
 
   const startNewGame = useCallback(
     (playerId: PlayerId): PersistenceActionResult => {
+      if (campaignIssues.length > 0) {
+        const failure = campaignIssues[0].failure;
+        setPersistenceIssue(failure);
+        return { ok: false, error: failure };
+      }
       const createdAt = clock.now();
       const game = createNewGameV5(
         playerId,
@@ -433,7 +529,7 @@ export function GameProvider({
       dispatch({ type: "openGame", playerId, game, registry });
       return { ok: true };
     },
-    [clock, state.registry, writeRequiredRegistry],
+    [campaignIssues, clock, state.registry, writeRequiredRegistry],
   );
 
   const loadGame = useCallback(
@@ -570,6 +666,7 @@ export function GameProvider({
       themePreference,
       hydrationFailure,
       persistenceIssue,
+      campaignIssues,
       setDarkMode,
       useSystemTheme,
       createPlayer,
@@ -579,7 +676,8 @@ export function GameProvider({
       loadGame,
       saveGame,
       retryPersistence,
-      replaceIncompatibleLegacy,
+      recoverCampaignIssues,
+      resetUnreadableRegistry,
       completeHeroSetup,
       moveHeroInDungeon,
       enterDungeon,
@@ -597,6 +695,7 @@ export function GameProvider({
       themePreference,
       hydrationFailure,
       persistenceIssue,
+      campaignIssues,
       selectedPlayer,
       selectedGame,
       createPlayer,
@@ -606,7 +705,8 @@ export function GameProvider({
       loadGame,
       saveGame,
       retryPersistence,
-      replaceIncompatibleLegacy,
+      recoverCampaignIssues,
+      resetUnreadableRegistry,
       completeHeroSetup,
       moveHeroInDungeon,
       enterDungeon,

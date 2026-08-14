@@ -92,7 +92,9 @@ Converted legacy snapshots may additionally retain old Dungeon `day`, `treasury`
 
 **Accepted and implemented in E03-T06:** `GameRegistry` version 2 contains local player profiles, at most one version-5 campaign per profile, and the last active player ID. The preferred container is stored at `dmcl.prototype.registry.v2` through the E03-T02 verified-write contract.
 
-On first successful legacy load, the application strictly decodes and migrates the version-1 source, writes and verifies the version-2 candidate, and leaves the original `dmcl.prototype.registry.v1` bytes untouched. A valid version-2 registry is preferred without consulting version 1. Failed decode, migration, write, or verification never substitutes an empty registry or overwrites the legacy source.
+On first fully successful legacy load, the application strictly decodes and migrates the version-1 source, writes and decode-validates the version-2 candidate after exact readback, and leaves the original `dmcl.prototype.registry.v1` bytes untouched. A valid version-2 registry is preferred without consulting version 1. Failed decode, migration, write, readback, or validation never substitutes an empty registry or overwrites the legacy source.
+
+Campaign-level failures are isolated from valid profiles and campaigns. The affected campaign is omitted from the typed in-memory registry, its profile remains visible with a bounded recovery explanation, and ordinary registry writes pause so the filtered view cannot overwrite the source. Only an explicit confirmed recovery may replace every affected campaign with a fresh version-5 Castle Setup campaign; a verified write must succeed before the UI reports recovery or enters Setup. Hard parse/container failures similarly require an explicit confirmed reset before a verified empty version-2 registry may replace the unreadable preferred payload. Storage-unavailable failures remain retry-only.
 
 ## Accepted EPIC 03 transition contract
 
@@ -124,30 +126,30 @@ The application layer now owns lifecycle time and registry transactions through 
 - hydration stages raw read, parse, registry/profile validation, campaign validation, existing v2/v3/v4 migration, and target validation as distinct typed outcomes;
 - a hydration or migration failure leaves the original raw registry untouched and blocks the former automatic empty-registry write;
 - legitimate empty storage produces an explicit empty success rather than sharing an error path;
-- every automatic durable update and manual Save performs serialization, write, exact readback verification, and best-effort rollback to the previous raw payload if verification fails;
+- every automatic durable update and manual Save validates the candidate, serializes, writes, verifies exact readback, decodes and validates that readback, and performs best-effort rollback to the previous raw payload if verification fails;
 - later non-destructive autosave failure keeps the changed in-memory campaign and marks persistence failed; the Save action is the visible retry;
 - profile deletion and campaign replacement remain explicit confirmed actions and change in-memory state only after verified persistence succeeds;
 - player-visible errors use bounded messages for unavailable/read/parse/registry/campaign/migration/serialization/quota/write/verification failures and never expose raw exceptions.
 
 The registry-version-2/new-key option in DMCL-P31 remains conditional and is not activated by E03-T02. This task hardens the current version-1 key in place while guaranteeing that failed decode/migration never writes and that failed destructive changes retain the previous durable/in-memory registry.
 
-### E03-T04 implemented World-generation authority
+### E03-T04 World-generation checkpoint history
 
-The pure `generateStartingWorld` boundary now implements the explicitly accepted DMCL-P41 generation policy without adding World data to the current version-4 campaign:
+At the E03-T04 checkpoint, the pure `generateStartingWorld` boundary implemented the explicitly accepted DMCL-P41 generation policy without yet adding World data to the then-current version-4 campaign:
 
 - `campaignSeed` remains the root provenance; the effective World seed is 32-bit FNV-1a of `world/home-ring/v1:<campaignSeed>`;
-- generator version `1`, the effective World seed, and the generated snapshot types are ready for persistence by E03-T05, but they are not yet stored or loaded;
+- generator version `1`, the effective World seed, and the generated snapshot types were prepared for persistence by E03-T05 but were not stored or loaded at that checkpoint;
 - the home region is axial `(0,0)` and the six neighbors use the accepted clockwise order beginning east;
 - region IDs derive from coordinates, while the one capital, three sites, and two locations use family-specific deterministic instance IDs independent of array positions;
 - Fisher–Yates placement consumes a fresh random source created only from the derived World seed and assigns exactly one approved content to each neighbor;
 - the result contains the Tier-1 Village capital reference, seven controlled neutral-terrain regions, Food/Wood/Stone sites, the regional Dungeon, and the inert ruin; the one unattached neighbor is derived as terrain-only;
 - validation checks metadata, exact topology/order, coordinate and ID uniqueness, control, catalog references, distinct placements, and the one terrain-only remainder.
 
-The returned snapshot is a pure generated value, not current version-4 campaign truth. E03-T05 owns the version-5 target and pure migration result, which stores the generated result as authoritative rather than regenerating it during target normalization. `createDungeonLevel` and existing stored Dungeon snapshots remain unchanged.
+At that checkpoint the returned snapshot was a pure generated value, not version-4 campaign truth. E03-T05 subsequently made it authoritative in the version-5 target and pure migration result rather than regenerating it during target normalization. `createDungeonLevel` and existing stored Dungeon snapshots remain unchanged.
 
 ### E03-T05 accepted version-5 state and migration boundary
 
-`CampaignStateV5` now defines the accepted minimum target payload independently from the current application-facing version-4 alias:
+At the E03-T05 checkpoint, `CampaignStateV5` defined the accepted minimum target payload independently from the then-current application-facing version-4 alias. E03-T06 subsequently made version 5 the application/save authority:
 
 - identity, campaign seed, immutable creation/best-available modification timestamps, and a bounded Setup/Hero/Settlement/World/Dungeon resume destination remain top-level;
 - `foundation: null` is the only pre-Setup form and cannot contain a Hero, draft, Village, World, or retained exploration context;
@@ -177,7 +179,7 @@ The opening boards read the existing version-5 foundation without adding campaig
 
 Normal Settlement, World, Hero, shell, and Start presentation do not expose legacy Dungeon day or treasury as strategic values. Development inspection may show the exact optional `legacyPrototypeMetadata` values only under explicit legacy labels with no rule authority.
 
-Legacy cutover now reports `incompatible-legacy-campaign` separately from generic migration failure. Only the explicit confirmed recovery path may create a preferred version-2 candidate that retains all profiles and compatible migrated campaigns while omitting campaigns proven to have the incompatible Dungeon root choice. That candidate is written and read back through the existing verified contract; the version-1 adapter is never written, so the original source remains untouched. Corrupt/invalid/migration failures remain blocked recovery states and never become empty registries.
+Legacy cutover reports `incompatible-legacy-campaign` separately from generic migration failure. Campaign-level incompatibility, validation, and migration failures are isolated by profile while valid campaigns remain loadable; automatic and ordinary registry writes pause until explicit recovery so this filtered view cannot become destructive authority. Confirmed recovery creates fresh pre-Setup Castle campaigns for the affected profiles, retains valid campaigns, and enters Setup only after the preferred version-2 candidate passes write, exact readback, decode, and validation. The version-1 adapter is never written, so the original source remains untouched. Hard corrupt/container failures remain blocked until the player explicitly confirms a verified preferred-registry reset; they never masquerade as empty storage or trigger automatic replacement.
 
 ## Current non-campaign runtime state
 

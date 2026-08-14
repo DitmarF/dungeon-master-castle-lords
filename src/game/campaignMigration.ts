@@ -23,6 +23,11 @@ import {
   type LocationId,
 } from "./generateStartingWorld.ts";
 import { isCampaignSeed } from "./random.ts";
+import {
+  CLASS_SKILL,
+  VOCATION_SKILL,
+  isLegalHeroSetupBonusSkill,
+} from "./heroSetup.ts";
 import { selectHeroAttributes } from "./selectors.ts";
 import { SKILL_BY_ID, type SkillId } from "./skillTrees.ts";
 
@@ -108,6 +113,7 @@ function isSkillId(value: string): value is SkillId {
 function isDungeonRoom(value: unknown): value is DungeonRoom {
   return (
     isRecord(value) &&
+    unknownKeys(value, ["id", "x", "y", "width", "height"]).length === 0 &&
     isInteger(value.id) &&
     isInteger(value.x) &&
     isInteger(value.y) &&
@@ -127,13 +133,55 @@ function unknownKeys(
 }
 
 function isPosition(value: unknown): value is CellPosition {
-  return isRecord(value) && isInteger(value.x) && isInteger(value.y);
+  return (
+    isRecord(value) &&
+    unknownKeys(value, ["x", "y"]).length === 0 &&
+    isInteger(value.x) &&
+    isInteger(value.y)
+  );
 }
 
 function isAttributes(value: unknown): value is HeroAttributes {
   return (
     isRecord(value) &&
+    unknownKeys(value, ATTRIBUTE_KEYS).length === 0 &&
     ATTRIBUTE_KEYS.every((key) => isFiniteNumber(value[key]))
+  );
+}
+
+function attributesEqual(
+  first: Readonly<HeroAttributes>,
+  second: Readonly<HeroAttributes>,
+): boolean {
+  return ATTRIBUTE_KEYS.every((key) => first[key] === second[key]);
+}
+
+function isStoredRegion(value: unknown): boolean {
+  return (
+    isRecord(value) &&
+    unknownKeys(value, [
+      "id",
+      "coordinate",
+      "terrainDefinitionId",
+      "controlled",
+    ]).length === 0 &&
+    isRecord(value.coordinate) &&
+    unknownKeys(value.coordinate, ["q", "r"]).length === 0 &&
+    isInteger(value.coordinate.q) &&
+    isInteger(value.coordinate.r) &&
+    typeof value.id === "string" &&
+    typeof value.terrainDefinitionId === "string" &&
+    typeof value.controlled === "boolean"
+  );
+}
+
+function isStoredSiteOrLocation(value: unknown): boolean {
+  return (
+    isRecord(value) &&
+    unknownKeys(value, ["id", "definitionId", "regionId"]).length === 0 &&
+    typeof value.id === "string" &&
+    typeof value.definitionId === "string" &&
+    typeof value.regionId === "string"
   );
 }
 
@@ -535,6 +583,11 @@ function validateRegionalDungeon(
     const metadata = value.legacyPrototypeMetadata;
     if (
       !isRecord(metadata) ||
+      unknownKeys(metadata, [
+        "dungeonDay",
+        "dungeonTreasury",
+        "settlementClaimed",
+      ]).length > 0 ||
       !isInteger(metadata.dungeonDay) ||
       metadata.dungeonDay < 0 ||
       !isFiniteNumber(metadata.dungeonTreasury) ||
@@ -542,6 +595,12 @@ function validateRegionalDungeon(
     ) {
       issues.push({ path: `${path}.legacyPrototypeMetadata`, message: "Legacy prototype metadata is invalid." });
     }
+  }
+  if (
+    !isRecord(value.grid) ||
+    unknownKeys(value.grid, ["columns", "rows"]).length > 0
+  ) {
+    issues.push({ path: `${path}.grid`, message: "Regional Dungeon grid contains unsupported fields." });
   }
   return issues;
 }
@@ -568,40 +627,90 @@ function validateTargetHero(
   if (extras.length > 0) {
     issues.push({ path: "foundation.hero", message: `Target Hero contains unsupported or competing fields: ${extras.join(", ")}.` });
   }
-  if (!HERO_CLASSES.has(String(value.heroClass))) {
+  const hasValidClass = HERO_CLASSES.has(String(value.heroClass));
+  const hasValidVocation = HERO_VOCATIONS.has(String(value.vocation));
+  const hasValidAllocation = isValidFreeAttributes(value.freeAttributes);
+  if (!hasValidClass) {
     issues.push({ path: "foundation.hero.heroClass", message: "Target Hero Class is invalid." });
   }
-  if (!HERO_VOCATIONS.has(String(value.vocation))) {
+  if (!hasValidVocation) {
     issues.push({ path: "foundation.hero.vocation", message: "Target Hero Vocation is invalid." });
   }
-  if (!isValidFreeAttributes(value.freeAttributes)) {
+  if (!hasValidAllocation) {
     issues.push({ path: "foundation.hero.freeAttributes", message: "Target Hero allocation is invalid." });
   }
-  if (
-    typeof value.bonusSkillId !== "string" ||
-    !isSkillId(value.bonusSkillId)
-  ) {
+  const hasKnownBonusSkill =
+    typeof value.bonusSkillId === "string" &&
+    isSkillId(value.bonusSkillId);
+  if (!hasKnownBonusSkill) {
     issues.push({ path: "foundation.hero.bonusSkillId", message: "Target Hero bonus skill is invalid." });
-  }
-  if (
-    !isRecord(value.skillRanks) ||
-    Object.entries(value.skillRanks).some(
-      ([skillId, rank]) => !isSkillId(skillId) || !isInteger(rank) || rank <= 0,
+  } else if (
+    hasValidClass &&
+    hasValidVocation &&
+    !isLegalHeroSetupBonusSkill(
+      value.bonusSkillId as SkillId,
+      value.heroClass as CampaignHeroStateV5["heroClass"],
+      value.vocation as CampaignHeroStateV5["vocation"],
     )
   ) {
-    issues.push({ path: "foundation.hero.skillRanks", message: "Target Hero ranks must contain only positive ranks for known skills." });
+    issues.push({ path: "foundation.hero.bonusSkillId", message: "Target Hero bonus skill does not belong to the selected Class or Vocation opening tree." });
   }
-  if (
-    !isRecord(value.attributesCompatibility) ||
-    value.attributesCompatibility.ruleVersion !== "v4-path-bonus-1" ||
-    !isAttributes(value.attributesCompatibility.values)
-  ) {
+  const hasValidSkillRecord =
+    isRecord(value.skillRanks) &&
+    !Object.entries(value.skillRanks).some(
+      ([skillId, rank]) => !isSkillId(skillId) || !isInteger(rank) || rank <= 0,
+    );
+  if (!hasValidSkillRecord) {
+    issues.push({ path: "foundation.hero.skillRanks", message: "Target Hero ranks must contain only positive ranks for known skills." });
+  } else if (hasValidClass && hasValidVocation && hasKnownBonusSkill) {
+    const heroClass = value.heroClass as CampaignHeroStateV5["heroClass"];
+    const vocation = value.vocation as CampaignHeroStateV5["vocation"];
+    const bonusSkillId = value.bonusSkillId as SkillId;
+    const expectedMinimums = new Map<SkillId, number>();
+    for (const skillId of [
+      CLASS_SKILL[heroClass],
+      VOCATION_SKILL[vocation],
+      bonusSkillId,
+    ]) {
+      expectedMinimums.set(skillId, (expectedMinimums.get(skillId) ?? 0) + 1);
+    }
+    for (const [skillId, minimumRank] of expectedMinimums) {
+      const storedRank = value.skillRanks[skillId];
+      if (!isInteger(storedRank) || storedRank < minimumRank) {
+        issues.push({ path: `foundation.hero.skillRanks.${skillId}`, message: "Target Hero is missing an approved starting skill grant." });
+      }
+    }
+    for (const skillId of Object.keys(value.skillRanks)) {
+      const skill = SKILL_BY_ID[skillId as SkillId];
+      if (skill && skill.treeId !== heroClass && skill.treeId !== vocation) {
+        issues.push({ path: `foundation.hero.skillRanks.${skillId}`, message: "Target Hero contains a skill outside the selected Class and Vocation trees." });
+      }
+    }
+  }
+  const compatibility = value.attributesCompatibility;
+  const hasValidCompatibility =
+    isRecord(compatibility) &&
+    unknownKeys(compatibility, ["ruleVersion", "values"]).length === 0 &&
+    compatibility.ruleVersion === "v4-path-bonus-1" &&
+    isAttributes(compatibility.values);
+  if (!hasValidCompatibility) {
     issues.push({ path: "foundation.hero.attributesCompatibility", message: "Target Hero compatibility attributes are invalid." });
+  } else if (hasValidClass && hasValidVocation && hasValidAllocation) {
+    const expectedAttributes = selectHeroAttributes({
+      heroClass: value.heroClass as CampaignHeroStateV5["heroClass"],
+      vocation: value.vocation as CampaignHeroStateV5["vocation"],
+      freeAttributes: value.freeAttributes as HeroAttributes,
+    });
+    if (!attributesEqual(compatibility.values, expectedAttributes)) {
+      issues.push({ path: "foundation.hero.attributesCompatibility.values", message: "Target Hero compatibility attributes do not match the stored Class, Vocation, and allocation facts." });
+    }
   }
   if (
     typeof value.strategicRegionId !== "string" ||
     !Array.isArray(foundation.world.regions) ||
-    !foundation.world.regions.some((region) => region.id === value.strategicRegionId)
+    !foundation.world.regions.some(
+      (region) => isRecord(region) && region.id === value.strategicRegionId,
+    )
   ) {
     issues.push({ path: "foundation.hero.strategicRegionId", message: "Target Hero strategic region is invalid." });
   }
@@ -609,6 +718,7 @@ function validateTargetHero(
     const context = value.explorationContext;
     if (
       !isRecord(context) ||
+      unknownKeys(context, ["locationId", "cell", "returnBoardId"]).length > 0 ||
       context.locationId !== REGIONAL_DUNGEON_LOCATION_ID ||
       !isPosition(context.cell) ||
       !isPositionInsideDungeon(context.cell, regionalDungeon as unknown as DungeonState) ||
@@ -620,7 +730,7 @@ function validateTargetHero(
   return issues;
 }
 
-export function validateCampaignStateV5(
+function validateCampaignStateV5Internal(
   value: unknown,
 ): readonly CampaignValidationIssue[] {
   if (!isRecord(value)) {
@@ -677,8 +787,15 @@ export function validateCampaignStateV5(
     Array.isArray(foundation.world.regions) &&
     Array.isArray(foundation.world.sites) &&
     Array.isArray(foundation.world.locations);
+  const hasStructuredWorldArrays =
+    hasWorldArrays &&
+    foundation.world.regions.every(isStoredRegion) &&
+    foundation.world.sites.every(isStoredSiteOrLocation) &&
+    foundation.world.locations.every(isStoredSiteOrLocation);
   if (!hasWorldArrays) {
     issues.push({ path: "foundation.world", message: "Target World regions, sites, and locations must be arrays." });
+  } else if (!hasStructuredWorldArrays) {
+    issues.push({ path: "foundation.world", message: "Target World entries must use the exact approved region, site, and location shapes." });
   }
   const capitalExtras = unknownKeys(foundation.capital as unknown as Record<string, unknown>, [
     "id",
@@ -708,7 +825,7 @@ export function validateCampaignStateV5(
   ) {
     issues.push({ path: "foundation.capital", message: "Target capital must be the Tier-1 Village in the home region." });
   }
-  if (hasWorldArrays) {
+  if (hasStructuredWorldArrays) {
     const generatedView: GeneratedStartingWorld = {
       ...foundation.world,
       capital: foundation.capital,
@@ -755,6 +872,7 @@ export function validateCampaignStateV5(
     Array.isArray(foundation.world.locations) &&
     !foundation.world.locations.some(
       (location) =>
+        isRecord(location) &&
         location.id === REGIONAL_DUNGEON_LOCATION_ID &&
         location.definitionId === "regional-dungeon",
     )
@@ -769,6 +887,21 @@ export function validateCampaignStateV5(
     issues.push({ path: "activeBoardId", message: "Dungeon resume requires a valid exploration context." });
   }
   return issues;
+}
+
+export function validateCampaignStateV5(
+  value: unknown,
+): readonly CampaignValidationIssue[] {
+  try {
+    return validateCampaignStateV5Internal(value);
+  } catch {
+    return [
+      {
+        path: "$",
+        message: "Target campaign structure could not be validated safely.",
+      },
+    ];
+  }
 }
 
 export function migrateCampaignToV5(
