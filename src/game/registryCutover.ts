@@ -128,7 +128,11 @@ export function decodeLegacyRegistryForV2(
     if (!migrated.ok) {
       return {
         ok: false,
-        failure: createPersistenceFailure("migration-failed"),
+        failure: createPersistenceFailure(
+          migrated.failure.code === "incompatible-faction"
+            ? "incompatible-legacy-campaign"
+            : "migration-failed",
+        ),
       };
     }
     games[playerId] = migrated.state;
@@ -144,6 +148,92 @@ export function decodeLegacyRegistryForV2(
       lastActivePlayerId: parsed.value.lastActivePlayerId,
     } as GameRegistryV2,
   };
+}
+
+export type IncompatibleLegacyReplacementResult =
+  | { ok: true; registry: GameRegistryV2 }
+  | { ok: false; failure: PersistenceFailure };
+
+/**
+ * Explicit recovery for the accepted clean-break policy. Compatible campaigns
+ * and every profile are retained; only campaigns proven to be Dungeon-faction
+ * incompatible are omitted from the verified v2 candidate. The legacy adapter
+ * is read-only here, so the original v1 bytes remain recovery material.
+ */
+export function replaceIncompatibleLegacyRegistry(
+  primary: RegistryStorageAdapter,
+  legacy: RegistryStorageAdapter,
+): IncompatibleLegacyReplacementResult {
+  const primaryRead = primary.read();
+  if (!primaryRead.ok) {
+    return {
+      ok: false,
+      failure: createPersistenceFailure(primaryRead.code),
+    };
+  }
+  if (primaryRead.value !== null) {
+    return {
+      ok: false,
+      failure: createPersistenceFailure("registry-validation-failed"),
+    };
+  }
+
+  const legacyRead = legacy.read();
+  if (!legacyRead.ok) {
+    return {
+      ok: false,
+      failure: createPersistenceFailure(legacyRead.code),
+    };
+  }
+  if (legacyRead.value === null) {
+    return {
+      ok: false,
+      failure: createPersistenceFailure("migration-failed"),
+    };
+  }
+
+  const parsed = parse(legacyRead.value);
+  if (!parsed.ok) return parsed;
+  if (!validateContainer(parsed.value, 1)) {
+    return {
+      ok: false,
+      failure: createPersistenceFailure("registry-validation-failed"),
+    };
+  }
+
+  let foundIncompatibleCampaign = false;
+  const games: GameRegistryV2["games"] = {};
+  for (const [playerId, source] of Object.entries(parsed.value.games)) {
+    const migrated = migrateCampaignToV5(source, playerId);
+    if (migrated.ok) {
+      games[playerId] = migrated.state;
+      continue;
+    }
+    if (migrated.failure.code === "incompatible-faction") {
+      foundIncompatibleCampaign = true;
+      continue;
+    }
+    return {
+      ok: false,
+      failure: createPersistenceFailure("migration-failed"),
+    };
+  }
+
+  if (!foundIncompatibleCampaign) {
+    return {
+      ok: false,
+      failure: createPersistenceFailure("migration-failed"),
+    };
+  }
+
+  const registry: GameRegistryV2 = {
+    version: 2,
+    players: structuredClone(parsed.value.players),
+    games,
+    lastActivePlayerId: parsed.value.lastActivePlayerId,
+  } as GameRegistryV2;
+  const persisted = persistRegistryV2(primary, registry);
+  return persisted.ok ? { ok: true, registry } : persisted;
 }
 
 function preservePrimaryPayload(

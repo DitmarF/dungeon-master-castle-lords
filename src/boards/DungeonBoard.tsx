@@ -19,6 +19,7 @@ import {
   GridCell,
 } from "../ui/GamePrimitives";
 import { GameShell } from "../ui/GameShell";
+import { ModalOverlay } from "../ui/ModalOverlay";
 
 const CELL_SIZE = 48;
 const MAX_ZOOM = 3.5;
@@ -470,7 +471,7 @@ export function DungeonBoard() {
           value: `${discoveredFloorCount}/${floorCount}`,
           icon: "eye",
         },
-        { label: "Vision", value: hero.visionRadius, icon: "layers" },
+        { label: "Context", value: "Regional", icon: "world" },
       ]}
     >
       <section className="dungeon-board" aria-labelledby="dungeon-heading">
@@ -515,6 +516,8 @@ export function DungeonBoard() {
               mapViewRef.current.zoom > 1.4 ? 1 : 2,
             )
           }
+          role="region"
+          tabIndex={0}
           aria-label="Interactive dungeon map. Drag to pan, use the mouse wheel or two fingers to zoom."
         >
           <svg
@@ -638,18 +641,11 @@ export function DungeonBoard() {
       </section>
 
       {heartPromptOpen ? (
-        <div
-          className="modal-backdrop"
-          role="presentation"
-          onMouseDown={() => setHeartPromptOpen(false)}
+        <ModalOverlay
+          panelClassName="decision-sheet"
+          labelledBy="heart-title"
+          onClose={() => setHeartPromptOpen(false)}
         >
-          <section
-            className="decision-sheet"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="heart-title"
-            onMouseDown={(event) => event.stopPropagation()}
-          >
             <span className="decision-sheet__icon">
               <GameIcon name="heart" size={27} />
             </span>
@@ -682,8 +678,7 @@ export function DungeonBoard() {
                 Continue exploring
               </ActionButton>
             </div>
-          </section>
-        </div>
+        </ModalOverlay>
       ) : null}
     </GameShell>
   );

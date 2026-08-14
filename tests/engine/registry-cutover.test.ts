@@ -12,6 +12,7 @@ import {
   decodeRegistryV2,
   hydratePreferredRegistryV2,
   persistRegistryV2,
+  replaceIncompatibleLegacyRegistry,
 } from "../../src/game/registryCutover.ts";
 import { completeVillageFirstHeroSetup } from "../../src/game/villageOpening.ts";
 import {
@@ -115,9 +116,28 @@ test("incompatible Dungeon campaigns do not create or replace a v2 payload", () 
   const result = hydratePreferredRegistryV2(primary, legacy, EMPTY_V2);
 
   assert.equal(result.ok, false);
-  if (!result.ok) assert.equal(result.failure.code, "migration-failed");
+  if (!result.ok) {
+    assert.equal(result.failure.code, "incompatible-legacy-campaign");
+  }
   assert.equal(primary.value, null);
   assert.equal(primary.writes, 0);
+  assert.equal(legacy.value, legacyRaw);
+  assert.equal(legacy.writes, 0);
+});
+
+test("confirmed incompatible replacement verifies v2 while retaining legacy bytes", () => {
+  const legacyRaw = JSON.stringify(legacyRegistry(completedV4DungeonFixture()));
+  const legacy = new MemoryRegistryStorage(legacyRaw);
+  const primary = new MemoryRegistryStorage();
+  const result = replaceIncompatibleLegacyRegistry(primary, legacy);
+
+  assert.equal(result.ok, true);
+  if (!result.ok) return;
+  assert.deepEqual(result.registry.players, [profile()]);
+  assert.deepEqual(result.registry.games, {});
+  assert.equal(result.registry.lastActivePlayerId, FIXTURE_PLAYER_ID);
+  assert.equal(primary.value, JSON.stringify(result.registry));
+  assert.equal(decodeRegistryV2(primary.value ?? "").ok, true);
   assert.equal(legacy.value, legacyRaw);
   assert.equal(legacy.writes, 0);
 });

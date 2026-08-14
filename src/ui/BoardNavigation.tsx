@@ -21,10 +21,18 @@ export function BoardNavigation({ game, onSelect }: BoardNavigationProps) {
     >
       {BOARD_DESCRIPTORS.map((board) => {
         const availability = getBoardAvailability(board.id, game);
+        const unavailableReason =
+          board.id === "dungeon"
+            ? "select its World location first"
+            : board.id === "combat"
+              ? "requires a legal encounter"
+              : board.id === "diplomacy"
+                ? "requires a legal relationship context"
+                : "unavailable";
         const stateLabel = !availability.enabled
-          ? `${board.label} — unavailable`
+          ? `${board.label} — ${unavailableReason}`
           : !availability.unlocked
-            ? `${board.label} — locked`
+            ? `${board.label} — ${unavailableReason}`
             : board.label;
         return (
           <button

@@ -790,7 +790,7 @@ The approved top-level in-campaign boards are:
 - **Combat** — hex-grid tactical resolution;
 - **Diplomacy** — persistent relationships, leverage, agreements, and diplomatic actions.
 
-Player/campaign selection and Hero Setup are pre-campaign surfaces. The quick Hero Sheet is an overlay, not a seventh board.
+Player/campaign selection and Hero Setup are pre-campaign surfaces. The Hero board is the sole in-campaign Hero information and progression surface; the shell Hero shortcut navigates there rather than opening a duplicate overlay.
 
 Initial availability direction:
 

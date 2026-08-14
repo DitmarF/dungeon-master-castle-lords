@@ -210,7 +210,11 @@ export function SetupBoard() {
           <div>
             <span className="section-kicker">Campaign foundation</span>
             <h1>Build your founding hero.</h1>
-            <p>Castle is your campaign foundation. Choose two paths, two attributes, and one skill-tree advance.</p>
+            <p>
+              Castle is your campaign foundation. Choose a Class, Vocation,
+              two free attribute points, and one legal starting skill. These
+              choices become campaign facts only when you enter the Village.
+            </p>
             <ProgressBar
               className="setup-progress"
               label="Hero setup choices completed"
@@ -232,7 +236,7 @@ export function SetupBoard() {
               <span>01</span>
               <div>
                 <h2>Base faction</h2>
-                <p>Defines your first settlement.</p>
+                <p>Your established Tier-1 Village foundation.</p>
               </div>
             </header>
             <div className="faction-options">
@@ -301,7 +305,7 @@ export function SetupBoard() {
               <span>02</span>
               <div>
                 <h2>Hero paths</h2>
-                <p>Each path grants an attribute and a skill.</p>
+                <p>Current Level-1 compatibility grants.</p>
               </div>
             </header>
 

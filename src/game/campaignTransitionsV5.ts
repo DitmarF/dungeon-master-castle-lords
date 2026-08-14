@@ -7,6 +7,7 @@ import {
   getBoardAvailabilityV5,
   type RegisteredBoardIdV5,
 } from "./navigationV5.ts";
+import type { LocationId, RegionId } from "./generateStartingWorld.ts";
 
 export interface TransitionSuccessV5<Details extends object = object> {
   ok: true;
@@ -21,12 +22,80 @@ export interface TransitionFailureV5<Code extends string> {
 
 export type DungeonMoveDirectionV5 = "north" | "west" | "south" | "east";
 
+export type EnterRegionalDungeonResultV5 =
+  | TransitionSuccessV5<{
+      locationId: "location:regional-dungeon";
+      regionId: RegionId;
+      resumed: boolean;
+    }>
+  | TransitionFailureV5<
+      | "hero-not-ready"
+      | "location-not-found"
+      | "location-not-explorable"
+      | "dungeon-context-required"
+    >;
+
 const DIRECTION_DELTAS: Record<DungeonMoveDirectionV5, CellPosition> = {
   north: { x: 0, y: -1 },
   west: { x: -1, y: 0 },
   south: { x: 0, y: 1 },
   east: { x: 1, y: 0 },
 };
+
+export function enterRegionalDungeon(
+  campaign: Readonly<CampaignStateV5>,
+  locationId: LocationId,
+): EnterRegionalDungeonResultV5 {
+  const foundation = campaign.foundation;
+  if (!foundation) return { ok: false, code: "hero-not-ready" };
+  const location = foundation.world.locations.find(
+    (candidate) => candidate.id === locationId,
+  );
+  if (!location) return { ok: false, code: "location-not-found" };
+  if (location.definitionId !== "regional-dungeon") {
+    return { ok: false, code: "location-not-explorable" };
+  }
+  const dungeon = foundation.regionalDungeons[location.id];
+  if (!dungeon) return { ok: false, code: "dungeon-context-required" };
+
+  const previousContext = foundation.hero.explorationContext;
+  const resumed = previousContext?.locationId === location.id;
+  const cell = resumed ? previousContext.cell : dungeon.start;
+  const visible = discoverAround(
+    cell,
+    dungeon.grid.columns,
+    dungeon.grid.rows,
+  );
+  const discovered = Array.from(new Set([...dungeon.discovered, ...visible]));
+
+  return {
+    ok: true,
+    state: {
+      ...campaign,
+      activeBoardId: "dungeon",
+      foundation: {
+        ...foundation,
+        hero: {
+          ...foundation.hero,
+          explorationContext: {
+            locationId: location.id,
+            cell: { ...cell },
+            returnBoardId: "world",
+          },
+        },
+        regionalDungeons: {
+          ...foundation.regionalDungeons,
+          [location.id]: { ...dungeon, discovered },
+        },
+      },
+    },
+    details: {
+      locationId: location.id,
+      regionId: location.regionId,
+      resumed,
+    },
+  };
+}
 
 export type MoveHeroInDungeonResultV5 =
   | TransitionSuccessV5<{

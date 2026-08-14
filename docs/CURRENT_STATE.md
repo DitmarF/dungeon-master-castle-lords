@@ -10,6 +10,8 @@ Source commit inspected: `80604a1da061bacbd1becb315268b57a387deaeb` (`Document E
 
 > **Audit scope notice:** This is a fresh evidence-based audit of the repository after the accepted EPIC 01 and EPIC 02 engineering work. The closure changes that accompany this audit are documentation-only and do not alter the inspected application behavior.
 
+> **Incremental EPIC 03 evidence (2026-08-14):** The audit body below records the EPIC 02 checkpoint and is retained for historical evidence. Where it conflicts with the current repository, accepted E03-T01–T06 records and the in-progress [E03-T07 Candidate](./E03-T07_OPENING_BOARDS_SUMMARIES_AND_INSPECTION.md) supersede it. The current application uses campaign version 5 and registry version 2, opens with an established Castle Village/home ring, renders authoritative Settlement/World/Hero summaries, enters the retained Dungeon through its regional World context, and reports typed local-storage/migration states. Economy, Roads, travel, projects, units, Combat, Diplomacy mechanics, and strategic Day/resources remain unimplemented.
+
 ## Purpose and evidence labels
 
 This document records what the current repository implements. It is evidence, not target architecture or approval of unresolved product behavior.

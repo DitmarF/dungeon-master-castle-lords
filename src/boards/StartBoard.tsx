@@ -6,6 +6,7 @@ import type { PlayerProfile } from "../game/model";
 import { Crest } from "../ui/Crest";
 import { FS_BANNER_COLORS as BANNER_COLORS } from "../ui/fs-game-colors.generated";
 import { GameIcon } from "../ui/GameIcon";
+import { ModalOverlay } from "../ui/ModalOverlay";
 
 function formatLastPlayed(player: PlayerProfile): string {
   if (!player.lastPlayedAt) return "No campaign yet";
@@ -21,6 +22,7 @@ function formatLastPlayed(player: PlayerProfile): string {
 export function StartBoard() {
   const {
     players,
+    campaignPlayerIds,
     selectedPlayer,
     selectedGame,
     createPlayer,
@@ -189,9 +191,7 @@ export function StartBoard() {
                 <div className="player-list" role="list" aria-label="Saved players">
                   {players.map((player) => {
                     const selected = player.id === selectedPlayer?.id;
-                    const hasSave = Boolean(
-                      selected ? selectedGame : player.lastPlayedAt,
-                    );
+                    const hasSave = campaignPlayerIds.includes(player.id);
                     return (
                       <button
                         type="button"
@@ -208,7 +208,7 @@ export function StartBoard() {
                           <small>{formatLastPlayed(player)}</small>
                         </span>
                         <span className="player-card__state">
-                          {hasSave ? "Saved" : "New"}
+                          {hasSave ? "Campaign" : "No campaign"}
                         </span>
                       </button>
                     );
@@ -258,7 +258,7 @@ export function StartBoard() {
                   className="button button--secondary"
                   onClick={handleNewGame}
                 >
-                  <GameIcon name="plus" size={18} /> New game
+                  <GameIcon name="plus" size={18} /> New campaign
                 </button>
                 <button
                   type="button"
@@ -266,7 +266,7 @@ export function StartBoard() {
                   onClick={() => loadGame(selectedPlayer.id)}
                   disabled={!selectedGame}
                 >
-                  {selectedGame ? "Continue" : "No saved game"}
+                  {selectedGame ? "Continue campaign" : "No campaign yet"}
                   {selectedGame ? <GameIcon name="arrow" size={18} /> : null}
                 </button>
               </div>
@@ -281,18 +281,11 @@ export function StartBoard() {
       </div>
 
       {deleteTarget ? (
-        <div
-          className="modal-backdrop"
-          role="presentation"
-          onMouseDown={() => setDeleteTarget(null)}
+        <ModalOverlay
+          panelClassName="confirm-dialog"
+          labelledBy="delete-title"
+          onClose={() => setDeleteTarget(null)}
         >
-          <section
-            className="confirm-dialog"
-            role="alertdialog"
-            aria-modal="true"
-            aria-labelledby="delete-title"
-            onMouseDown={(event) => event.stopPropagation()}
-          >
             <span className="dialog-icon dialog-icon--danger">
               <GameIcon name="trash" size={23} />
             </span>
@@ -324,28 +317,23 @@ export function StartBoard() {
                 Delete player
               </button>
             </div>
-          </section>
-        </div>
+        </ModalOverlay>
       ) : null}
 
       {replaceTarget ? (
-        <div
-          className="modal-backdrop"
-          role="presentation"
-          onMouseDown={() => setReplaceTarget(null)}
+        <ModalOverlay
+          panelClassName="confirm-dialog"
+          labelledBy="replace-title"
+          onClose={() => setReplaceTarget(null)}
         >
-          <section
-            className="confirm-dialog"
-            role="alertdialog"
-            aria-modal="true"
-            aria-labelledby="replace-title"
-            onMouseDown={(event) => event.stopPropagation()}
-          >
             <span className="dialog-icon">
               <GameIcon name="plus" size={23} />
             </span>
             <h2 id="replace-title">Begin a new campaign?</h2>
-            <p>{replaceTarget.name}&apos;s current save will be replaced.</p>
+            <p>
+              {replaceTarget.name}&apos;s current campaign will be replaced only
+              after the new Castle campaign is written and verified.
+            </p>
             {persistenceIssue ? (
               <p className="dialog-error" role="alert">
                 {persistenceIssue.message}
@@ -371,8 +359,7 @@ export function StartBoard() {
                 Start new game
               </button>
             </div>
-          </section>
-        </div>
+        </ModalOverlay>
       ) : null}
     </main>
   );

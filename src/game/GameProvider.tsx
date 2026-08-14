@@ -39,18 +39,22 @@ import {
 import {
   hydratePreferredRegistryV2,
   persistRegistryV2,
+  replaceIncompatibleLegacyRegistry,
 } from "./registryCutover";
 import { gameStorageV2, legacyGameStorage } from "./storage";
 import {
   claimSettlementFromDungeonHeart,
+  enterRegionalDungeon,
   moveHeroInRegionalDungeon,
   navigateToAvailableBoardV5,
   type DungeonMoveDirectionV5,
+  type EnterRegionalDungeonResultV5,
   type MoveHeroInDungeonResultV5,
   type NavigateToAvailableBoardResultV5,
   type RetiredSettlementClaimResult,
 } from "./campaignTransitionsV5";
 import type { CampaignStateV5 } from "./campaignState";
+import type { LocationId } from "./generateStartingWorld";
 import type { CastleHeroSetupSelection } from "./heroSetup";
 import {
   completeVillageFirstHeroSetup,
@@ -177,6 +181,7 @@ interface CreatePlayerResult extends PersistenceActionResult {
 interface GameContextValue {
   hydrated: boolean;
   players: PlayerProfile[];
+  campaignPlayerIds: PlayerId[];
   selectedPlayer: PlayerProfile | null;
   selectedGame: CampaignStateV5 | null;
   activeGame: CampaignStateV5 | null;
@@ -194,12 +199,16 @@ interface GameContextValue {
   loadGame: (playerId: PlayerId) => PersistenceActionResult;
   saveGame: () => PersistenceActionResult;
   retryPersistence: () => PersistenceActionResult;
+  replaceIncompatibleLegacy: () => PersistenceActionResult;
   completeHeroSetup: (
     selection: CastleHeroSetupSelection,
   ) => VillageFirstSetupResult | null;
   moveHeroInDungeon: (
     direction: DungeonMoveDirectionV5,
   ) => MoveHeroInDungeonResultV5 | null;
+  enterDungeon: (
+    locationId: LocationId,
+  ) => EnterRegionalDungeonResultV5 | null;
   claimSettlement: () => RetiredSettlementClaimResult;
   navigateToBoard: (
     boardId: RegisteredBoardIdV5,
@@ -323,6 +332,24 @@ export function GameProvider({
     }
     return writeRegistry(state.registry);
   }, [hydrationFailure, legacyStorage, state.registry, storage, writeRegistry]);
+
+  const replaceIncompatibleLegacy = useCallback(
+    (): PersistenceActionResult => {
+      if (hydrationFailure?.code !== "incompatible-legacy-campaign") {
+        return { ok: false, error: hydrationFailure ?? undefined };
+      }
+      const result = replaceIncompatibleLegacyRegistry(storage, legacyStorage);
+      if (!result.ok) {
+        setPersistenceIssue(result.failure);
+        return { ok: false, error: result.failure };
+      }
+      setHydrationFailure(null);
+      setPersistenceIssue(null);
+      dispatch({ type: "hydrate", registry: result.registry });
+      return { ok: true };
+    },
+    [hydrationFailure, legacyStorage, storage],
+  );
 
   const createPlayer = useCallback(
     (name: string, bannerColor: string): CreatePlayerResult => {
@@ -466,6 +493,18 @@ export function GameProvider({
     [commitCampaignTransition, state.activeGame],
   );
 
+  const enterDungeon = useCallback(
+    (locationId: LocationId): EnterRegionalDungeonResultV5 | null => {
+      if (!state.activeGame) return null;
+      const result = enterRegionalDungeon(state.activeGame, locationId);
+      if (!result.ok) return result;
+
+      const game = commitCampaignTransition(result.state);
+      return { ...result, state: game };
+    },
+    [commitCampaignTransition, state.activeGame],
+  );
+
   const claimSettlement = useCallback(
     (): RetiredSettlementClaimResult => claimSettlementFromDungeonHeart(),
     [],
@@ -522,6 +561,7 @@ export function GameProvider({
     () => ({
       hydrated: state.hydrated,
       players: state.registry.players,
+      campaignPlayerIds: Object.keys(state.registry.games) as PlayerId[],
       selectedPlayer,
       selectedGame,
       activeGame: state.activeGame,
@@ -539,8 +579,10 @@ export function GameProvider({
       loadGame,
       saveGame,
       retryPersistence,
+      replaceIncompatibleLegacy,
       completeHeroSetup,
       moveHeroInDungeon,
+      enterDungeon,
       claimSettlement,
       navigateToBoard,
       returnToPlayers,
@@ -548,6 +590,7 @@ export function GameProvider({
     [
       state.hydrated,
       state.registry.players,
+      state.registry.games,
       state.activeGame,
       state.view,
       darkMode,
@@ -563,8 +606,10 @@ export function GameProvider({
       loadGame,
       saveGame,
       retryPersistence,
+      replaceIncompatibleLegacy,
       completeHeroSetup,
       moveHeroInDungeon,
+      enterDungeon,
       claimSettlement,
       navigateToBoard,
       returnToPlayers,

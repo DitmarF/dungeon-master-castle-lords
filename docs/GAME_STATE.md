@@ -171,6 +171,14 @@ The pure version-5 navigation policy makes Hero, Settlement, and World initially
 
 The provider submits the complete transition through the verified version-2 persistence path. Successful persistence enters the Village-first campaign durably. A later write failure retains the complete in-memory campaign with explicit unsaved feedback and Save retry; it never reports durability or falls back to a partial campaign.
 
+### E03-T07 Candidate presentation and regional-entry behavior
+
+The opening boards read the existing version-5 foundation without adding campaign fields. World region selection/focus remains UI-only. Choosing the stored `location:regional-dungeon` entry invokes one pure transition that validates its World location and matching retained Dungeon, sets or resumes `hero.explorationContext`, adds only the start-cell visibility not already discovered, and changes the stored resume board to Dungeon. Re-entry preserves the stored cell, rooms, tiles, Heart, and discovery history. The Hero strategic-region reference remains a separate fact and is never replaced with a Dungeon cell or an axial coordinate.
+
+Normal Settlement, World, Hero, shell, and Start presentation do not expose legacy Dungeon day or treasury as strategic values. Development inspection may show the exact optional `legacyPrototypeMetadata` values only under explicit legacy labels with no rule authority.
+
+Legacy cutover now reports `incompatible-legacy-campaign` separately from generic migration failure. Only the explicit confirmed recovery path may create a preferred version-2 candidate that retains all profiles and compatible migrated campaigns while omitting campaigns proven to have the incompatible Dungeon root choice. That candidate is written and read back through the existing verified contract; the version-1 adapter is never written, so the original source remains untouched. Corrupt/invalid/migration failures remain blocked recovery states and never become empty registries.
+
 ## Current non-campaign runtime state
 
 **Observed:** These runtime values do not live inside `CampaignState`/`GameSave`:

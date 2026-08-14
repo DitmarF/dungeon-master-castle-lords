@@ -9,7 +9,6 @@ import { BoardNavigation } from "./BoardNavigation";
 import { Crest } from "./Crest";
 import { GameIcon, type IconName } from "./GameIcon";
 import { ResourceIndicator, Stat } from "./GamePrimitives";
-import { HeroSheet } from "./HeroSheet";
 import { NotificationRegion } from "./NotificationRegion";
 import { SettingsSheet } from "./SettingsSheet";
 
@@ -45,9 +44,7 @@ export function GameShell({
     navigateToBoard,
     persistenceIssue,
   } = useGame();
-  const [activeOverlay, setActiveOverlay] = useState<
-    "hero" | "settings" | null
-  >(null);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const [saveResult, setSaveResult] =
     useState<PersistenceActionResult | null>(null);
 
@@ -90,8 +87,9 @@ export function GameShell({
           <button
             type="button"
             className="appbar-button"
-            onClick={() => setActiveOverlay("hero")}
-            aria-label="Open hero information"
+            onClick={() => navigateToBoard("hero")}
+            aria-label="Open Hero board"
+            aria-current={activeGame.activeBoardId === "hero" ? "page" : undefined}
           >
             <GameIcon name="user" size={20} />
             <span>Hero</span>
@@ -108,7 +106,7 @@ export function GameShell({
           <button
             type="button"
             className="appbar-button"
-            onClick={() => setActiveOverlay("settings")}
+            onClick={() => setSettingsOpen(true)}
             aria-label="Open game settings"
           >
             <GameIcon name="settings" size={20} />
@@ -155,16 +153,8 @@ export function GameShell({
       />
 
       <div className="game-shell__overlay-layer">
-        {activeOverlay === "hero" ? (
-          <HeroSheet
-            hero={activeGame.foundation.hero}
-            playerName={selectedPlayer.name}
-            onClose={() => setActiveOverlay(null)}
-          />
-        ) : null}
-
-        {activeOverlay === "settings" ? (
-          <SettingsSheet onClose={() => setActiveOverlay(null)} />
+        {settingsOpen ? (
+          <SettingsSheet onClose={() => setSettingsOpen(false)} />
         ) : null}
       </div>
 

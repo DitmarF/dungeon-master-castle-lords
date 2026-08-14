@@ -15,6 +15,7 @@ import {
 import {
   claimSettlement,
   completeHeroSetup,
+  enterRegionalDungeon,
   moveHeroInDungeon,
   navigateToAvailableBoard,
   validateHeroSetupSelection,
@@ -172,6 +173,65 @@ test("Dungeon movement requires both the regional context and active board", () 
     ok: false,
     code: "dungeon-context-required",
   });
+});
+
+test("World entry establishes regional context without regenerating Dungeon state", () => {
+  const campaign = createReadyCampaign();
+  const foundation = campaign.foundation;
+  if (!foundation) throw new Error("Missing foundation");
+  const sourceDungeon = structuredClone(
+    foundation.regionalDungeons["location:regional-dungeon"],
+  );
+  const sourceWorld = structuredClone(foundation.world);
+
+  const result = enterRegionalDungeon(
+    campaign,
+    "location:regional-dungeon",
+  );
+  assert.equal(result.ok, true);
+  if (!result.ok) return;
+  assert.equal(result.state.activeBoardId, "dungeon");
+  assert.deepEqual(result.state.foundation?.world, sourceWorld);
+  assert.deepEqual(
+    result.state.foundation?.hero.explorationContext?.cell,
+    sourceDungeon.start,
+  );
+  assert.equal(
+    result.state.foundation?.hero.strategicRegionId,
+    foundation.world.homeRegionId,
+  );
+  const enteredDungeon =
+    result.state.foundation?.regionalDungeons["location:regional-dungeon"];
+  assert.deepEqual(enteredDungeon?.rooms, sourceDungeon.rooms);
+  assert.deepEqual(enteredDungeon?.tiles, sourceDungeon.tiles);
+  assert.deepEqual(enteredDungeon?.heart, sourceDungeon.heart);
+  assert.ok((enteredDungeon?.discovered.length ?? 0) > 0);
+
+  const resumed = enterRegionalDungeon(
+    { ...result.state, activeBoardId: "world" },
+    "location:regional-dungeon",
+  );
+  assert.equal(resumed.ok, true);
+  if (!resumed.ok) return;
+  assert.equal(resumed.details.resumed, true);
+  assert.deepEqual(
+    resumed.state.foundation?.hero.explorationContext?.cell,
+    result.state.foundation?.hero.explorationContext?.cell,
+  );
+  assert.deepEqual(
+    resumed.state.foundation?.regionalDungeons["location:regional-dungeon"].rooms,
+    sourceDungeon.rooms,
+  );
+});
+
+test("inert World locations cannot create Dungeon context", () => {
+  const campaign = createReadyCampaign();
+  const snapshot = structuredClone(campaign);
+  assert.deepEqual(enterRegionalDungeon(campaign, "location:ruin"), {
+    ok: false,
+    code: "location-not-explorable",
+  });
+  assert.deepEqual(campaign, snapshot);
 });
 
 test("the former Dungeon Heart settlement claim is retired", () => {

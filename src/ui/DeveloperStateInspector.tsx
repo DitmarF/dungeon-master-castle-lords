@@ -87,6 +87,7 @@ export function DeveloperStateInspector({
     ["Owner / player ID", activeGame.playerId],
     ["Campaign seed", activeGame.campaignSeed],
     ["World seed", foundation?.world.seed ?? "Not generated"],
+    ["World generator", foundation?.world.generatorVersion ?? "Not generated"],
     ["Dungeon seed", dungeon?.seed ?? "Not generated"],
     ["Active board", activeGame.activeBoardId],
     ["Hero Setup", foundation ? "Complete" : "Incomplete"],
@@ -94,15 +95,30 @@ export function DeveloperStateInspector({
     ["Hero class", hero?.heroClass ?? "Not selected"],
     ["Hero vocation", hero?.vocation ?? "Not selected"],
     ["Strategic region", hero?.strategicRegionId ?? "Not created"],
-    ["Exploration position", formatPosition(exploration?.cell)],
+    ["Exploration location", exploration?.locationId ?? "No active context"],
+    ["Exploration cell", formatPosition(exploration?.cell)],
+    ["Exploration return", exploration?.returnBoardId ?? "No active context"],
     ["Dungeon level", dungeon?.level ?? "Not generated"],
     ["Discovered cells", dungeon?.discovered.length ?? 0],
     [
       "Dungeon Heart",
       dungeon?.heartReached ? "Reached" : "Not reached",
     ],
-    ["Capital", foundation ? "Tier-1 Village" : "Not created"],
+    ["Capital", foundation?.capital.id ?? "Not created"],
+    ["Capital definition", foundation?.capital.definitionId ?? "Not created"],
+    ["Capital tier", foundation?.capital.tier ?? "Not created"],
+    ["Capital region", foundation?.capital.regionId ?? "Not created"],
   ] as const;
+
+  const worldFacts = foundation
+    ? [
+        ["Home region", foundation.world.homeRegionId],
+        ["Region snapshots", foundation.world.regions.length],
+        ["Controlled regions", foundation.world.regions.filter((region) => region.controlled).length],
+        ["Site snapshots", foundation.world.sites.length],
+        ["Location snapshots", foundation.world.locations.length],
+      ] as const
+    : [];
 
   return (
     <ModalOverlay
@@ -168,6 +184,76 @@ export function DeveloperStateInspector({
             </div>
           ))}
         </dl>
+      </section>
+
+      <section
+        className="developer-inspector__section"
+        aria-labelledby="world-snapshot-title"
+      >
+        <div className="developer-inspector__section-heading">
+          <h3 id="world-snapshot-title">World snapshot authority</h3>
+          <span>Stored, not regenerated</span>
+        </div>
+        {foundation ? (
+          <>
+            <dl className="developer-inspector__facts">
+              {worldFacts.map(([label, value]) => (
+                <div key={label}><dt>{label}</dt><dd>{value}</dd></div>
+              ))}
+            </dl>
+            <ul className="developer-inspector__records" aria-label="World regions">
+              {foundation.world.regions.map((region) => {
+                const site = foundation.world.sites.find((item) => item.regionId === region.id);
+                const location = foundation.world.locations.find((item) => item.regionId === region.id);
+                return (
+                  <li key={region.id}>
+                    <strong>{region.id}</strong>
+                    <span>
+                      axial {region.coordinate.q},{region.coordinate.r} · controlled · {site?.definitionId ?? location?.definitionId ?? (region.id === foundation.world.homeRegionId ? "capital" : "terrain-only")}
+                    </span>
+                  </li>
+                );
+              })}
+            </ul>
+          </>
+        ) : (
+          <p className="developer-inspector__empty">Available after Hero Setup.</p>
+        )}
+      </section>
+
+      <section
+        className="developer-inspector__section"
+        aria-labelledby="dungeon-snapshot-title"
+      >
+        <div className="developer-inspector__section-heading">
+          <h3 id="dungeon-snapshot-title">Retained regional Dungeon</h3>
+          <span>Snapshot authority</span>
+        </div>
+        {dungeon ? (
+          <dl className="developer-inspector__facts">
+            <div><dt>Definition</dt><dd>{dungeon.dungeonDefinitionId}</dd></div>
+            <div><dt>Seed</dt><dd>{dungeon.seed}</dd></div>
+            <div><dt>Grid</dt><dd>{dungeon.grid.columns} × {dungeon.grid.rows}</dd></div>
+            <div><dt>Rooms</dt><dd>{dungeon.rooms.length}</dd></div>
+            <div><dt>Start</dt><dd>{formatPosition(dungeon.start)}</dd></div>
+            <div><dt>Heart</dt><dd>{formatPosition(dungeon.heart)}</dd></div>
+            <div><dt>Discovered</dt><dd>{dungeon.discovered.length}</dd></div>
+            <div><dt>Heart reached</dt><dd>{dungeon.heartReached ? "Yes" : "No"}</dd></div>
+            <div>
+              <dt>Legacy metadata</dt>
+              <dd>{dungeon.legacyPrototypeMetadata ? "Retained, non-strategic" : "None"}</dd>
+            </div>
+            {dungeon.legacyPrototypeMetadata ? (
+              <>
+                <div><dt>Legacy Dungeon day</dt><dd>{dungeon.legacyPrototypeMetadata.dungeonDay}</dd></div>
+                <div><dt>Legacy Dungeon treasury</dt><dd>{dungeon.legacyPrototypeMetadata.dungeonTreasury}</dd></div>
+                <div><dt>Legacy settlement claim</dt><dd>{dungeon.legacyPrototypeMetadata.settlementClaimed ? "Recorded" : "Not recorded"}</dd></div>
+              </>
+            ) : null}
+          </dl>
+        ) : (
+          <p className="developer-inspector__empty">Not generated.</p>
+        )}
       </section>
 
       <section

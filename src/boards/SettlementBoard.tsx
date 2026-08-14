@@ -2,7 +2,7 @@
 
 import { useGame } from "../game/GameProvider";
 import { GameIcon } from "../ui/GameIcon";
-import { Slot } from "../ui/GamePrimitives";
+import { Panel } from "../ui/GamePrimitives";
 import { GameShell } from "../ui/GameShell";
 
 export function SettlementBoard() {
@@ -34,22 +34,40 @@ export function SettlementBoard() {
           </span>
         </header>
 
-        <div className="settlement-map">
-          <div className="settlement-grid" aria-hidden="true" />
-          <div className="settlement-empty">
+        <div className="settlement-summary-grid">
+          <Panel variant="raised" className="settlement-capital-card">
             <span className="settlement-empty__mark">
               <GameIcon name="castle" size={32} />
             </span>
-            <span className="section-kicker">Village-first opening</span>
-            <h2>Your capital is established.</h2>
-            <p>
-              The Village and controlled home ring are campaign facts. Economy,
-              buildings, and projects remain later work.
-            </p>
-          </div>
-          <Slot label="Future district 01" className="future-slot future-slot--one" />
-          <Slot label="Future district 02" className="future-slot future-slot--two" />
-          <Slot label="Future district 03" className="future-slot future-slot--three" />
+            <span>
+              <small>Capital reference</small>
+              <h2>{capital.id}</h2>
+              <p>
+                {capital.definitionId} · Tier {capital.tier} · {capital.regionId}
+              </p>
+            </span>
+          </Panel>
+
+          <Panel className="settlement-fact-card">
+            <small>Faction authority</small>
+            <strong>Castle</strong>
+            <p>The campaign owns this root identity; the Hero does not duplicate it.</p>
+          </Panel>
+          <Panel className="settlement-fact-card">
+            <small>Controlled opening</small>
+            <strong>{world.regions.length} regions</strong>
+            <p>One home region and exactly six adjacent controlled neighbors.</p>
+          </Panel>
+          <Panel className="settlement-fact-card">
+            <small>Starting contents</small>
+            <strong>{world.sites.length} sites · {world.locations.length} locations</strong>
+            <p>Food, Wood, Stone, a regional Dungeon, one inert ruin, and terrain-only context.</p>
+          </Panel>
+          <p className="settlement-boundary-note">
+            This board shows existing campaign facts only. Production,
+            buildings, projects, recruitment, costs, and evolution are not yet
+            implemented.
+          </p>
         </div>
       </section>
     </GameShell>

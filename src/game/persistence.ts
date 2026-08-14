@@ -31,6 +31,7 @@ export type PersistenceFailureCode =
   | "parse-failed"
   | "registry-validation-failed"
   | "campaign-validation-failed"
+  | "incompatible-legacy-campaign"
   | "migration-failed"
   | "serialization-failed"
   | "verification-failed";
@@ -51,6 +52,8 @@ const FAILURE_MESSAGES: Record<PersistenceFailureCode, string> = {
     "The local player registry is invalid and could not be opened safely.",
   "campaign-validation-failed":
     "A saved campaign is invalid and could not be opened safely.",
+  "incompatible-legacy-campaign":
+    "A Dungeon-faction campaign cannot be converted into a Castle campaign. The original save was kept.",
   "migration-failed":
     "A saved campaign could not be upgraded safely. The original save was kept.",
   "serialization-failed":

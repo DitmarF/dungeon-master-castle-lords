@@ -1,10 +1,12 @@
 export {
   claimSettlementFromDungeonHeart as claimSettlement,
+  enterRegionalDungeon,
   moveHeroInRegionalDungeon as moveHeroInDungeon,
   navigateToAvailableBoardV5 as navigateToAvailableBoard,
 } from "./campaignTransitionsV5.ts";
 export type {
   DungeonMoveDirectionV5 as DungeonMoveDirection,
+  EnterRegionalDungeonResultV5 as EnterRegionalDungeonResult,
   MoveHeroInDungeonResultV5 as MoveHeroInDungeonResult,
   NavigateToAvailableBoardResultV5 as NavigateToAvailableBoardResult,
   RetiredSettlementClaimResult as ClaimSettlementResult,
