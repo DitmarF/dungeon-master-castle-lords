@@ -2,7 +2,7 @@
 
 Status: source of truth for runtime-information ownership  
 Scope: what belongs to a campaign, what does not, and what exists today  
-Last updated: 2026-08-10
+Last updated: 2026-08-14
 
 ## Purpose and authority
 
@@ -211,7 +211,7 @@ Campaign count, ownership, timestamps, save slots, branching, and lifecycle stat
 - faction identity and any approved faction progression;
 - acquired skills, capabilities, equipment, companions, conditions, or other progression only after their rules are approved.
 
-Approved shape includes an approximately 12-level hero target, Class + Vocation leading toward a prestige archetype, the faction branch/stage structure in `GAME_CONCEPT.md`, and distinct Downed/Wounded/Dead states. Exact schemas and balance remain TBD.
+Approved future shape includes 20 Hero Levels, 40 allocated attribute points, 20 spendable skill points, Class + Vocation determining one of nine Professions, compositional faction-evolution riders, and distinct Downed/Wounded/Dead states. Exact schemas, curves, executable effects, and balance remain TBD.
 
 No unapproved progression field should be added merely as a placeholder that implies a rule.
 
@@ -239,7 +239,7 @@ What regenerates, what is stored, and what is reconstructed from a seed remain T
 - supply relationships and consequences once the supply model is approved;
 - campaign time, turns, days, or schedules only once their authority and advancement rules are defined.
 
-Strategic time is based on Days, strategic hero travel uses global Movement Points, and dungeon exploration uses exploration turns. The existing treasury/day counters do not establish their exact advancement, conversion, economy, or supply rules.
+Strategic time is based on Days, strategic Hero movement uses Travel, and Dungeon exploration uses exploration turns. The existing treasury/day counters do not establish their exact advancement, conversion, economy, or supply rules.
 
 ### Tactical encounters and consequences
 
@@ -248,7 +248,7 @@ Strategic time is based on Days, strategic hero travel uses global Movement Poin
 - resolved outcome and consequences returned to the campaign;
 - in-progress tactical state only if resumable encounters are approved.
 
-Approved tactical state shape includes squad-scale participants, a hex grid, an initiative queue, and separate MP/AP values. Exact turn data, actions, damage, AI, retreat, recovery, and encounter-resume rules remain TBD.
+Approved tactical state shape includes squad-scale participants, a hex grid, an initiative queue, and separate Move/AP values. Exact turn data, actions, damage, AI, retreat, recovery, and encounter-resume rules remain TBD.
 
 ## State that should remain outside the campaign
 
@@ -309,6 +309,6 @@ Implementation must not convert an open gameplay question into a permanent save-
 6. Are tactical encounters resumable; if so, which in-progress combat state is durable?
 7. For generated locations, what is authoritative: seed/version, generated snapshot, or both?
 8. What world, region, holding, conquest, and supply fields implement their approved system shapes once exact rules are defined?
-9. How do Days, global hero Movement Points, exploration turns, and tactical initiative/MP/AP advance or convert between one another?
+9. How do Days, strategic Travel, exploration turns, and tactical initiative/Move/AP advance or convert between one another?
 10. What are the cloud-save, offline, synchronization, conflict, export/import, and migration guarantees?
 11. Must multiplayer requirements constrain the campaign schema now; if yes, who is authoritative for state transitions?

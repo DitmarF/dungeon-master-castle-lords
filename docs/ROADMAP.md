@@ -1,78 +1,92 @@
 # Dungeon Master & Castle Lords — Roadmap
 
-Status: source of truth for current Epic, exact next task, and decision gates
-Last updated: 2026-08-10
+Status: Game Concept 2.0 roadmap rebase Candidate; owner acceptance required before activation
+Last updated: 2026-08-14
 
 ## Purpose and authority
 
-This document answers: **Where are we, and what is next?** Product rules live in [GAME_CONCEPT.md](./GAME_CONCEPT.md), implementation evidence in [CURRENT_STATE.md](./CURRENT_STATE.md), and accepted decisions in [DECISIONS.md](./DECISIONS.md).
+This document answers: **Where are we, and what is next?** Product rules live in [GAME_CONCEPT.md](./GAME_CONCEPT.md), the detailed proposed Epic/task/subtask plan in [MVP_IMPLEMENTATION_PLAN.md](./MVP_IMPLEMENTATION_PLAN.md), implementation evidence in [CURRENT_STATE.md](./CURRENT_STATE.md), and accepted decisions in [DECISIONS.md](./DECISIONS.md).
 
-The approved master roadmap uses **EPIC 00 through EPIC 24**, with Milestone A after EPIC 11. Work follows that sequence and adapts each Epic to the implementation already present; an Epic must not recreate working systems from scratch. The registry below preserves the approved long-range spine. Detailed tasks and exit criteria are added only when an Epic approaches activation.
+This Candidate preserves completed EPIC 00–02 and replaces the former unstarted EPIC 03–24 sequence with a vertical Castle-MVP sequence through EPIC 14. It retains useful responsibilities from the old plan but changes their order and grouping around Game Concept 2.0. No completed Epic or accepted closure record is rewritten.
+
+Until the owner accepts DMCL-P26, this rebase is not active and no implementation task has begun. After acceptance, ROADMAP.md remains the execution authority for the active Epic and exactly one next task; MVP_IMPLEMENTATION_PLAN.md remains its detailed planning companion.
 
 ## Current implementation boundary
 
-The playable prototype is:
+The implemented prototype remains:
 
 `local player → campaign → hero setup → deterministic dungeon exploration → dungeon-heart claim → placeholder settlement`
 
-World strategy, region conquest, supply, meaningful management, tactical combat, executable skill effects, cloud saves, and multiplayer are not implemented. See `CURRENT_STATE.md` for detail.
+World strategy, region conquest, supply, meaningful management, tactical combat, executable skill effects, the new faction evolution, cloud saves, and multiplayer are not implemented. See CURRENT_STATE.md for evidence. This roadmap Candidate changes intended sequencing, not implementation state.
 
-## Current Epic
+## Candidate activation
 
-### EPIC 03 — Campaign lifecycle and persistence
+Owner acceptance of this plan will:
 
-Status: **Current**
+- accept DMCL-P26 and supersede only the former unstarted EPIC 03–24 sequence;
+- activate **EPIC 03 — Game Concept 2.0 transition and campaign persistence**;
+- make **E03-T01 — Audit Concept 2.0 lifecycle, save, and opening-flow transition** the sole next task;
+- preserve EPIC 00–02 and every accepted E01/E02 closure as historical foundation;
+- leave all gameplay numbers and later decision gates unresolved until their responsible tasks.
 
-Purpose: define and implement the supported local campaign lifecycle and persistence boundary on top of the accepted EPIC 02 engine foundation.
+Acceptance activates planning only. It does not start E03-T01 automatically, change code or saves, authorize commit/push or a Sites checkpoint, or authorize deployment.
 
-EPIC 02 is complete. EPIC 03 begins with one audit/planning task before any lifecycle or persistence behavior changes. Current one-campaign-per-player behavior, automatic local writes, explicit Save, timestamps, replacement/deletion, and browser-only storage are implementation evidence—not silently accepted final product rules.
+## First MVP Epic after acceptance
 
-## Current Next Task
+### EPIC 03 — Game Concept 2.0 transition and campaign persistence
 
-### E03-T01 — Audit campaign lifecycle and persistence boundaries
+Status: **Proposed Current**
 
-Status: **Next — exactly one**
+Purpose: safely replace the version-4 Dungeon-first prototype foundation with the minimum Castle-only, Village-first campaign state while establishing deliberate local lifecycle, validation, migration, recovery, and board-entry behavior.
 
-Goal: inspect the current player → campaign → create/load/save/return/`localStorage` flow and define the smallest approved EPIC 03 lifecycle/persistence contract before changing implementation.
+EPIC 03 does not add an empty final-game schema. It adds only state and content required by the new opening: Castle authority, a capital Village, the controlled home ring, basic starting sites, regional Dungeon context, and approved retained legacy facts. Economy yields, Road construction, units, Combat, Gambits, Hero progression depth, and evolution effects remain with later Epics.
 
-The audit will map the existing meanings and boundaries of New Game, Continue, automatic persistence, explicit Save, player/campaign ownership, the current one-campaign-per-player registry, campaign replacement/deletion, timestamps, storage validation/errors, migrations, and the supported browser-local save lifecycle. It will identify the exact owner decisions required before implementation and propose the smallest bounded E03 task sequence.
+## Exact next task after acceptance
 
-The audit must not answer those product questions through implementation, redesign persistence, alter saves, add cloud/authentication, install dependencies, refactor `GameProvider`, or deploy. Cloud saves, cross-device synchronization, authentication, and multiplayer authority remain explicitly out of scope for the initial contract unless a later owner decision separately changes that boundary.
+### E03-T01 — Audit Concept 2.0 lifecycle, save, and opening-flow transition
 
-Do not begin E03-T01 until this EPIC 02 closure checkpoint is complete.
+Status: **Proposed Next — exactly one**
+
+Goal: produce an owner-approved lifecycle, state-ownership, migration, version-5 candidate, and Village-first opening contract before runtime behavior changes.
+
+The audit must:
+
+- trace New Game, Continue, replacement, deletion, hydration, automatic persistence, manual Save, return, timestamps, registry validation, and storage failures;
+- classify every version-4 field, transition, content reference, board unlock, and UI assumption as preserve, relocate, derive, retire, or owner-decision-required;
+- compare clean-break, conversion, and legacy-mode treatments for current Castle and Dungeon campaigns;
+- prevent old Dungeon day, treasury, and settlementClaimed meanings from silently becoming strategic Day, Gold, or capital ownership;
+- define the minimum new-opening stored, derived, static, identity, and generation categories without adding later mechanics;
+- present explicit owner decisions, recommended MVP defaults, the migration matrix, E03-T02–T08 bounds, and the Epic exit gate.
+
+E03-T01 is documentation and analysis only. It must not change runtime behavior, cut over the save version, add future gameplay slices, install dependencies, change database/hosting infrastructure, add cloud/authentication/multiplayer, or deploy.
 
 ## Epic registry
 
-The sequence column records dependency position, not permission to begin an Epic early. Each Epic receives scoped tasks and acceptance criteria before implementation.
+The sequence column records dependency position, not permission to begin early. Detailed tasks, subtasks, decisions, and exit criteria are in MVP_IMPLEMENTATION_PLAN.md. Every task still requires a bounded task definition when activated.
 
 | Epic / milestone | Status | High-level purpose | Sequence position |
 |---|---|---|---|
 | EPIC 00 — Project contract and development infrastructure | **Complete** | Establish the audit, product and technical contracts, decision log, roadmap, workflow, repository guidance, FS source, and project README. | Foundation |
 | EPIC 01 — UI shell and board architecture | **Complete** | Finish and generalize the existing mobile-first shell, FS integration, and modular board foundations. | After EPIC 00 |
 | EPIC 02 — Core game engine and state | **Complete** | Establish the shared game-engine and central campaign-state foundations needed by later boards and systems. | After EPIC 01 |
-| EPIC 03 — Campaign lifecycle and persistence | **Current** | Define and implement the campaign lifecycle and its supported save/load persistence boundary. | After EPIC 02 |
-| EPIC 04 — Hero foundation | Planned | Establish the approved hero identity, attributes, and foundational campaign representation. | After EPIC 03 |
-| EPIC 05 — Minimal progression framework | Planned | Add the smallest progression framework needed for the first playable loop. | After EPIC 04 |
-| EPIC 06 — Calendar and global turn engine | Planned | Establish strategic Days and the global turn/movement structure. | After EPIC 05 |
-| EPIC 07 — Minimal settlement economy | Planned | Add the minimum settlement economy needed by the first playable loop. | After EPIC 06 |
-| EPIC 08 — Minimal world map | Planned | Introduce the minimum usable world-map board and its campaign integration. | After EPIC 07 |
-| EPIC 09 — Region conquest and supply | Planned | Add the approved region-conquest and supply system shapes to the strategic loop. | After EPIC 08 |
-| EPIC 10 — Dungeon exploration | Planned | Develop the dungeon exploration loop and its campaign consequences. | After EPIC 09 |
-| EPIC 11 — Tactical combat skeleton | Planned | Establish the minimum squad-based tactical combat loop on a hex board. | After EPIC 10 |
-| MILESTONE A — First complete playable loop | Planned checkpoint | Demonstrate the first integrated strategic, exploration, and tactical campaign loop. | After EPIC 11; before EPIC 12 |
-| EPIC 12 — Army and troop system | Planned | Develop campaign armies and troop content beyond the Milestone A minimum. | After Milestone A |
-| EPIC 13 — Items, equipment and spells | Planned | Add reusable item, equipment, and spell content within the established content model. | After EPIC 12 |
-| EPIC 14 — Full class/vocation system | Planned | Expand the minimal hero progression into the approved class and vocation structure. | After EPIC 13 |
-| EPIC 15 — Faction system and evolution | Planned | Develop the approved faction identities, domains, and evolution structure. | After EPIC 14 |
-| EPIC 16 — Prestige hero classes | Planned | Add prestige outcomes that build on class, vocation, and faction progression. | After EPIC 15 |
-| EPIC 17 — Dungeon depth | Planned | Expand dungeon content and exploration depth through existing system boundaries. | After EPIC 16 |
-| EPIC 18 — Tactical combat depth | Planned | Expand tactical choices and combat content beyond the skeleton. | After EPIC 17 |
-| EPIC 19 — Subjects and advanced settlement | Planned | Develop subjects and deeper settlement management. | After EPIC 18 |
-| EPIC 20 — Strategic interaction systems | Planned | Expand interactions within the strategic layer using established campaign systems. | After EPIC 19 |
-| EPIC 21 — Events and world simulation | Planned | Add campaign events and broader world-state simulation. | After EPIC 20 |
-| EPIC 22 — Rival sovereign AI | Planned | Introduce AI-controlled rival sovereign behavior within approved campaign rules. | After EPIC 21 |
-| EPIC 23 — Victory and campaign ending | Planned | Implement approved victory families, defeat conditions, and campaign resolution. | After EPIC 22 |
-| EPIC 24 — Balancing, UX and production hardening | Planned | Balance approved systems, improve usability, and harden the integrated prototype. | After EPIC 23 |
+| EPIC 03 — Game Concept 2.0 transition and campaign persistence | **Proposed Current** | Update lifecycle, versioned state, migration, Castle/Village opening, regional Dungeon context, and board entry safely. | After EPIC 02 |
+| EPIC 04 — Tier 1 World, Settlement, economy, and strategic Days | Planned | Implement Roads, connection, simple supply, projects, stockpile, core infrastructure, production, and both functional boards. | After EPIC 03 |
+| EPIC 05 — Regional Dungeon integration and first vertical slice | Planned | Make the existing Dungeon a World-region location that returns a persistent consequence and completes the approved first slice. | After EPIC 04 |
+| MILESTONE A — New-concept strategic slice | Planned checkpoint | Prove Setup → Village → Road → improvement → Day → regional Dungeon consequence → Tier 2 preview. | After EPIC 05 |
+| EPIC 06 — Hero levels, attributes, Classes, Vocations, and Professions | Planned | Establish Level 1–20 progression, point budgets, all stable Hero identities, trees, and Profession unlocks. | After Milestone A |
+| EPIC 07 — Persistent armies, encounters, and tactical Combat core | Planned | Recruit and move squads, resolve hex Combat, and return persistent campaign consequences. | After EPIC 06 |
+| MILESTONE B — Connected gameplay loop | Planned checkpoint | Prove recruit → Travel → encounter → Combat → continuing campaign consequence. | After EPIC 07 |
+| EPIC 08 — Executable abilities, equipment, and tactical depth | Planned | Implement the concrete typed vocabulary and all 150 shared Class/Vocation/Profession abilities. | After EPIC 07, using EPIC 06 progression |
+| EPIC 09 — Diplomacy, intelligence, enemy Heroes, and opposed Gambits | Planned | Implement relationships and symmetric General/Spy/Diplomat Gambits with defending-Hero resistance. | After EPIC 08 |
+| CAPABILITY GATE — Hero, social, and encounter integration | Planned checkpoint | Prove all nine Professions, executable abilities, enemy Heroes, Diplomacy, and Gambits interoperate. | After EPIC 09 |
+| EPIC 10 — Tier 2 Civilizational Evolution | Planned | Implement Republic/Empire, Iron/Gold, branch packages, atomic evolution, riders, and bounded rosters. | After EPIC 09 |
+| EPIC 11 — Tier 3 Technological Evolution | Planned | Implement Mana Crystals, Industry/Magic, four composed identities, facilities, and riders. | After EPIC 10 |
+| EPIC 12 — Tier 4 Spiritual Evolution and terminal identities | Planned | Implement Holy/Unholy, eight terminal capstones, ancestry, signature content, costs, counters, and riders. | After EPIC 11 |
+| MILESTONE C — Evolution-complete Castle campaign | Planned checkpoint | Prove all eight Tier 4 combinations through shared strategic and tactical systems. | After EPIC 12 |
+| EPIC 13 — Integrated campaign, territory, and endings | Planned | Add compact territorial conflict, bounded strategic opposition, Dominion/Conquest/Ascension, defeat, and full-campaign proofs. | After EPIC 12 |
+| FULL CAMPAIGN GATE | Planned checkpoint | Prove progression from Setup through Tier 4 to victory or defeat without developer intervention. | After EPIC 13 |
+| EPIC 14 — MVP hardening, balance, accessibility, and release candidate | Planned | Complete content, onboarding, mobile/accessibility, persistence recovery, performance, balance, full verification, and owner acceptance. | After EPIC 13 |
+| MVP CANDIDATE | Planned checkpoint | Accepted, verified, non-deployed Castle-faction MVP. | After EPIC 14 |
 
 ## EPIC 01 closure
 
@@ -214,12 +228,10 @@ E00-T05 was accepted by the project owner on 2026-08-09, completing EPIC 00. Its
 - Every accepted task updates this file with the current Epic status and exactly one next task.
 - Normal tasks save an accepted Sites version but do not deploy. Deployment requires separate explicit user instruction.
 
-## Deferred decisions that do not block E03-T01
+## Open decisions routed by this Candidate
 
-- exact gameplay formulas, balance, thresholds, costs, and progression values;
-- final player/account/cloud/offline/multiplayer authority model;
-- unfinished setup and other draft persistence;
-- placement of still-unimplemented clock isolation;
-- exact effect vocabulary until an approved mechanic needs it;
-- localization, mod/content-pack, and remote-content requirements;
-- detailed tasks, formulas, readiness criteria, and exit criteria for future Epics; define these through bounded planning before each Epic is activated.
+- E03-T01 must resolve the MVP lifecycle, timestamp, storage-failure, campaign-count, legacy-save, opening-destination, starting-ring, and version-transition contract before runtime changes.
+- Exact gameplay formulas, balance, thresholds, costs, progression values, content quantities, and later schema fields remain with their named Epic decision tasks.
+- Exact effect vocabulary remains deferred until EPIC 08 has concrete approved abilities.
+- Cloud/offline synchronization, authentication, multiplayer authority, localization, mods/content packs, and remote content remain outside the MVP.
+- A detailed task row is planning scope, not implementation authorization; each task still requires its own accepted task definition.

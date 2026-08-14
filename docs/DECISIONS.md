@@ -2,7 +2,7 @@
 
 Status: lightweight architecture and design-decision index  
 Scope: accepted decisions, current interim choices, pending proposals, and deferred questions  
-Last updated: 2026-08-10
+Last updated: 2026-08-14
 
 ## Purpose
 
@@ -29,7 +29,7 @@ Only the project owner may convert **Proposed** or **Deferred/TBD** to **Accepte
 
 ## Accepted decisions
 
-These decisions were consolidated into this log on 2026-08-09. Their original approval dates were not separately recorded, so the consolidation date must not be mistaken for the approval date.
+DMCL-001–DMCL-021 were consolidated into this log on 2026-08-09. Their original approval dates were not separately recorded, so the consolidation date must not be mistaken for the approval date. DMCL-022–DMCL-028 were explicitly approved on 2026-08-14. Superseded DMCL-014 and DMCL-015 remain in place for history.
 
 | ID | Decision | Reason/constraint | Responsible source |
 |---|---|---|---|
@@ -46,14 +46,21 @@ These decisions were consolidated into this log on 2026-08-09. Their original ap
 | DMCL-011 | Campaign data is versioned and requires deliberate migration handling. | Existing saves are persistent project data, even during the prototype. | `GAME_STATE.md`, `CURRENT_STATE.md` |
 | DMCL-012 | Multiplayer is a possible future direction, not a current commitment. | Its mode, authority, ownership, and synchronization requirements are unresolved. | `GAME_CONCEPT.md`, `ROADMAP.md` |
 | DMCL-013 | Grid assignments are World Map → hex, Dungeon/Building Map → square, Tactical Combat → hex. | Each board uses the approved spatial model for its loop. | `GAME_CONCEPT.md` |
-| DMCL-014 | The faction-development structure is Castle/Humanoid/Light Dominion → Human, Dwarf, or Elf → Domain → Ascension; Dungeon/Monster/Dark Dominion → Goblinoid, Insectoid, or Necronoid → Domain → Ascension. | Structure is approved; exact effects and balance remain TBD. | `GAME_CONCEPT.md` |
-| DMCL-015 | Hero progression targets approximately 12 levels; Class + Vocation leads toward a prestige archetype; skill trees use root + 3 branches × 3 tiers. | Progression shape is approved without fixing thresholds or bonuses. | `GAME_CONCEPT.md` |
+| DMCL-014 | **Superseded by DMCL-022 and DMCL-023.** Historical decision: The faction-development structure is Castle/Humanoid/Light Dominion → Human, Dwarf, or Elf → Domain → Ascension; Dungeon/Monster/Dark Dominion → Goblinoid, Insectoid, or Necronoid → Domain → Ascension. | The original structure was approved with effects and balance TBD; the owner replaced it with the Village-first Castle evolution on 2026-08-14. | `GAME_CONCEPT.md` |
+| DMCL-015 | **Superseded by DMCL-025 and DMCL-026.** Historical decision: Hero progression targets approximately 12 levels; Class + Vocation leads toward a prestige archetype; skill trees use root + 3 branches × 3 tiers. | The original progression shape was approved without fixed thresholds or bonuses; the owner replaced it with the Level-20 Profession system on 2026-08-14. | `GAME_CONCEPT.md` |
 | DMCL-016 | Strategic play advances in Days and uses global hero Movement Points; dungeon exploration uses exploration turns. | Time/economy shape is approved; exact conversion and costs remain TBD. | `GAME_CONCEPT.md` |
 | DMCL-017 | Tactical combat uses squads, a hex grid, an initiative queue, and separate MP/AP economies. | Combat structure is approved; exact rules and balance remain TBD. | `GAME_CONCEPT.md` |
 | DMCL-018 | Downed, Wounded, and Dead are distinct hero states; death of the actual sovereign is campaign defeat. | Consequence shape is approved; exact thresholds/recovery remain TBD. | `GAME_CONCEPT.md` |
 | DMCL-019 | Dominion, Conquest, and Ascension are the approved victory families. | Exact victory thresholds/resolution remain TBD. | `GAME_CONCEPT.md` |
 | DMCL-020 | The authoritative FS token source is `sources/fs.tokens.json`. | UI adapters derive/synchronize from this repository source; adapter details are EPIC 01 work. | `GAME_CONCEPT.md`, `ROADMAP.md` |
 | DMCL-021 | The top-level in-campaign board family is Hero, Settlement, World, Dungeon, Combat, and Diplomacy; player/setup remains pre-campaign, and the full Hero board remains distinct from the quick-information `HeroSheet`. | Establish the complete modular family without conflating board surfaces, setup flow, or overlays. | `GAME_CONCEPT.md`, `ARCHITECTURE.md`, `E01-T05_EMPTY_BOARD_SCAFFOLD.md` |
+| DMCL-022 | The Castle Faction is the sole playable MVP faction family and begins with an established capital Village and controlled home ring; regional Dungeons are sites rather than the source of the starting Settlement. | Establishes a coherent Village-first strategic opening while retaining stable legacy faction IDs. Starting-ring contents beyond the guaranteed Food, Wood, and Stone sites and save migration remain TBD. | `GAME_CONCEPT.md` |
+| DMCL-023 | Castle makes three permanent faction-wide evolution choices when its capital reaches Settlement Tiers 2–4: Republic/Empire, Industry/Magic, and Holy/Unholy; the combination derives one of eight terminal identities. | Replaces the inaccurate racial/light–dark ladder with orthogonal governance, technology, and metaphysical axes. Exact costs, numeric effects, balance, and capstone formulas remain TBD. | `GAME_CONCEPT.md` |
+| DMCL-024 | Region control grants a base resource contribution; a continuous Road connection through controlled regions enables exterior improvements and supply; strategic production, upkeep, and projects resolve deterministically by Day. | Connects World geography to Settlement economy while separating control, connection, supply, and building ownership. Exact rates, construction times, shortages, conquest, and supply penalties remain TBD. | `GAME_CONCEPT.md` |
+| DMCL-025 | Hero progression has 20 levels, 40 allocated attribute points, and 20 spendable skill points; Class and Vocation each grant a free Rank-I Mastery, and five purchased points in each foundation tree plus both Masteries at Rank II unlock the Class × Vocation Profession no earlier than Level 10. | Creates a comprehensible point budget with meaningful post-unlock Profession choices. XP thresholds, attribute curves/caps, respecialization, and exact skill effects remain TBD. | `GAME_CONCEPT.md` |
+| DMCL-026 | Class, Vocation, and the nine Profession trees retain stable base abilities and resolve compatible faction-evolution riders compositionally; terminal factions do not duplicate all skill trees, rosters, or economies. | Prevents the proposed 780-ability multiplication and preserves recognizable abilities, stable IDs, and modular future content. Exact tags, riders, precedence, and named exceptions remain TBD. | `GAME_CONCEPT.md`, `CONTENT_MODEL.md` |
+| DMCL-027 | A Vocation Gambit is the encounter initiator’s one optional pre-battle action under symmetric player/enemy rules; the defender’s attributes, matching Mastery, army rating, equipment, status, and context produce opposed resistance, and the deterministic result is persisted atomically. | Makes defensive Hero development and enemy-Hero counterplay meaningful while preventing rerolls and unbounded pre-battle stacking. Exact weights, thresholds, costs, target lists, and reset timing remain TBD. | `GAME_CONCEPT.md` |
+| DMCL-028 | Hero attributes are bounded rule inputs rather than universal multipliers; tactical Aim and Critical Chance are separate, Move and AP are separate, and Armor/Ward use diminishing mitigation with explicit immunity rather than a binary damage-versus-defense cliff. | Avoids runaway scaling, ambiguous MP terminology, accuracy overflow, and zero-damage hard cliffs while preserving the approved squad/hex/initiative shape. Exact combat constants, curves, values, conditions, and AI remain TBD. | `GAME_CONCEPT.md` |
 | DMCL-P17 | Generate and commit the existing light/dark FS CSS adapter deterministically from `sources/fs.tokens.json`, keep derived/application CSS handwritten, and generate only the narrow default primitive-color TypeScript projection needed by existing persisted banners. | This removes manual FS-value drift without changing the CSS API, runtime theme bootstrap, visual behavior, dependencies, or stored banner values. | `ARCHITECTURE.md`, `E01-T01_FS_TOKEN_ADAPTER_AUDIT.md`, `E01-T02_FS_TOKEN_SYNCHRONIZATION.md` |
 | DMCL-P18 | Retain `npm run install:ci` as the protected ChatGPT Sites/Linux install path; use `npm ci` for local macOS and GitHub Actions; use `npm run verify` as the shared automated quality gate; and treat GitHub Actions Linux as the canonical independent automated checkpoint while keeping rendered/mobile browser acceptance and owner physical-smartphone QA separate. | This makes token, lint, bounded build, artifact, and rendered-HTML checks reproducible across Linux and macOS without weakening the specialized Sites installer; CI remains verification-only. | `ARCHITECTURE.md`, `WORKFLOW.md`, `E01-T07_EPIC_01_EXIT_GATE.md` |
 
@@ -110,6 +117,14 @@ The project owner explicitly selected the deterministic campaign-RNG foundation 
 |---|---|---|---|---|
 | DMCL-P25 | **Accepted** | Add one persisted unsigned 32-bit `campaignSeed`, migrate `GameSave` from version 3 to version 4, obtain new seeds through infrastructure entropy separate from `IdSource`, and require explicit seeds for the unchanged deterministic Dungeon generator. Existing version-2/version-3 saves adopt their stored Dungeon seed without regenerating the stored Dungeon snapshot. | Establishes the smallest current deterministic authority while preserving all existing campaign facts and avoiding speculative streams, counters, or future random mechanics. | `ARCHITECTURE.md`, `GAME_STATE.md`, `E02-T06_DETERMINISTIC_CAMPAIGN_RNG.md` |
 
+## Game Concept 2.0 MVP roadmap rebase proposal
+
+The following planning decision is proposed by the 2026-08-14 roadmap Candidate and requires explicit owner acceptance before activation.
+
+| ID | Status | Decision | Reason/constraint | Responsible source |
+|---|---|---|---|---|
+| DMCL-P26 | **Proposed** | Preserve completed EPIC 00–02; supersede the former unstarted EPIC 03–24 sequence with the Game Concept 2.0 Castle-MVP sequence in EPIC 03–14; begin with the versioned Village-first campaign-transition Epic; and make E03-T01 the sole next task after acceptance. | The old plan places World/Settlement dependencies, armies/Combat, Professions, Gambits, and faction evolution in an order that no longer matches the approved core mechanic. The rebase uses vertical milestones and does not reopen completed work or pre-approve later numeric decisions. | `ROADMAP.md`, `MVP_IMPLEMENTATION_PLAN.md` |
+
 ## Foundation proposals resolved by E00-T05
 
 | ID | Status | Decision | Source |
@@ -138,16 +153,18 @@ The responsible documents contain detailed questions. This index groups the deci
 | ID | Decision needed | Blocks/affects | Responsible source |
 |---|---|---|---|
 | DMCL-Q01 | Exact Dominion, Conquest, Ascension, and defeat thresholds/resolution. | Campaign goals and completion. | `GAME_CONCEPT.md` |
-| DMCL-Q02 | Exact bonuses, costs, units, unlocks, and balance for the approved faction branches/stages. | Setup, management, content, balance. | `GAME_CONCEPT.md` |
-| DMCL-Q03 | Region conquest and supply rules. | World board and strategic state. | `GAME_CONCEPT.md`, `GAME_STATE.md` |
-| DMCL-Q04 | Exact tactical initiative, MP/AP, squad composition, damage, recovery, AI, and encounter-resume rules. | Combat board, skills, tactical state. | `GAME_CONCEPT.md`, `GAME_STATE.md` |
+| DMCL-Q02 | Exact bonuses, requirements, units, buildings, capstone formulas, counters, costs, and balance for the approved Castle evolution packages and terminal identities. | Setup, management, content, balance. | `GAME_CONCEPT.md` |
+| DMCL-Q03 | Exact starting-region generation, conquest, control loss, Road, connection, supply, hostile-Dungeon access, and siege rules. | World board and strategic state. | `GAME_CONCEPT.md`, `GAME_STATE.md` |
+| DMCL-Q04 | Exact tactical initiative, Move/AP, squad composition, Aim/Evasion, Armor/Ward, damage, conditions, recovery, AI, and encounter-resume rules. | Combat board, skills, tactical state. | `GAME_CONCEPT.md`, `GAME_STATE.md` |
 | DMCL-Q05 | Dungeon/building hierarchy, multiple levels, regeneration, and authored/procedural balance. | Exploration content, state, generation. | `GAME_CONCEPT.md`, `CONTENT_MODEL.md` |
-| DMCL-Q06 | Exact hero level/prestige thresholds, effects, equipment, companions, injury/recovery, and balance. | Progression content/state and combat. | `GAME_CONCEPT.md` |
-| DMCL-Q07 | First meaningful holding-management mechanic and economy/time consequences. | Future holding-management work. | `GAME_CONCEPT.md` |
+| DMCL-Q06 | Exact Hero XP thresholds, attribute caps/conversions, Class/Vocation/Profession effects, evolution riders, equipment, companions, respecialization, injury/recovery, and balance. | Progression content/state and combat. | `GAME_CONCEPT.md` |
+| DMCL-Q07 | Exact Settlement production, construction, recruitment, reinforcement, upkeep, shortage, project-capacity, and resource-sink rules. | Future Settlement/economy work. | `GAME_CONCEPT.md` |
 | DMCL-Q09 | Player/profile/user/owner/participant relationship and number of campaigns. | Save schema, identity, cloud, multiplayer. | `GAME_STATE.md` |
-| DMCL-Q10 | Save semantics, draft persistence, cloud/offline sync, conflict handling, and compatibility guarantee. | Persistence and migrations. | `GAME_STATE.md`, `ROADMAP.md` |
+| DMCL-Q10 | Save semantics, draft persistence, cloud/offline sync, conflict handling, compatibility guarantees, and migration treatment of current Dungeon/Castle campaigns under the Village-first opening. | Persistence and migrations. | `GAME_STATE.md`, `ROADMAP.md` |
 | DMCL-Q11 | Multiplayer mode and authority model, or confirmation that it should not constrain current work. | Architecture and campaign transitions. | `ROADMAP.md` |
-| DMCL-Q12 | Content ID/version/deprecation strategy, localization, asset catalog, and mod/remote-content requirements. | Content infrastructure. | `CONTENT_MODEL.md` |
+| DMCL-Q12 | Content ID/version/deprecation strategy, evolution-rider compatibility and precedence, localization, asset catalog, and mod/remote-content requirements. | Content infrastructure. | `CONTENT_MODEL.md` |
+| DMCL-Q17 | Exact Gambit weights, variance, outcome thresholds, costs, target eligibility, hidden information, re-engagement reset timing, AI policy, and high-risk consequences. | Vocation progression, enemy Heroes, encounters, Combat entry, deterministic persistence. | `GAME_CONCEPT.md`, `GAME_STATE.md` |
+| DMCL-Q18 | Exact Diplomacy participant, relationship, trust/obligation, Favor/Leverage, access, trade, treaty, loyalty-change, faction-reaction, and minimum strategic-event rules. | Diplomacy board, World access, economy, Gambits, evolution consequences, and strategic opposition. | `GAME_CONCEPT.md`, `GAME_STATE.md` |
 
 ### Resolved deferred entries
 
@@ -186,8 +203,14 @@ Use a full standalone ADR only when a decision needs alternatives, extensive evi
 
 ## Current approval position
 
+On 2026-08-14, the project owner accepted the Game Concept 2.0 system shape recorded by DMCL-022–DMCL-028. DMCL-014 and DMCL-015 remain visible as historical decisions and are superseded by the named replacements. The approval establishes the Village-first Castle MVP, three-axis faction evolution, World/Settlement economy relationship, Level-20 Profession progression, compositional skills, opposed Gambits with defensive resistance, and bounded tactical-stat/damage shape. Exact numeric values and the deferred questions remain unapproved.
+
+This concept approval changes intended product direction but does not claim implementation, migrate current version-4 campaigns, amend the roadmap sequence, or authorize deployment. EPIC 03 remains Current and `E03-T01 — Audit campaign lifecycle and persistence boundaries` remains the sole next implementation task unless the roadmap is separately amended.
+
+DMCL-P26 is now the proposed roadmap amendment. Until the owner accepts the roadmap Candidate, it does not supersede the last accepted execution status or begin implementation. If accepted, it activates the Game Concept 2.0 EPIC 03 and replaces the unstarted E03-T01 scope with the broader lifecycle/save/opening-flow transition audit while retaining all of its persistence questions.
+
 EPIC 01 and EPIC 02 are complete. DMCL-P01–P13, DMCL-P16–P21, and DMCL-P23–P25 are accepted; DMCL-P14/P15 remain historical superseded proposals, and DMCL-P22's task sequence is superseded by DMCL-P24. The project owner accepted the E02-T08 PASS Candidate and EPIC 02 closure on 2026-08-10 and separately confirmed the latest GitHub Actions `Verify` result as PASS.
 
 E02-T02 implemented the original v3-preserving `CampaignState` boundary and dependency-free engine tests authorized by DMCL-P19–P21. DMCL-P23 records the accepted bounded E02-T03 identity policy, DMCL-P24 authorized the accepted E02-T04 transition layer, E02-T05 implemented the accepted concrete selector boundary, and DMCL-P25 authorized the accepted E02-T06 version-4 campaign-seed migration. E02-T07 completed the bounded read-only developer inspector. E02-T08 found no new decision or blocking defect and verified that the implementation satisfies the EPIC 02 exit criteria.
 
-EPIC 03 is Current and `E03-T01 — Audit campaign lifecycle and persistence boundaries` is the sole next task. One-campaign-per-player behavior, automatic writes, explicit Save, timestamp meanings, replacement/deletion semantics, and browser-only persistence remain observed/interim until that audit presents owner decisions. Clock isolation remains unimplemented and unscheduled; no deferred gameplay or product question is promoted by this closure.
+One-campaign-per-player behavior, automatic writes, explicit Save, timestamp meanings, replacement/deletion semantics, and browser-only persistence remain observed/interim until E03-T01 presents owner decisions. Clock isolation remains unimplemented and unscheduled; no deferred numeric gameplay or product question is promoted by either Epic closure or concept approval.

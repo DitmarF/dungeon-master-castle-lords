@@ -2,7 +2,7 @@
 
 Status: source of truth for game-content ownership and extension principles  
 Scope: how authored definitions relate to rules, presentation, and campaign instances  
-Last updated: 2026-08-10
+Last updated: 2026-08-14
 
 ## Purpose and authority
 
@@ -47,7 +47,7 @@ Skill descriptions are currently presentation text; most described effects are n
 
 **Implemented through E02-T05:** `src/game/selectors.ts` is the one current authority for class/vocation attribute bonus meaning and total Hero attribute calculation. Hero Setup derives its path-card bonus copy and live preview from those typed mappings; setup completion and migration normalization use the same total calculation. The current version-4 campaign preserves class, vocation, and free allocation as facts plus total attributes as the compatibility snapshot introduced by the earlier v3 shape.
 
-Faction, class, vocation, and attribute names/icons remain presentation definitions in `SetupBoard`; consolidating the complete Hero-foundation catalog belongs to EPIC 04, not this bounded selector task. Initial root skills, legal bonus-skill eligibility, and setup validation remain current rule definitions in `transitions.ts` and `skillTrees.ts`. No generic content/effect framework was introduced.
+Faction, class, vocation, and attribute names/icons remain presentation definitions in `SetupBoard`; consolidating the complete Hero-foundation catalog belongs to its responsible future Hero-progression Epic, not this bounded selector task. Initial root skills, legal bonus-skill eligibility, and setup validation remain current rule definitions in `transitions.ts` and `skillTrees.ts`. No generic content/effect framework was introduced.
 
 **Observed:** Faction-related presentation and banner colors appear in board/UI components. `GameIcon` contains a typed hand-authored icon mapping. Most UI copy and board-specific labels are component-local.
 
