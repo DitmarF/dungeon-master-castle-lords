@@ -28,6 +28,8 @@ export function StartBoard() {
     deletePlayer,
     startNewGame,
     loadGame,
+    persistenceIssue,
+    retryPersistence,
   } = useGame();
   const [isCreating, setIsCreating] = useState(players.length === 0);
   const [name, setName] = useState("");
@@ -40,7 +42,11 @@ export function StartBoard() {
     event.preventDefault();
     const result = createPlayer(name, bannerColor);
     if (!result.ok) {
-      setFormError(result.error ?? "Could not create that player.");
+      setFormError(
+        result.message ??
+          result.error?.message ??
+          "Could not create that player.",
+      );
       return;
     }
 
@@ -91,6 +97,18 @@ export function StartBoard() {
         </section>
 
         <div className="start-sheets">
+          {persistenceIssue ? (
+            <div className="persistence-alert" role="alert">
+              <span>{persistenceIssue.message}</span>
+              <button
+                type="button"
+                className="button button--ghost"
+                onClick={retryPersistence}
+              >
+                Retry
+              </button>
+            </div>
+          ) : null}
           <section className="start-sheet" aria-labelledby="players-title">
             <header className="sheet-heading">
               <div>
@@ -280,6 +298,11 @@ export function StartBoard() {
             </span>
             <h2 id="delete-title">Delete {deleteTarget.name}?</h2>
             <p>This permanently removes the player and their local campaign.</p>
+            {persistenceIssue ? (
+              <p className="dialog-error" role="alert">
+                {persistenceIssue.message}
+              </p>
+            ) : null}
             <div className="dialog-actions">
               <button
                 type="button"
@@ -292,7 +315,8 @@ export function StartBoard() {
                 type="button"
                 className="button button--danger"
                 onClick={() => {
-                  deletePlayer(deleteTarget.id);
+                  const result = deletePlayer(deleteTarget.id);
+                  if (!result.ok) return;
                   setDeleteTarget(null);
                   if (players.length <= 1) setIsCreating(true);
                 }}
@@ -322,6 +346,11 @@ export function StartBoard() {
             </span>
             <h2 id="replace-title">Begin a new campaign?</h2>
             <p>{replaceTarget.name}&apos;s current save will be replaced.</p>
+            {persistenceIssue ? (
+              <p className="dialog-error" role="alert">
+                {persistenceIssue.message}
+              </p>
+            ) : null}
             <div className="dialog-actions">
               <button
                 type="button"
@@ -334,7 +363,8 @@ export function StartBoard() {
                 type="button"
                 className="button button--primary"
                 onClick={() => {
-                  startNewGame(replaceTarget.id);
+                  const result = startNewGame(replaceTarget.id);
+                  if (!result.ok) return;
                   setReplaceTarget(null);
                 }}
               >

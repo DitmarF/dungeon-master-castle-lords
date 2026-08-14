@@ -95,8 +95,14 @@ test("current profile and campaign creation consume only their ID categories", (
     calls,
   );
 
-  const player = createPlayerProfile("  The Red Lord  ", "red", source);
-  const campaign = createNewGame(player.id, source, 123_456);
+  const createdAt = "2026-08-14T10:00:00.000Z";
+  const player = createPlayerProfile(
+    "  The Red Lord  ",
+    "red",
+    source,
+    createdAt,
+  );
+  const campaign = createNewGame(player.id, source, 123_456, createdAt);
 
   assert.equal(player.id, "player-created-profile");
   assert.equal(player.name, "The Red Lord");
@@ -119,6 +125,7 @@ test("legacy migration preserves existing identity strings without rewriting", (
     "player-registry-fallback",
     source,
     MIGRATION_SEED_SOURCE,
+    "2026-08-14T10:00:00.000Z",
   );
 
   assert.equal(migrated.id, "Legacy Campaign Label");
@@ -133,8 +140,14 @@ test("identity injection preserves the current creation, setup, and load flow", 
     player: ["player-regression"],
     campaign: ["game-regression"],
   });
-  const player = createPlayerProfile("Regression Lord", "blue", source);
-  const campaign = createNewGame(player.id, source, 654_321);
+  const createdAt = "2026-08-14T10:00:00.000Z";
+  const player = createPlayerProfile(
+    "Regression Lord",
+    "blue",
+    source,
+    createdAt,
+  );
+  const campaign = createNewGame(player.id, source, 654_321, createdAt);
   const completion = completeHeroSetup(campaign, {
     faction: "dungeon",
     heroClass: "fighter",
@@ -159,6 +172,7 @@ test("identity injection preserves the current creation, setup, and load flow", 
       campaign: ["game-unused"],
     }),
     MIGRATION_SEED_SOURCE,
+    "2026-08-14T10:00:00.000Z",
   );
 
   assert.equal(loaded.id, "game-regression");

@@ -851,6 +851,28 @@ button.game-slot {
   font-size: 0.68rem;
 }
 
+.persistence-alert {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  padding: var(--space-sm);
+  border: 1px solid color-mix(in srgb, var(--fs-feedback-error) 45%, var(--border-soft));
+  border-radius: var(--radius-sm);
+  color: var(--fs-feedback-error);
+  background: color-mix(in srgb, var(--fs-feedback-error) 8%, var(--surface-raised));
+  font-size: var(--font-size-xs);
+}
+
+.persistence-alert .button {
+  flex: 0 0 auto;
+}
+
+.confirm-dialog > p.dialog-error {
+  color: var(--fs-feedback-error);
+  font-size: var(--font-size-xs);
+}
+
 /* App bars */
 .appbar-button {
   min-width: 44px;
@@ -3222,6 +3244,11 @@ button.game-slot {
   box-shadow: var(--shadow-soft);
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-semibold);
+}
+
+.notification-toast--error {
+  color: var(--fs-content-inverse);
+  background: var(--fs-feedback-error);
 }
 
 /* Phone refinements */

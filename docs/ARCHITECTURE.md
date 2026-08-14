@@ -39,7 +39,7 @@ The architecture should support fast prototype iteration without allowing UI com
 - versioned campaign data persisted to browser `localStorage`;
 - platform entry, optional storage scaffolding, and Sites configuration at repository edges.
 
-The current evidence hierarchy and limitations are documented in `CURRENT_STATE.md`. The application now uses named validated transitions and a pure board-navigation policy, while one provider still coordinates runtime/lifecycle concerns. The existing wall-clock timestamping, active/registry mirroring, and one global stylesheet remain observed implementation choices. E03-T01 separately accepts the browser-local one-campaign and lifecycle target described below; E03-T02 must implement it before it can be reported as current behavior.
+The current evidence hierarchy and limitations are documented in `CURRENT_STATE.md`. The application uses named validated transitions, a pure board-navigation policy, an injected application clock, and pure lifecycle/persistence helpers, while one provider still coordinates runtime/session concerns. Active/registry mirroring and one global stylesheet remain observed implementation choices. E03-T02 implements the accepted browser-local one-campaign lifecycle target described below without changing the campaign schema.
 
 ## Current core-engine architecture
 
@@ -50,8 +50,8 @@ The current engine surface is:
 - named application operations for the current campaign intents;
 - pure validated transitions for hero setup, dungeon movement/discovery/heart outcome, settlement claim, and board navigation as each bounded task extracts them;
 - concrete selectors for current derived reads such as board availability and shared hero/dungeon calculations;
-- explicit application/infrastructure inputs for player/campaign identity and new gameplay seeds, with identity entropy separate from deterministic rule RNG; application clock isolation remains open;
-- browser `localStorage` at the infrastructure edge with pure campaign migration/normalization functions inside the current registry adapter;
+- explicit application/infrastructure inputs for player/campaign identity, lifecycle time, and new gameplay seeds, with identity entropy, wall-clock time, and deterministic rule RNG kept separate;
+- browser `localStorage` at the infrastructure edge behind a raw string adapter, with pure staged decode/validation/migration and verified registry-write orchestration inward of that adapter;
 - pure engine tests using the existing Node runtime, without React, browser APIs, Sites/Cloudflare code, or a new testing dependency.
 
 This architecture does not use a command framework, event bus, event sourcing, CQRS, ECS, state-management library, cloud repository, or placeholder future gameplay slices. `GameProvider` continues coordinating React runtime state and persistence while delegating the current rule-bearing changes to named pure operations.
@@ -60,7 +60,7 @@ This architecture does not use a command framework, event bus, event sourcing, C
 
 E02-T02 establishes `src/game/campaignState.ts` as the pure campaign/model boundary. It defines `CampaignState` with exactly the version-3 campaign fields and retains `GameSave` as a type alias, so existing serialized campaigns keep the same runtime shape and require no migration. `src/game/model.ts` now re-exports those campaign types for compatibility while separately owning `PlayerProfile`, `GameRegistry`, `RuntimeState`, and application-view state. Theme, hydration behavior, and board-local presentation remain outside the campaign contract.
 
-Focused engine verification uses the supported Node runtime and built-in `node:test` with native TypeScript stripping. `npm run test:engine` exercises the state boundary, migration/normalization, deterministic Dungeon generation, identity, selectors, transitions/navigation, dependency purity, and the inspector contract without rendering React or building Sites. The normal `npm test` and `npm run verify` paths include these focused tests. At the E02-T02 checkpoint, identity, transitions, and campaign-seed work were still later tasks; E02-T03, E02-T04, and E02-T06 subsequently implemented those boundaries. Application clock isolation remains open.
+Focused engine verification uses the supported Node runtime and built-in `node:test` with native TypeScript stripping. `npm run test:engine` exercises the state boundary, migration/normalization, deterministic Dungeon generation, identity, selectors, transitions/navigation, lifecycle/persistence, dependency purity, and the inspector contract without rendering React or building Sites. The normal `npm test` and `npm run verify` paths include these focused tests. At the E02-T02 checkpoint, identity, transitions, and campaign-seed work were still later tasks; E02-T03, E02-T04, and E02-T06 subsequently implemented those boundaries, and E03-T02 later implemented clock/persistence isolation.
 
 ### E02-T03 implemented identity boundary
 
@@ -68,7 +68,7 @@ E02-T03 establishes `src/game/identity.ts` as the pure current identity contract
 
 This is not a generic entity system. Skills, boards, faction/class/vocation values, and other reusable definitions retain their literal content IDs. Cell keys remain coordinate-derived `CellKey` values, and dungeon room numbers remain stored snapshot-local ordinals rather than global entity identities. No hero, settlement, region, army, unit, or item identity exists until an approved mechanic has a persistent instance that needs one. Existing loaded IDs are never rewritten merely for format consistency.
 
-The provider and browser-storage adapter supply the system identity source to current player/campaign creation and migration fallback paths. E02-T03 deliberately left clock and gameplay-seed work outside its identity scope; E02-T06 subsequently implemented the separate campaign-seed boundary, while application clock isolation remains open.
+The provider and browser-storage adapter supply the system identity source to current player/campaign creation and migration fallback paths. E02-T03 deliberately left clock and gameplay-seed work outside its identity scope; E02-T06 subsequently implemented the campaign-seed boundary, and E03-T02 later added the separate injected application clock.
 
 ### E02-T04 implemented transition boundary
 
@@ -292,7 +292,9 @@ Hydration is a staged read/decode/validate/migrate operation. A failed stage sup
 
 For EPIC 03, each local profile has at most one campaign. Confirmed replacement/profile deletion are application transactions, not domain rules: destructive success is reported only after verified persistence, and the previous durable entry remains recoverable until then. Manual Save uses the same immediate verified adapter write and changes no timestamps by itself.
 
-The accepted timestamp policy separates immutable campaign creation time, campaign modification/resume-context time, and successful profile New/Continue activity. E03-T02 implements this with the smallest explicit clock boundary; it does not introduce a time framework, repository framework, database abstraction, event sourcing, CQRS, or alternate state library.
+**Implemented in E03-T02:** The timestamp policy separates immutable campaign creation time, campaign modification/resume-context time, and successful profile New/Continue activity through the smallest explicit `Clock`. The application uses pure lifecycle helpers and a raw storage port; `src/game/storage.ts` is the only campaign-registry module that touches browser storage. Hydration never writes, all writes serialize and verify exact readback, verification failure attempts rollback, and destructive replacement/deletion commits in memory only after verified persistence. The current registry remains version 1 under its existing key; the conditional registry-v2 cutover is not pulled forward.
+
+This boundary does not introduce a time framework, repository framework, database abstraction, event sourcing, CQRS, or alternate state library.
 
 **Still open beyond the local MVP:** authenticated cloud saves, synchronization/conflict resolution, broader ownership, cross-device/offline guarantees, export/import, and multiplayer authority.
 

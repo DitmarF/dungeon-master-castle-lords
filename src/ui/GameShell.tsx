@@ -1,7 +1,10 @@
 "use client";
 
 import { useEffect, useState, type ReactNode } from "react";
-import { useGame } from "../game/GameProvider";
+import {
+  useGame,
+  type PersistenceActionResult,
+} from "../game/GameProvider";
 import { BoardNavigation } from "./BoardNavigation";
 import { Crest } from "./Crest";
 import { GameIcon, type IconName } from "./GameIcon";
@@ -40,23 +43,24 @@ export function GameShell({
     returnToPlayers,
     saveGame,
     navigateToBoard,
+    persistenceIssue,
   } = useGame();
   const [activeOverlay, setActiveOverlay] = useState<
     "hero" | "settings" | null
   >(null);
-  const [saved, setSaved] = useState(false);
+  const [saveResult, setSaveResult] =
+    useState<PersistenceActionResult | null>(null);
 
   useEffect(() => {
-    if (!saved) return;
-    const timer = window.setTimeout(() => setSaved(false), 1600);
+    if (!saveResult) return;
+    const timer = window.setTimeout(() => setSaveResult(null), 2800);
     return () => window.clearTimeout(timer);
-  }, [saved]);
+  }, [saveResult]);
 
   if (!activeGame?.hero || !selectedPlayer) return null;
 
   function handleSave() {
-    saveGame();
-    setSaved(true);
+    setSaveResult(saveGame());
   }
 
   return (
@@ -164,10 +168,20 @@ export function GameShell({
         ) : null}
       </div>
 
-      <NotificationRegion>
-        {saved ? (
+      <NotificationRegion
+        kind={saveResult?.ok === false || persistenceIssue ? "error" : "success"}
+      >
+        {saveResult ? (
           <>
-            <GameIcon name="save" size={18} /> Campaign saved
+            <GameIcon name="save" size={18} />{
+              saveResult.ok
+                ? "Campaign saved"
+                : saveResult.error?.message ?? "Campaign was not saved"
+            }
+          </>
+        ) : persistenceIssue ? (
+          <>
+            <GameIcon name="save" size={18} /> {persistenceIssue.message}
           </>
         ) : null}
       </NotificationRegion>

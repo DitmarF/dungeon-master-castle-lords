@@ -10,7 +10,20 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { createNewGame, createPlayerProfile } from "./createGame";
+import {
+  createNewGame,
+  createPlayerProfile,
+  migrateLegacyGame,
+} from "./createGame";
+import { systemClock, type Clock } from "./clock";
+import {
+  activateCampaign,
+  addPlayerToRegistry,
+  removePlayerAndCampaign,
+  selectPlayerInRegistry,
+  stampCampaignModification,
+  storeCampaign,
+} from "./lifecycle";
 import type { RegisteredBoardId } from "./navigation";
 import { systemIdSource } from "./systemIdSource";
 import { systemCampaignSeedSource } from "./systemCampaignSeedSource";
@@ -23,6 +36,13 @@ import {
   type RuntimeState,
   type HeroSetupSelection,
 } from "./model";
+import {
+  commitRequiredRegistryChange,
+  hydrateRegistry,
+  persistRegistry,
+  type PersistenceFailure,
+  type RegistryStorageAdapter,
+} from "./persistence";
 import { gameStorage } from "./storage";
 import {
   claimSettlement as transitionClaimSettlement,
@@ -58,13 +78,23 @@ function systemUsesDarkMode(): boolean {
 
 type Action =
   | { type: "hydrate"; registry: GameRegistry }
-  | { type: "createPlayer"; player: PlayerProfile }
-  | { type: "selectPlayer"; playerId: PlayerId }
-  | { type: "deletePlayer"; playerId: PlayerId }
-  | { type: "openGame"; playerId: PlayerId; game: GameSave }
-  | { type: "saveGame"; game: GameSave }
-  | { type: "applyCampaignTransition"; game: GameSave }
-  | { type: "returnToPlayers"; game: GameSave | null };
+  | {
+      type: "setRegistry";
+      registry: GameRegistry;
+      selectedPlayerId: PlayerId | null;
+    }
+  | {
+      type: "openGame";
+      playerId: PlayerId;
+      game: GameSave;
+      registry: GameRegistry;
+    }
+  | {
+      type: "applyCampaignTransition";
+      game: GameSave;
+      registry: GameRegistry;
+    }
+  | { type: "returnToPlayers" };
 
 const INITIAL_STATE: RuntimeState = {
   hydrated: false,
@@ -73,18 +103,6 @@ const INITIAL_STATE: RuntimeState = {
   activeGame: null,
   view: "players",
 };
-
-function touchPlayer(
-  players: PlayerProfile[],
-  playerId: PlayerId,
-  timestamp: string,
-): PlayerProfile[] {
-  return players.map((player) =>
-    player.id === playerId
-      ? { ...player, lastPlayedAt: timestamp }
-      : player,
-  );
-}
 
 function reducer(state: RuntimeState, action: Action): RuntimeState {
   switch (action.type) {
@@ -103,112 +121,48 @@ function reducer(state: RuntimeState, action: Action): RuntimeState {
       };
     }
 
-    case "createPlayer":
+    case "setRegistry":
       return {
         ...state,
-        selectedPlayerId: action.player.id,
-        registry: {
-          ...state.registry,
-          players: [...state.registry.players, action.player],
-          lastActivePlayerId: action.player.id,
-        },
+        selectedPlayerId: action.selectedPlayerId,
+        registry: action.registry,
       };
-
-    case "selectPlayer":
-      return {
-        ...state,
-        selectedPlayerId: action.playerId,
-        registry: {
-          ...state.registry,
-          lastActivePlayerId: action.playerId,
-        },
-      };
-
-    case "deletePlayer": {
-      const players = state.registry.players.filter(
-        (player) => player.id !== action.playerId,
-      );
-      const games = { ...state.registry.games };
-      delete games[action.playerId];
-
-      const selectedPlayerId =
-        state.selectedPlayerId === action.playerId
-          ? players[0]?.id ?? null
-          : state.selectedPlayerId;
-
-      return {
-        ...state,
-        selectedPlayerId,
-        registry: {
-          ...state.registry,
-          players,
-          games,
-          lastActivePlayerId: selectedPlayerId,
-        },
-      };
-    }
 
     case "openGame": {
-      const now = new Date().toISOString();
-      const game = { ...action.game, updatedAt: now };
-
       return {
         ...state,
         view: "game",
         selectedPlayerId: action.playerId,
-        activeGame: game,
-        registry: {
-          ...state.registry,
-          players: touchPlayer(state.registry.players, action.playerId, now),
-          games: { ...state.registry.games, [action.playerId]: game },
-          lastActivePlayerId: action.playerId,
-        },
+        activeGame: action.game,
+        registry: action.registry,
       };
     }
 
-    case "saveGame":
+    case "applyCampaignTransition": {
       return {
         ...state,
         activeGame: action.game,
-        registry: {
-          ...state.registry,
-          games: {
-            ...state.registry.games,
-            [action.game.playerId]: action.game,
-          },
-        },
-      };
-
-    case "applyCampaignTransition": {
-      const game = action.game;
-      return {
-        ...state,
-        activeGame: game,
-        registry: {
-          ...state.registry,
-          games: { ...state.registry.games, [game.playerId]: game },
-        },
+        registry: action.registry,
       };
     }
 
-    case "returnToPlayers": {
-      const games = action.game
-        ? { ...state.registry.games, [action.game.playerId]: action.game }
-        : state.registry.games;
-
+    case "returnToPlayers":
       return {
         ...state,
         view: "players",
         activeGame: null,
-        registry: { ...state.registry, games },
       };
-    }
   }
 }
 
-interface CreatePlayerResult {
+export interface PersistenceActionResult {
   ok: boolean;
-  error?: string;
+  error?: PersistenceFailure;
+}
+
+interface CreatePlayerResult extends PersistenceActionResult {
+  ok: boolean;
+  message?: string;
 }
 
 interface GameContextValue {
@@ -220,14 +174,17 @@ interface GameContextValue {
   view: RuntimeState["view"];
   darkMode: boolean;
   themePreference: ThemePreference;
+  hydrationFailure: PersistenceFailure | null;
+  persistenceIssue: PersistenceFailure | null;
   setDarkMode: (enabled: boolean) => void;
   useSystemTheme: () => void;
   createPlayer: (name: string, bannerColor: string) => CreatePlayerResult;
-  selectPlayer: (playerId: PlayerId) => void;
-  deletePlayer: (playerId: PlayerId) => void;
-  startNewGame: (playerId: PlayerId) => void;
-  loadGame: (playerId: PlayerId) => void;
-  saveGame: () => void;
+  selectPlayer: (playerId: PlayerId) => PersistenceActionResult;
+  deletePlayer: (playerId: PlayerId) => PersistenceActionResult;
+  startNewGame: (playerId: PlayerId) => PersistenceActionResult;
+  loadGame: (playerId: PlayerId) => PersistenceActionResult;
+  saveGame: () => PersistenceActionResult;
+  retryPersistence: () => PersistenceActionResult;
   completeHeroSetup: (
     selection: HeroSetupSelection,
   ) => CompleteHeroSetupResult | null;
@@ -243,8 +200,22 @@ interface GameContextValue {
 
 const GameContext = createContext<GameContextValue | null>(null);
 
-export function GameProvider({ children }: { children: ReactNode }) {
+interface GameProviderProps {
+  children: ReactNode;
+  clock?: Clock;
+  storage?: RegistryStorageAdapter;
+}
+
+export function GameProvider({
+  children,
+  clock = systemClock,
+  storage = gameStorage,
+}: GameProviderProps) {
   const [state, dispatch] = useReducer(reducer, INITIAL_STATE);
+  const [hydrationFailure, setHydrationFailure] =
+    useState<PersistenceFailure | null>(null);
+  const [persistenceIssue, setPersistenceIssue] =
+    useState<PersistenceFailure | null>(null);
   const [themePreference, setThemePreference] = useState<ThemePreference>(
     readThemePreference,
   );
@@ -271,74 +242,218 @@ export function GameProvider({ children }: { children: ReactNode }) {
   }, [darkMode]);
 
   useEffect(() => {
-    dispatch({ type: "hydrate", registry: gameStorage.read() });
-  }, []);
+    let cancelled = false;
+    queueMicrotask(() => {
+      if (cancelled) return;
+      const hydratedAt = clock.now();
+      const result = hydrateRegistry(
+        storage,
+        {
+          migrateGame: (value, playerId) =>
+            migrateLegacyGame(
+              value,
+              playerId,
+              systemIdSource,
+              systemCampaignSeedSource,
+              hydratedAt,
+            ),
+        },
+        EMPTY_REGISTRY,
+      );
 
-  useEffect(() => {
-    if (state.hydrated) gameStorage.write(state.registry);
-  }, [state.hydrated, state.registry]);
+      if (!result.ok) {
+        setHydrationFailure(result.failure);
+        setPersistenceIssue(result.failure);
+        return;
+      }
+
+      setHydrationFailure(null);
+      setPersistenceIssue(null);
+      dispatch({ type: "hydrate", registry: result.registry });
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [clock, storage]);
+
+  const writeRegistry = useCallback(
+    (registry: GameRegistry): PersistenceActionResult => {
+      const result = persistRegistry(storage, registry);
+      if (!result.ok) {
+        setPersistenceIssue(result.failure);
+        return { ok: false, error: result.failure };
+      }
+      setPersistenceIssue(null);
+      return { ok: true };
+    },
+    [storage],
+  );
+
+  const writeRequiredRegistry = useCallback(
+    (registry: GameRegistry): PersistenceActionResult => {
+      const result = commitRequiredRegistryChange(
+        storage,
+        state.registry,
+        registry,
+      );
+      if (!result.ok) {
+        setPersistenceIssue(result.failure);
+        return { ok: false, error: result.failure };
+      }
+      setPersistenceIssue(null);
+      return { ok: true };
+    },
+    [state.registry, storage],
+  );
+
+  const retryPersistence = useCallback((): PersistenceActionResult => {
+    if (hydrationFailure) {
+      const hydratedAt = clock.now();
+      const result = hydrateRegistry(
+        storage,
+        {
+          migrateGame: (value, playerId) =>
+            migrateLegacyGame(
+              value,
+              playerId,
+              systemIdSource,
+              systemCampaignSeedSource,
+              hydratedAt,
+            ),
+        },
+        EMPTY_REGISTRY,
+      );
+      if (!result.ok) {
+        setHydrationFailure(result.failure);
+        setPersistenceIssue(result.failure);
+        return { ok: false, error: result.failure };
+      }
+      setHydrationFailure(null);
+      setPersistenceIssue(null);
+      dispatch({ type: "hydrate", registry: result.registry });
+      return { ok: true };
+    }
+    return writeRegistry(state.registry);
+  }, [clock, hydrationFailure, state.registry, storage, writeRegistry]);
 
   const createPlayer = useCallback(
     (name: string, bannerColor: string): CreatePlayerResult => {
       const trimmedName = name.trim();
       if (trimmedName.length < 2) {
-        return { ok: false, error: "Use at least 2 characters." };
+        return { ok: false, message: "Use at least 2 characters." };
       }
       if (trimmedName.length > 24) {
-        return { ok: false, error: "Keep the name under 25 characters." };
+        return { ok: false, message: "Keep the name under 25 characters." };
       }
       if (
         state.registry.players.some(
           (player) => player.name.toLowerCase() === trimmedName.toLowerCase(),
         )
       ) {
-        return { ok: false, error: "That lord already exists." };
+        return { ok: false, message: "That lord already exists." };
       }
 
+      const createdAt = clock.now();
+      const player = createPlayerProfile(
+        trimmedName,
+        bannerColor,
+        systemIdSource,
+        createdAt,
+      );
+      const registry = addPlayerToRegistry(state.registry, player);
+      const persistence = writeRequiredRegistry(registry);
+      if (!persistence.ok) return persistence;
       dispatch({
-        type: "createPlayer",
-        player: createPlayerProfile(trimmedName, bannerColor, systemIdSource),
+        type: "setRegistry",
+        registry,
+        selectedPlayerId: player.id,
       });
       return { ok: true };
     },
-    [state.registry.players],
+    [clock, state.registry, writeRequiredRegistry],
   );
 
-  const selectPlayer = useCallback((playerId: string) => {
-    dispatch({ type: "selectPlayer", playerId });
-  }, []);
+  const selectPlayer = useCallback(
+    (playerId: PlayerId): PersistenceActionResult => {
+      const registry = selectPlayerInRegistry(state.registry, playerId);
+      const persistence = writeRegistry(registry);
+      dispatch({ type: "setRegistry", registry, selectedPlayerId: playerId });
+      return persistence;
+    },
+    [state.registry, writeRegistry],
+  );
 
-  const deletePlayer = useCallback((playerId: string) => {
-    dispatch({ type: "deletePlayer", playerId });
-  }, []);
+  const deletePlayer = useCallback(
+    (playerId: PlayerId): PersistenceActionResult => {
+      const registry = removePlayerAndCampaign(state.registry, playerId);
+      const persistence = writeRequiredRegistry(registry);
+      if (!persistence.ok) return persistence;
+      const selectedPlayerId =
+        state.selectedPlayerId === playerId
+          ? registry.players[0]?.id ?? null
+          : state.selectedPlayerId;
+      dispatch({ type: "setRegistry", registry, selectedPlayerId });
+      return { ok: true };
+    },
+    [state.registry, state.selectedPlayerId, writeRequiredRegistry],
+  );
 
-  const startNewGame = useCallback((playerId: string) => {
-    dispatch({
-      type: "openGame",
-      playerId,
-      game: createNewGame(
+  const startNewGame = useCallback(
+    (playerId: PlayerId): PersistenceActionResult => {
+      const createdAt = clock.now();
+      const game = createNewGame(
         playerId,
         systemIdSource,
         systemCampaignSeedSource.nextCampaignSeed(),
-      ),
-    });
-  }, []);
-
-  const loadGame = useCallback(
-    (playerId: string) => {
-      const game = state.registry.games[playerId];
-      if (game) dispatch({ type: "openGame", playerId, game });
+        createdAt,
+      );
+      const registry = activateCampaign(
+        state.registry,
+        playerId,
+        game,
+        createdAt,
+      );
+      const persistence = writeRequiredRegistry(registry);
+      if (!persistence.ok) return persistence;
+      dispatch({ type: "openGame", playerId, game, registry });
+      return { ok: true };
     },
-    [state.registry.games],
+    [clock, state.registry, writeRequiredRegistry],
   );
 
-  const saveGame = useCallback(() => {
-    if (!state.activeGame) return;
-    dispatch({
-      type: "saveGame",
-      game: { ...state.activeGame, updatedAt: new Date().toISOString() },
-    });
-  }, [state.activeGame]);
+  const loadGame = useCallback(
+    (playerId: PlayerId): PersistenceActionResult => {
+      const game = state.registry.games[playerId];
+      if (!game) return { ok: false };
+      const registry = activateCampaign(
+        state.registry,
+        playerId,
+        game,
+        clock.now(),
+      );
+      const persistence = writeRegistry(registry);
+      dispatch({ type: "openGame", playerId, game, registry });
+      return persistence;
+    },
+    [clock, state.registry, writeRegistry],
+  );
+
+  const saveGame = useCallback((): PersistenceActionResult => {
+    if (!state.activeGame) return { ok: false };
+    return writeRegistry(state.registry);
+  }, [state.activeGame, state.registry, writeRegistry]);
+
+  const commitCampaignTransition = useCallback(
+    (transitioned: GameSave): GameSave => {
+      const game = stampCampaignModification(transitioned, clock.now());
+      const registry = storeCampaign(state.registry, game);
+      writeRegistry(registry);
+      dispatch({ type: "applyCampaignTransition", game, registry });
+      return game;
+    },
+    [clock, state.registry, writeRegistry],
+  );
 
   const completeHeroSetup = useCallback(
     (selection: HeroSetupSelection): CompleteHeroSetupResult | null => {
@@ -346,11 +461,10 @@ export function GameProvider({ children }: { children: ReactNode }) {
       const result = transitionCompleteHeroSetup(state.activeGame, selection);
       if (!result.ok) return result;
 
-      const game = { ...result.state, updatedAt: new Date().toISOString() };
-      dispatch({ type: "applyCampaignTransition", game });
+      const game = commitCampaignTransition(result.state);
       return { ...result, state: game };
     },
-    [state.activeGame],
+    [commitCampaignTransition, state.activeGame],
   );
 
   const moveHeroInDungeon = useCallback(
@@ -359,11 +473,10 @@ export function GameProvider({ children }: { children: ReactNode }) {
       const result = transitionMoveHeroInDungeon(state.activeGame, direction);
       if (!result.ok) return result;
 
-      const game = { ...result.state, updatedAt: new Date().toISOString() };
-      dispatch({ type: "applyCampaignTransition", game });
+      const game = commitCampaignTransition(result.state);
       return { ...result, state: game };
     },
-    [state.activeGame],
+    [commitCampaignTransition, state.activeGame],
   );
 
   const claimSettlement = useCallback((): ClaimSettlementResult | null => {
@@ -371,10 +484,9 @@ export function GameProvider({ children }: { children: ReactNode }) {
     const result = transitionClaimSettlement(state.activeGame);
     if (!result.ok) return result;
 
-    const game = { ...result.state, updatedAt: new Date().toISOString() };
-    dispatch({ type: "applyCampaignTransition", game });
+    const game = commitCampaignTransition(result.state);
     return { ...result, state: game };
-  }, [state.activeGame]);
+  }, [commitCampaignTransition, state.activeGame]);
 
   const navigateToBoard = useCallback(
     (
@@ -384,19 +496,15 @@ export function GameProvider({ children }: { children: ReactNode }) {
       const result = navigateToAvailableBoard(state.activeGame, boardId);
       if (!result.ok || result.state === state.activeGame) return result;
 
-      const game = { ...result.state, updatedAt: new Date().toISOString() };
-      dispatch({ type: "applyCampaignTransition", game });
+      const game = commitCampaignTransition(result.state);
       return { ...result, state: game };
     },
-    [state.activeGame],
+    [commitCampaignTransition, state.activeGame],
   );
 
   const returnToPlayers = useCallback(() => {
-    const game = state.activeGame
-      ? { ...state.activeGame, updatedAt: new Date().toISOString() }
-      : null;
-    dispatch({ type: "returnToPlayers", game });
-  }, [state.activeGame]);
+    dispatch({ type: "returnToPlayers" });
+  }, []);
 
   const setDarkMode = useCallback((enabled: boolean) => {
     const preference: ThemePreference = enabled ? "dark" : "light";
@@ -437,6 +545,8 @@ export function GameProvider({ children }: { children: ReactNode }) {
       view: state.view,
       darkMode,
       themePreference,
+      hydrationFailure,
+      persistenceIssue,
       setDarkMode,
       useSystemTheme,
       createPlayer,
@@ -445,6 +555,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       startNewGame,
       loadGame,
       saveGame,
+      retryPersistence,
       completeHeroSetup,
       moveHeroInDungeon,
       claimSettlement,
@@ -458,6 +569,8 @@ export function GameProvider({ children }: { children: ReactNode }) {
       state.view,
       darkMode,
       themePreference,
+      hydrationFailure,
+      persistenceIssue,
       selectedPlayer,
       selectedGame,
       createPlayer,
@@ -466,6 +579,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       startNewGame,
       loadGame,
       saveGame,
+      retryPersistence,
       completeHeroSetup,
       moveHeroInDungeon,
       claimSettlement,

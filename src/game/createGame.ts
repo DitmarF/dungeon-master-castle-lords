@@ -27,12 +27,13 @@ export function createPlayerProfile(
   name: string,
   bannerColor: string,
   idSource: IdSource,
+  createdAt: string,
 ): PlayerProfile {
   return {
     id: createPlayerId(idSource),
     name: name.trim(),
     bannerColor,
-    createdAt: new Date().toISOString(),
+    createdAt,
     lastPlayedAt: null,
   };
 }
@@ -41,7 +42,7 @@ export function createNewGame(
   playerId: PlayerId,
   idSource: IdSource,
   campaignSeed: CampaignSeed,
-  createdAt = new Date().toISOString(),
+  createdAt: string,
 ): GameSave {
   const seed = requireCampaignSeed(campaignSeed);
 
@@ -64,6 +65,7 @@ export function migrateLegacyGame(
   playerId: string,
   idSource: IdSource,
   campaignSeedSource: CampaignSeedSource,
+  fallbackCreatedAt: string,
 ): GameSave {
   if (value && typeof value === "object") {
     const candidate = value as { version?: unknown; dungeon?: unknown };
@@ -121,6 +123,7 @@ export function migrateLegacyGame(
       retainedPlayerId,
       idSource,
       campaignSeedSource.nextCampaignSeed(),
+      fallbackCreatedAt,
     );
     return {
       ...migrated,
@@ -140,5 +143,6 @@ export function migrateLegacyGame(
     playerId as PlayerId,
     idSource,
     campaignSeedSource.nextCampaignSeed(),
+    fallbackCreatedAt,
   );
 }

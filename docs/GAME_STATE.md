@@ -92,11 +92,11 @@ This is the implemented prototype state, not an approved final dungeon, economy,
 
 **Observed:** `GameRegistry` version 1 contains local player profiles, a games object keyed by player ID, and the last active player ID. The entire registry is serialized to browser `localStorage`.
 
-The active in-memory game is also copied into this registry after updates. One campaign per player, local profiles, automatic browser persistence, and the meanings of `updatedAt`/manual Save are current behavior—not established final product rules.
+The active in-memory game is also copied into this registry after updates. E03-T02 keeps that container and one-campaign-per-profile shape, but replaces implicit effect-driven writes with explicit verified persistence operations and typed hydration/write outcomes. Campaign version remains 4 and registry version remains 1; no gameplay-schema or container-version cutover occurs.
 
 ## Accepted EPIC 03 transition contract
 
-**Accepted in E03-T01; implementation is assigned to E03-T02–T07.** The following target rules are authoritative even where the current version-4 runtime has not implemented them yet:
+**Accepted in E03-T01.** E03-T02 implements the lifecycle/persistence subset below; the opening, World, and gameplay-shape portions remain assigned to E03-T03–T07:
 
 - each local profile has at most one campaign; replacement and profile deletion require explicit confirmation, and the old durable entry remains intact until the candidate write and readback verify;
 - `campaign.createdAt` is immutable creation time; `campaign.updatedAt` changes only with campaign truth or stored resume-context changes; `profile.lastPlayedAt` records successful New/Continue entry rather than campaign modification or Save;
@@ -113,6 +113,23 @@ The active in-memory game is also copied into this registry after updates. One c
 - through EPIC 05, Hero totals use the versioned `v4-path-bonus-1` stored compatibility snapshot; EPIC 06 must explicitly migrate or retire it.
 
 Campaign version `5` is accepted as the next campaign-schema number under DMCL-P40 but does not become the current persisted shape until E03-T05 implements and verifies the cutover. Registry version `2` remains conditional: if the registry cutover is required, the accepted target is a verified `dmcl.prototype.registry.v2` candidate while the original version-1 payload remains untouched throughout EPIC 03 with no automatic cleanup.
+
+### E03-T02 implemented lifecycle and persistence ownership
+
+The application layer now owns lifecycle time and registry transactions through explicit injected boundaries:
+
+- `Clock` supplies profile/campaign lifecycle timestamps; pure creation helpers require an explicit timestamp and no longer construct wall-clock time;
+- profile creation sets immutable `PlayerProfile.createdAt`; New/Continue alone update `lastPlayedAt`; selecting a profile does not;
+- campaign creation sets immutable `createdAt` and initial `updatedAt`; successful campaign transitions and legal resume-board changes update `updatedAt`; open, return, and manual Save do not;
+- hydration stages raw read, parse, registry/profile validation, campaign validation, existing v2/v3/v4 migration, and target validation as distinct typed outcomes;
+- a hydration or migration failure leaves the original raw registry untouched and blocks the former automatic empty-registry write;
+- legitimate empty storage produces an explicit empty success rather than sharing an error path;
+- every automatic durable update and manual Save performs serialization, write, exact readback verification, and best-effort rollback to the previous raw payload if verification fails;
+- later non-destructive autosave failure keeps the changed in-memory campaign and marks persistence failed; the Save action is the visible retry;
+- profile deletion and campaign replacement remain explicit confirmed actions and change in-memory state only after verified persistence succeeds;
+- player-visible errors use bounded messages for unavailable/read/parse/registry/campaign/migration/serialization/quota/write/verification failures and never expose raw exceptions.
+
+The registry-version-2/new-key option in DMCL-P31 remains conditional and is not activated by E03-T02. This task hardens the current version-1 key in place while guaranteeing that failed decode/migration never writes and that failed destructive changes retain the previous durable/in-memory registry.
 
 ## Current non-campaign runtime state
 
@@ -136,7 +153,7 @@ The current v4 payload classifies as follows:
 
 | Values | Classification |
 |---|---|
-| campaign/player reference, timestamps, campaign seed, active board, completed setup choices, hero position, learned ranks, dungeon counters/seed, discovery, heart outcome, and settlement claim | stored facts, with timestamp semantics still TBD |
+| campaign/player reference, timestamps, campaign seed, active board, completed setup choices, hero position, learned ranks, dungeon counters/seed, discovery, heart outcome, and settlement claim | stored facts; E03-T02 defines lifecycle timestamp semantics while legacy counter meanings remain isolated by E03-T01 |
 | `setupComplete`, calculated hero attributes, the zero-filled skill-record shape, vision radius under current rules, and generated dungeon grid/rooms/tiles/start/heart | stored snapshots or redundant persisted values; preserve until a deliberate migration |
 | legal board availability, setup readiness/attribute preview, skill indexes, discovered-cell indexes/counts, and display summaries | derived values |
 | skill/board definitions and generator constants/rules | static definitions |
@@ -155,7 +172,7 @@ The campaign continues to reference a player/profile ID without embedding `Playe
 
 `src/game/model.ts` remains a compatibility import surface while separately defining `PlayerProfile`, `GameRegistry`, `RuntimeState`, and `AppView`. `GameRegistry.games` and `RuntimeState.activeGame` now explicitly reference `CampaignState`; they remain persistence/application copies rather than new campaign fields. No migration is introduced because serialization is unchanged, and the existing v2/v3 normalization path is protected by focused Node fixtures.
 
-The E02-T02 implementation did not resolve timestamp semantics, seed-versus-snapshot authority, profile/campaign cardinality, future gameplay schemas, or hidden creation inputs. E02-T03 subsequently added only the bounded identity policy below; E02-T06 later added the campaign-seed policy, while clock semantics remain open.
+The E02-T02 implementation did not resolve timestamp semantics, seed-versus-snapshot authority, profile/campaign cardinality, future gameplay schemas, or hidden creation inputs. E02-T03 subsequently added the bounded identity policy, E02-T06 added the campaign-seed policy, and E03-T02 later resolved the browser-local clock/cardinality/lifecycle subset without changing campaign version 4.
 
 ### E02-T03 implemented identity policy
 
@@ -170,7 +187,7 @@ The current persistent identity types are now explicit without changing serializ
 
 Content-definition IDs are not player/campaign IDs. Coordinates and `CellKey` values such as `"3,4"` are spatial/derived keys scoped to the stored dungeon, while `DungeonRoom.id` is a snapshot-local generator ordinal. Neither is a global persistent entity identity. The current hero, settlement outcome, and generated dungeon do not gain manufactured entity IDs in this task.
 
-At this identity-only checkpoint, clock and gameplay-seed isolation remained unresolved. E02-T06 subsequently implemented the separate campaign-seed authority; clock isolation, the broader player/account/owner relationship, multiple campaigns, cloud/global identity, and multiplayer authority remain open.
+At this identity-only checkpoint, clock and gameplay-seed isolation remained unresolved. E02-T06 subsequently implemented the separate campaign-seed authority, and E03-T02 later implemented the application clock. The broader player/account/owner relationship, cloud/global identity, and multiplayer authority remain open beyond the accepted one-local-campaign MVP boundary.
 
 ### E02-T04 implemented transition policy
 
@@ -183,7 +200,7 @@ The version-3 shape and field classifications remain unchanged. E02-T04 changes 
 
 These pure transitions retain `updatedAt`; application operations in `GameProvider` stamp it only for a successful state change and mirror the result into `RuntimeState.activeGame` and `GameRegistry.games`. Failed transitions return a typed reason and do not produce a replacement campaign. Automatic browser persistence remains the adapter around the registry and no migration is required.
 
-The four migrated board interactions no longer receive unrestricted whole-campaign mutation. Player/profile creation, campaign create/load, save, return, hydration, theme, and UI-only draft/prompt/map state remain outside this transition set. E02-T06 subsequently resolved the campaign-seed boundary; clock semantics remain pending.
+The four migrated board interactions no longer receive unrestricted whole-campaign mutation. Player/profile creation, campaign create/load, save, return, hydration, theme, and UI-only draft/prompt/map state remain outside this transition set. E02-T06 subsequently resolved the campaign-seed boundary; E03-T02 later implemented the separate application lifecycle/clock/persistence boundary.
 
 ### E02-T05 implemented Hero-attribute consistency policy
 

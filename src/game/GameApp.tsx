@@ -12,7 +12,9 @@ export function GameApp() {
   const {
     activeGame,
     hydrated,
+    hydrationFailure,
     navigateToBoard,
+    retryPersistence,
     returnToPlayers,
     view,
   } = useGame();
@@ -27,6 +29,24 @@ export function GameApp() {
   useEffect(() => {
     if (fallbackBoardId) navigateToBoard(fallbackBoardId);
   }, [fallbackBoardId, navigateToBoard]);
+
+  if (hydrationFailure) {
+    return (
+      <main className="loading-screen" role="alert">
+        <span className="loading-mark">
+          <GameIcon name="save" size={30} />
+        </span>
+        <p>{hydrationFailure.message}</p>
+        <button
+          type="button"
+          className="button button--secondary"
+          onClick={retryPersistence}
+        >
+          Retry opening saves
+        </button>
+      </main>
+    );
+  }
 
   if (!hydrated) {
     return (

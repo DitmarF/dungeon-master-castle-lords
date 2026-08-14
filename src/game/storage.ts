@@ -1,59 +1,77 @@
-import { EMPTY_REGISTRY, type GameRegistry } from "./model";
-import { migrateLegacyGame } from "./createGame";
-import { systemIdSource } from "./systemIdSource";
-import { systemCampaignSeedSource } from "./systemCampaignSeedSource";
+import type {
+  RawStorageReadResult,
+  RawStorageWriteResult,
+  RegistryStorageAdapter,
+  StorageWriteFailureCode,
+} from "./persistence";
 
-const STORAGE_KEY = "dmcl.prototype.registry.v1";
+export const GAME_REGISTRY_STORAGE_KEY = "dmcl.prototype.registry.v1";
 
-function isRegistry(value: unknown): value is GameRegistry {
-  if (!value || typeof value !== "object") return false;
-
-  const candidate = value as Partial<GameRegistry>;
-  return (
-    candidate.version === 1 &&
-    Array.isArray(candidate.players) &&
-    typeof candidate.games === "object" &&
-    candidate.games !== null
-  );
+function storageUnavailable(): RawStorageReadResult {
+  return { ok: false, code: "storage-unavailable" };
 }
 
-export const gameStorage = {
-  read(): GameRegistry {
-    if (typeof window === "undefined") return EMPTY_REGISTRY;
+function classifyWriteFailure(error: unknown): StorageWriteFailureCode {
+  if (
+    error instanceof DOMException &&
+    (error.name === "QuotaExceededError" ||
+      error.name === "NS_ERROR_DOM_QUOTA_REACHED" ||
+      error.code === 22 ||
+      error.code === 1014)
+  ) {
+    return "quota-exceeded";
+  }
+  if (error instanceof DOMException && error.name === "SecurityError") {
+    return "storage-unavailable";
+  }
+  return "write-failed";
+}
 
+function getLocalStorage(): Storage | null {
+  if (typeof window === "undefined") return null;
+  try {
+    return window.localStorage;
+  } catch {
+    return null;
+  }
+}
+
+export const gameStorage: RegistryStorageAdapter = {
+  read(): RawStorageReadResult {
+    const storage = getLocalStorage();
+    if (!storage) return storageUnavailable();
     try {
-      const raw = window.localStorage.getItem(STORAGE_KEY);
-      if (!raw) return EMPTY_REGISTRY;
-
-      const parsed: unknown = JSON.parse(raw);
-      if (!isRegistry(parsed)) return EMPTY_REGISTRY;
-
       return {
-        ...parsed,
-        games: Object.fromEntries(
-          Object.entries(parsed.games).map(([playerId, game]) => [
-            playerId,
-            migrateLegacyGame(
-              game,
-              playerId,
-              systemIdSource,
-              systemCampaignSeedSource,
-            ),
-          ]),
-        ),
+        ok: true,
+        value: storage.getItem(GAME_REGISTRY_STORAGE_KEY),
       };
-    } catch {
-      return EMPTY_REGISTRY;
+    } catch (error) {
+      if (error instanceof DOMException && error.name === "SecurityError") {
+        return storageUnavailable();
+      }
+      return { ok: false, code: "storage-read-failed" };
     }
   },
 
-  write(registry: GameRegistry): void {
-    if (typeof window === "undefined") return;
-
+  write(value: string): RawStorageWriteResult {
+    const storage = getLocalStorage();
+    if (!storage) return { ok: false, code: "storage-unavailable" };
     try {
-      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(registry));
-    } catch {
-      // The prototype remains playable if private browsing blocks persistence.
+      storage.setItem(GAME_REGISTRY_STORAGE_KEY, value);
+      return { ok: true };
+    } catch (error) {
+      return { ok: false, code: classifyWriteFailure(error) };
+    }
+  },
+
+  remove(): RawStorageWriteResult {
+    const storage = getLocalStorage();
+    if (!storage) return { ok: false, code: "storage-unavailable" };
+    try {
+      storage.removeItem(GAME_REGISTRY_STORAGE_KEY);
+      return { ok: true };
+    } catch (error) {
+      return { ok: false, code: classifyWriteFailure(error) };
     }
   },
 };

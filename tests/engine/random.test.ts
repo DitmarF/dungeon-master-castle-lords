@@ -121,6 +121,7 @@ test("version-3 migration preserves every existing Dungeon and progress fact", (
         return 999;
       },
     },
+    "2026-08-14T10:00:00.000Z",
   );
 
   assert.equal(migrated.version, 4);

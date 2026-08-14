@@ -85,6 +85,7 @@ test("a version-3 campaign adopts its Dungeon seed without regeneration", () => 
     campaign.playerId,
     MIGRATION_ID_SOURCE,
     MIGRATION_SEED_SOURCE,
+    "2026-08-14T10:00:00.000Z",
   );
 
   assert.equal(migrated.version, 4);
@@ -135,6 +136,7 @@ test("version-2 and version-3 hero saves retain facts while snapshots normalize"
       "player-fallback",
       MIGRATION_ID_SOURCE,
       MIGRATION_SEED_SOURCE,
+      "2026-08-14T10:00:00.000Z",
     );
 
     assert.equal(migrated.version, 4);
