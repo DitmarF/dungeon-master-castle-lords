@@ -1,6 +1,6 @@
 # Dungeon Master & Castle Lords — MVP Implementation Plan
 
-Status: candidate implementation plan for owner review
+Status: accepted implementation plan; active planning companion for EPIC 03–14
 Scope: Game Concept 2.0 Castle-faction MVP, EPIC 03 through EPIC 14
 Last updated: 2026-08-14
 
@@ -10,14 +10,14 @@ This document translates the approved [Game Concept 2.0](./GAME_CONCEPT.md) into
 
 - GAME_CONCEPT.md defines the approved product and gameplay direction.
 - ROADMAP.md identifies the active Epic and exactly one next task.
-- this document defines the proposed MVP Epic, task, subtask, dependency, and exit-gate structure.
+- this document defines the accepted MVP Epic, task, subtask, dependency, and exit-gate structure.
 - DECISIONS.md records acceptance, supersession, and unresolved decisions.
 - GAME_STATE.md, ARCHITECTURE.md, and CONTENT_MODEL.md own their respective implementation contracts.
 - CURRENT_STATE.md remains evidence of what is implemented, never a future plan.
 
-This plan is a **Candidate** until the project owner accepts the roadmap rebase. It does not start implementation, change the campaign schema, migrate a save, authorize a commit, save a Sites version, or authorize deployment.
+The project owner accepted this plan and DMCL-P26 on 2026-08-14. Acceptance did not itself change the campaign schema, migrate a save, or authorize deployment.
 
-After acceptance, DMCL-P26 records the roadmap rebase, EPIC 03 becomes the active implementation Epic, and E03-T01 becomes the sole next task. Each later task still requires its own bounded task definition and any owner decisions named by this plan.
+DMCL-P26 records the roadmap rebase, EPIC 03 is the active implementation Epic, and the completed E03-T01 audit records its accepted transition decisions as DMCL-P27–DMCL-P39 plus the next campaign-schema number as DMCL-P40. E03-T02 is the sole next task. Each later task still requires its own bounded task definition and any owner decisions named by this plan.
 
 ## 2. Roadmap rebase
 
@@ -131,7 +131,7 @@ An Epic may begin its decision task while exact later-Epic values remain TBD. It
 
 **Entry:** EPIC 00–02 complete; Game Concept 2.0 and DMCL-022–DMCL-028 accepted.
 
-**Candidate schema target:** campaign version 5. The number and exact contract become authoritative only after E03-T01 owner approval.
+**Accepted next schema number:** campaign version 5 (DMCL-P40). Version 4 remains the current persisted authority until E03-T05 implements and verifies the accepted version-5 shape and cutover.
 
 | Task | Outcome | Key subtasks |
 |---|---|---|
@@ -144,9 +144,9 @@ An Epic may begin its decision task while exact later-Epic values remain TBD. It
 | E03-T07 — Opening boards, summaries, and inspection | Player-facing new opening without fake mechanics | update Start and Setup copy; render the Tier 1 Village and readable home ring; present the Dungeon through World context; remove Dungeon-local Day/Gold from global status; fix Hero/location assumptions; update the development inspector; present migration/storage errors; preserve portrait/touch/keyboard/accessibility behavior |
 | E03-T08 — Compatibility and Epic exit gate | Verified, accepted transition checkpoint | cover every approved v2/v3/v4 fixture and v5 round trip; test no reroll/no regeneration/idempotence/stable IDs/atomic Setup/failure recovery; run normal verification and GitHub Actions; manually test new, migrated, incompatible, corrupt, and failed-write paths; refresh responsible docs and CURRENT_STATE evidence; owner device acceptance and non-deployed checkpoint |
 
-### 7.1 E03-T01 required owner decisions
+### 7.1 E03-T01 accepted owner decisions
 
-E03-T01 must make these decisions explicit before E03-T02 begins:
+E03-T01 made these decisions explicit and the project owner accepted them before E03-T02:
 
 1. MVP campaign count and replacement/deletion behavior.
 2. Automatic persistence and the honest meaning of manual Save.
@@ -162,7 +162,7 @@ E03-T01 must make these decisions explicit before E03-T02 begins:
 12. treatment of old Dungeon day, treasury, and settlementClaimed fields.
 13. temporary compatibility treatment for current Hero attribute bonuses until EPIC 06.
 
-Recommended MVP defaults are one local campaign per profile, autosave after successful transitions, manual Save as an immediate verified write, visible recoverable storage errors, immutable createdAt, campaign updatedAt only for campaign-truth changes, and profile activity tracked separately. These remain recommendations until E03-T01 is accepted.
+The accepted MVP defaults are one local campaign per profile, autosave after successful durable changes, manual Save as an immediate verified write, visible recoverable storage errors, immutable createdAt, campaign updatedAt only for campaign-truth/resume-context changes, and profile activity tracked separately. DMCL-P27–DMCL-P39 hold the thirteen transition decisions; DMCL-P40 accepts version 5 as the next campaign-schema number.
 
 ### 7.2 Required migration classes
 
@@ -401,11 +401,13 @@ Every task applies only the relevant rows, but no Epic may close while an affect
 | AI scope explosion | full rival strategy could dominate MVP work | bounded encounter and strategic threat behavior; full sovereign simulation remains post-MVP |
 | False completion | feature breadth can hide broken save, migration, or inaccessible flows | milestone gates, deterministic fixtures, full-campaign tests, owner physical-device acceptance |
 
-## 21. Exact first task
+## 21. Completed first task and exact next task
 
-After owner acceptance of this plan, the sole next task is:
+The first task under this plan was:
 
 ### E03-T01 — Audit Concept 2.0 lifecycle, save, and opening-flow transition
+
+Status: **Complete**
 
 **Goal:** Produce the approved lifecycle, state-ownership, version-5 candidate, migration, opening-flow, and bounded EPIC 03 implementation contract without changing runtime behavior.
 
@@ -440,14 +442,19 @@ After owner acceptance of this plan, the sole next task is:
 
 Documentation-only verification is sufficient for E03-T01: inspect repository evidence, links, status labels, decision coverage, task bounds, and the complete diff. No application build is required unless the task separately changes code.
 
+### Exact next task
+
+**E03-T02 — Safe local lifecycle and persistence behavior** is the sole next task. It implements the accepted clock, timestamp, manual-Save, typed-failure, safe-hydration, and one-campaign replacement/deletion contract without changing the gameplay schema or starting the version-5 cutover.
+
 ## 22. Acceptance and activation
 
-To activate this plan, the project owner must accept or revise:
+On 2026-08-14, the project owner accepted:
 
 1. the EPIC 03–14 sequence and milestone placement;
 2. the included and cut MVP scope;
 3. the supersession of the former unstarted EPIC 03–24 sequence;
 4. DMCL-P26 as the compact decision-log record;
-5. E03-T01 as the sole next task.
+5. E03-T01 as the sole next task;
+6. campaign version 5 as the next campaign-schema number, recorded after E03-T01 as DMCL-P40.
 
-Acceptance activates planning only. It does not pre-approve the gameplay numbers or migration choices assigned to later decision gates, begin E03-T01 automatically, authorize commit/push, save a Sites version, or authorize deployment.
+Acceptance activated the plan and EPIC 03. It does not pre-approve gameplay numbers or later decision gates. The accepted E03-T01 checkpoint makes E03-T02 the sole next task and does not authorize deployment.

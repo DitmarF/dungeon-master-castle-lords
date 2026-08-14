@@ -39,7 +39,7 @@ The architecture should support fast prototype iteration without allowing UI com
 - versioned campaign data persisted to browser `localStorage`;
 - platform entry, optional storage scaffolding, and Sites configuration at repository edges.
 
-The current evidence hierarchy and limitations are documented in `CURRENT_STATE.md`. The application now uses named validated transitions and a pure board-navigation policy, while one provider still coordinates runtime/lifecycle concerns. One campaign per player, browser-only persistence, wall-clock timestamping, active/registry mirroring, and one global stylesheet remain observed interim implementation choices rather than approved permanent architecture.
+The current evidence hierarchy and limitations are documented in `CURRENT_STATE.md`. The application now uses named validated transitions and a pure board-navigation policy, while one provider still coordinates runtime/lifecycle concerns. The existing wall-clock timestamping, active/registry mirroring, and one global stylesheet remain observed implementation choices. E03-T01 separately accepts the browser-local one-campaign and lifecycle target described below; E03-T02 must implement it before it can be reported as current behavior.
 
 ## Current core-engine architecture
 
@@ -286,7 +286,15 @@ Folder names may evolve; dependency responsibilities matter more than a prescrib
 
 **Established:** Keep persistence behind a boundary and preserve schema versioning/migrations.
 
-**TBD/Open Question:** local-only versus authenticated cloud saves, one versus multiple campaigns, ownership, synchronization/conflict resolution, offline behavior, export/import, and multiplayer authority.
+**Accepted for the browser-local MVP transition:** Application lifecycle code depends on a small storage port with typed read/write outcomes and a small injected `Clock`; browser APIs and wall-clock construction remain infrastructure concerns. The boundary must distinguish legitimate absence from storage unavailability, parse, registry/profile/campaign validation, migration, serialization, quota/write, and verification failures. It must not expose raw platform exceptions to players.
+
+Hydration is a staged read/decode/validate/migrate operation. A failed stage suppresses automatic writes and cannot produce a legitimate empty replacement. The original serialized payload remains intact until a candidate replacement is written, read back, and validated. A later write failure leaves the in-memory campaign explicitly unsaved and retryable.
+
+For EPIC 03, each local profile has at most one campaign. Confirmed replacement/profile deletion are application transactions, not domain rules: destructive success is reported only after verified persistence, and the previous durable entry remains recoverable until then. Manual Save uses the same immediate verified adapter write and changes no timestamps by itself.
+
+The accepted timestamp policy separates immutable campaign creation time, campaign modification/resume-context time, and successful profile New/Continue activity. E03-T02 implements this with the smallest explicit clock boundary; it does not introduce a time framework, repository framework, database abstraction, event sourcing, CQRS, or alternate state library.
+
+**Still open beyond the local MVP:** authenticated cloud saves, synchronization/conflict resolution, broader ownership, cross-device/offline guarantees, export/import, and multiplayer authority.
 
 ## Board-to-board integration
 
@@ -325,7 +333,7 @@ This document does not approve:
 
 ## Open questions requiring approval
 
-1. What session or draft state must persist, beginning with unfinished hero setup?
-2. What is the authoritative player/campaign/persistence model: campaign count, identity, cloud sync, offline behavior, and save semantics?
-3. Should future multiplayer constrain architecture now; if yes, what authority and synchronization model is required?
+1. Beyond the accepted disposable Hero Setup draft and stored active-board context, what additional session/view state should persist?
+2. Beyond the accepted one-campaign browser-local MVP and verified-save semantics, what future authenticated identity, cloud sync, offline, export/import, and ownership model is required?
+3. Should future multiplayer constrain architecture later; if yes, what authority and synchronization model is required?
 4. Should styling remain handcrafted CSS, use Tailwind intentionally, or defer that choice?

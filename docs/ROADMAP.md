@@ -1,15 +1,15 @@
 # Dungeon Master & Castle Lords — Roadmap
 
-Status: Game Concept 2.0 roadmap rebase Candidate; owner acceptance required before activation
+Status: Active Game Concept 2.0 roadmap; EPIC 03 Current
 Last updated: 2026-08-14
 
 ## Purpose and authority
 
-This document answers: **Where are we, and what is next?** Product rules live in [GAME_CONCEPT.md](./GAME_CONCEPT.md), the detailed proposed Epic/task/subtask plan in [MVP_IMPLEMENTATION_PLAN.md](./MVP_IMPLEMENTATION_PLAN.md), implementation evidence in [CURRENT_STATE.md](./CURRENT_STATE.md), and accepted decisions in [DECISIONS.md](./DECISIONS.md).
+This document answers: **Where are we, and what is next?** Product rules live in [GAME_CONCEPT.md](./GAME_CONCEPT.md), the detailed Epic/task/subtask plan in [MVP_IMPLEMENTATION_PLAN.md](./MVP_IMPLEMENTATION_PLAN.md), implementation evidence in [CURRENT_STATE.md](./CURRENT_STATE.md), and accepted decisions in [DECISIONS.md](./DECISIONS.md).
 
-This Candidate preserves completed EPIC 00–02 and replaces the former unstarted EPIC 03–24 sequence with a vertical Castle-MVP sequence through EPIC 14. It retains useful responsibilities from the old plan but changes their order and grouping around Game Concept 2.0. No completed Epic or accepted closure record is rewritten.
+The accepted Game Concept 2.0 rebase preserves completed EPIC 00–02 and replaces the former unstarted EPIC 03–24 sequence with a vertical Castle-MVP sequence through EPIC 14. It retains useful responsibilities from the old plan but changes their order and grouping around Game Concept 2.0. No completed Epic or accepted closure record is rewritten.
 
-Until the owner accepts DMCL-P26, this rebase is not active and no implementation task has begun. After acceptance, ROADMAP.md remains the execution authority for the active Epic and exactly one next task; MVP_IMPLEMENTATION_PLAN.md remains its detailed planning companion.
+The owner accepted DMCL-P26, the E03-T01 decision packet DMCL-P27–DMCL-P39, and the next campaign-schema number under DMCL-P40 on 2026-08-14. ROADMAP.md remains the execution authority for the active Epic and exactly one next task; MVP_IMPLEMENTATION_PLAN.md remains its detailed planning companion.
 
 ## Current implementation boundary
 
@@ -17,48 +17,49 @@ The implemented prototype remains:
 
 `local player → campaign → hero setup → deterministic dungeon exploration → dungeon-heart claim → placeholder settlement`
 
-World strategy, region conquest, supply, meaningful management, tactical combat, executable skill effects, the new faction evolution, cloud saves, and multiplayer are not implemented. See CURRENT_STATE.md for evidence. This roadmap Candidate changes intended sequencing, not implementation state.
+World strategy, region conquest, supply, meaningful management, tactical combat, executable skill effects, the new faction evolution, cloud saves, and multiplayer are not implemented. See CURRENT_STATE.md for evidence. The roadmap rebase and E03-T01 checkpoint change sequencing and accepted contracts, not implementation state.
 
-## Candidate activation
+## Accepted activation
 
-Owner acceptance of this plan will:
+Owner acceptance on 2026-08-14:
 
-- accept DMCL-P26 and supersede only the former unstarted EPIC 03–24 sequence;
-- activate **EPIC 03 — Game Concept 2.0 transition and campaign persistence**;
-- make **E03-T01 — Audit Concept 2.0 lifecycle, save, and opening-flow transition** the sole next task;
-- preserve EPIC 00–02 and every accepted E01/E02 closure as historical foundation;
-- leave all gameplay numbers and later decision gates unresolved until their responsible tasks.
+- accepted DMCL-P26 and superseded only the former unstarted EPIC 03–24 sequence;
+- activated **EPIC 03 — Game Concept 2.0 transition and campaign persistence**;
+- accepted E03-T01 and its thirteen owner decisions as DMCL-P27–DMCL-P39;
+- accepted campaign version 5 as the next implemented campaign-schema number under DMCL-P40, without changing the current version-4 save;
+- preserved EPIC 00–02 and every accepted E01/E02 closure as historical foundation;
+- left all gameplay numbers and later decision gates unresolved until their responsible tasks.
 
-Acceptance activates planning only. It does not start E03-T01 automatically, change code or saves, authorize commit/push or a Sites checkpoint, or authorize deployment.
+The acceptance establishes planning and transition authority only. E03-T01 changed no runtime code or saves, and deployment remains separately authorized work.
 
-## First MVP Epic after acceptance
+## Current Epic
 
 ### EPIC 03 — Game Concept 2.0 transition and campaign persistence
 
-Status: **Proposed Current**
+Status: **Current**
 
 Purpose: safely replace the version-4 Dungeon-first prototype foundation with the minimum Castle-only, Village-first campaign state while establishing deliberate local lifecycle, validation, migration, recovery, and board-entry behavior.
 
 EPIC 03 does not add an empty final-game schema. It adds only state and content required by the new opening: Castle authority, a capital Village, the controlled home ring, basic starting sites, regional Dungeon context, and approved retained legacy facts. Economy yields, Road construction, units, Combat, Gambits, Hero progression depth, and evolution effects remain with later Epics.
 
-## Exact next task after acceptance
+## Exact next task
 
-### E03-T01 — Audit Concept 2.0 lifecycle, save, and opening-flow transition
+### E03-T02 — Safe local lifecycle and persistence behavior
 
-Status: **Proposed Next — exactly one**
+Status: **Next — exactly one**
 
-Goal: produce an owner-approved lifecycle, state-ownership, migration, version-5 candidate, and Village-first opening contract before runtime behavior changes.
+Goal: implement the accepted E03-T01 persistence/lifecycle contract so browser-local campaigns fail honestly and recoverably, without redesigning the campaign gameplay schema.
 
-The audit must:
+E03-T02 must:
 
-- trace New Game, Continue, replacement, deletion, hydration, automatic persistence, manual Save, return, timestamps, registry validation, and storage failures;
-- classify every version-4 field, transition, content reference, board unlock, and UI assumption as preserve, relocate, derive, retire, or owner-decision-required;
-- compare clean-break, conversion, and legacy-mode treatments for current Castle and Dungeon campaigns;
-- prevent old Dungeon day, treasury, and settlementClaimed meanings from silently becoming strategic Day, Gold, or capital ownership;
-- define the minimum new-opening stored, derived, static, identity, and generation categories without adding later mechanics;
-- present explicit owner decisions, recommended MVP defaults, the migration matrix, E03-T02–T08 bounds, and the Epic exit gate.
+- introduce the smallest explicit application-clock boundary required by the accepted timestamp semantics;
+- distinguish campaign modification from profile activity and implement verified manual Save behavior;
+- return typed persistence outcomes for absence, decode/validation/migration, storage availability, serialization, quota/write, and verification failures;
+- preserve the original payload and suppress destructive autosave after failed hydration or migration;
+- implement the accepted one-campaign replacement/deletion policy through explicit confirmed actions;
+- provide a pure in-memory persistence test boundary and focused success/failure lifecycle coverage.
 
-E03-T01 is documentation and analysis only. It must not change runtime behavior, cut over the save version, add future gameplay slices, install dependencies, change database/hosting infrastructure, add cloud/authentication/multiplayer, or deploy.
+E03-T02 must not cut over campaign version 5, implement World/Village/gameplay migration, add future gameplay slices, install dependencies, change database/hosting infrastructure, add cloud/authentication/multiplayer, or deploy.
 
 ## Epic registry
 
@@ -69,7 +70,7 @@ The sequence column records dependency position, not permission to begin early. 
 | EPIC 00 — Project contract and development infrastructure | **Complete** | Establish the audit, product and technical contracts, decision log, roadmap, workflow, repository guidance, FS source, and project README. | Foundation |
 | EPIC 01 — UI shell and board architecture | **Complete** | Finish and generalize the existing mobile-first shell, FS integration, and modular board foundations. | After EPIC 00 |
 | EPIC 02 — Core game engine and state | **Complete** | Establish the shared game-engine and central campaign-state foundations needed by later boards and systems. | After EPIC 01 |
-| EPIC 03 — Game Concept 2.0 transition and campaign persistence | **Proposed Current** | Update lifecycle, versioned state, migration, Castle/Village opening, regional Dungeon context, and board entry safely. | After EPIC 02 |
+| EPIC 03 — Game Concept 2.0 transition and campaign persistence | **Current** | Update lifecycle, versioned state, migration, Castle/Village opening, regional Dungeon context, and board entry safely. | After EPIC 02 |
 | EPIC 04 — Tier 1 World, Settlement, economy, and strategic Days | Planned | Implement Roads, connection, simple supply, projects, stockpile, core infrastructure, production, and both functional boards. | After EPIC 03 |
 | EPIC 05 — Regional Dungeon integration and first vertical slice | Planned | Make the existing Dungeon a World-region location that returns a persistent consequence and completes the approved first slice. | After EPIC 04 |
 | MILESTONE A — New-concept strategic slice | Planned checkpoint | Prove Setup → Village → Road → improvement → Day → regional Dungeon consequence → Tier 2 preview. | After EPIC 05 |
@@ -115,6 +116,18 @@ E02-T01 through E02-T08 established and verified:
 - preserved current saves, six-board architecture, and playable prototype behavior without speculative gameplay or frameworks.
 
 The E02-T08 exit assessment is **PASS**. The project owner accepted E02-T08 and EPIC 02 on 2026-08-10 and separately confirmed the latest GitHub Actions `Verify` result as PASS. The matching closure checkpoint is documentation-only, saves a new non-deployed Sites version, makes EPIC 03 Current, and names E03-T01 as the sole next task.
+
+## E03-T01 closure
+
+E03-T01 established and the project owner accepted:
+
+- the complete current version-4 lifecycle map and field-by-field transition classification;
+- the required migration-source matrix and clean-break/conversion/legacy-mode alternatives without semantic reinterpretation;
+- the minimum candidate Castle/Village/home-ring/retained-Dungeon campaign shape and stored/derived/static authority boundaries;
+- the accepted browser-local lifecycle, timestamp, verified Save, typed failure, source-preservation, cardinality, opening, World-authority, Castle-conversion, Dungeon-incompatibility, legacy-metadata, and Hero-compatibility policies recorded as DMCL-P27–DMCL-P39, plus version 5 as the next campaign-schema number under DMCL-P40;
+- bounded E03-T02–T08 contracts, the EPIC 03 exit gate, affected-file map, and explicit non-goals.
+
+The project owner accepted DMCL-P26 and all thirteen E03-T01 recommendations on 2026-08-14. This documentation-only checkpoint changes no runtime behavior, campaign/registry version, migration, generated World, gameplay rule, dependency, database, hosting, or deployment state. Its matching pushed/Sites checkpoint completes before E03-T02 begins.
 
 ## E02-T01 closure
 
@@ -228,9 +241,10 @@ E00-T05 was accepted by the project owner on 2026-08-09, completing EPIC 00. Its
 - Every accepted task updates this file with the current Epic status and exactly one next task.
 - Normal tasks save an accepted Sites version but do not deploy. Deployment requires separate explicit user instruction.
 
-## Open decisions routed by this Candidate
+## Open decisions after E03-T01
 
-- E03-T01 must resolve the MVP lifecycle, timestamp, storage-failure, campaign-count, legacy-save, opening-destination, starting-ring, and version-transition contract before runtime changes.
+- DMCL-P27–DMCL-P39 resolve the MVP lifecycle, timestamp, storage-failure, campaign-count, legacy-save, opening-destination, starting-ring, and transition contract. Implementation remains bounded to the responsible E03 tasks.
+- Campaign version 5 is the accepted next campaign-schema number but is not current until E03-T05 implements and verifies the cutover. Registry version 2 remains conditional on the DMCL-P31 lifecycle/cutover need.
 - Exact gameplay formulas, balance, thresholds, costs, progression values, content quantities, and later schema fields remain with their named Epic decision tasks.
 - Exact effect vocabulary remains deferred until EPIC 08 has concrete approved abilities.
 - Cloud/offline synchronization, authentication, multiplayer authority, localization, mods/content packs, and remote content remain outside the MVP.

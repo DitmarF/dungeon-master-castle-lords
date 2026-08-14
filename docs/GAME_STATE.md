@@ -94,6 +94,26 @@ This is the implemented prototype state, not an approved final dungeon, economy,
 
 The active in-memory game is also copied into this registry after updates. One campaign per player, local profiles, automatic browser persistence, and the meanings of `updatedAt`/manual Save are current behavior—not established final product rules.
 
+## Accepted EPIC 03 transition contract
+
+**Accepted in E03-T01; implementation is assigned to E03-T02–T07.** The following target rules are authoritative even where the current version-4 runtime has not implemented them yet:
+
+- each local profile has at most one campaign; replacement and profile deletion require explicit confirmation, and the old durable entry remains intact until the candidate write and readback verify;
+- `campaign.createdAt` is immutable creation time; `campaign.updatedAt` changes only with campaign truth or stored resume-context changes; `profile.lastPlayedAt` records successful New/Continue entry rather than campaign modification or Save;
+- automatic persistence follows successful durable campaign/profile changes; manual Save performs an immediate adapter write plus verified readback, reports success only after both succeed, and changes no campaign fact or timestamp by itself;
+- absence is distinct from storage unavailability and from parse, registry/profile/campaign validation, migration, serialization, quota/write, and verification failure;
+- failed hydration or migration suppresses automatic persistence and cannot be treated as an empty registry; the original serialized payload remains untouched until an approved decode/migration and verified replacement succeeds;
+- a later write failure leaves the current in-memory campaign playable but explicitly unsaved, exposes a bounded retry/recovery action, and does not expose raw platform exceptions to the player;
+- unfinished Hero Setup choices remain disposable; valid Setup completion atomically creates the Castle/Hero/Village/World opening and enters Settlement;
+- initial campaign availability is Hero, Settlement, and World; Dungeon requires valid regional exploration context, while Combat and Diplomacy await later legal contexts;
+- the controlled home ring contains the three approved resource regions plus exactly one introductory Dungeon location, one inert discoverable ruin location, and one terrain-only region;
+- World creation derives a domain-separated seed from `campaignSeed` and stores that seed, a generator version, and an authoritative generated snapshot that is not regenerated on ordinary load;
+- eligible completed version-4 Castle campaigns use deterministic conversion; version-4 Dungeon-faction campaigns are incompatible and never silently convert to Castle;
+- migrated Dungeon `day`, `treasury`, and `settlementClaimed` are legacy prototype metadata only and never strategic Day, Gold/resources, capital/Village ownership, or region control;
+- through EPIC 05, Hero totals use the versioned `v4-path-bonus-1` stored compatibility snapshot; EPIC 06 must explicitly migrate or retire it.
+
+Campaign version `5` is accepted as the next campaign-schema number under DMCL-P40 but does not become the current persisted shape until E03-T05 implements and verifies the cutover. Registry version `2` remains conditional: if the registry cutover is required, the accepted target is a verified `dmcl.prototype.registry.v2` candidate while the original version-1 payload remains untouched throughout EPIC 03 with no automatic cleanup.
+
 ## Current non-campaign runtime state
 
 **Observed:** These runtime values do not live inside `CampaignState`/`GameSave`:
@@ -301,14 +321,10 @@ Implementation must not convert an open gameplay question into a permanent save-
 
 ## Open questions requiring approval
 
-1. Which draft/session information persists, beginning with unfinished hero setup?
-2. Is one campaign per player intentional, or will players have multiple campaigns/save slots?
-3. What distinguishes player profile, authenticated user, campaign owner, faction participant, and future multiplayer participant?
-4. What are the authoritative save moments and meanings of created, modified, opened, and manually saved timestamps?
-5. Should camera/board position resume per campaign, per player, or not at all?
-6. Are tactical encounters resumable; if so, which in-progress combat state is durable?
-7. For generated locations, what is authoritative: seed/version, generated snapshot, or both?
-8. What world, region, holding, conquest, and supply fields implement their approved system shapes once exact rules are defined?
-9. How do Days, strategic Travel, exploration turns, and tactical initiative/Move/AP advance or convert between one another?
-10. What are the cloud-save, offline, synchronization, conflict, export/import, and migration guarantees?
-11. Must multiplayer requirements constrain the campaign schema now; if yes, who is authoritative for state transitions?
+1. What distinguishes local player profile, future authenticated user, campaign owner, faction participant, and future multiplayer participant beyond the accepted one-local-campaign MVP boundary?
+2. Should camera/board position resume per campaign, per player, or not at all beyond the accepted stored active-board context?
+3. Are tactical encounters resumable; if so, which in-progress combat state is durable?
+4. What world, region, holding, conquest, and supply fields implement their approved system shapes beyond the minimum EPIC 03 opening snapshot?
+5. How do strategic Days and Travel, exploration turns, and tactical initiative/Move/AP advance or relate? Dungeon day is explicitly not a strategic Day.
+6. What are the future cloud-save, offline synchronization, conflict, export/import, and long-term migration guarantees beyond the accepted browser-local recovery contract?
+7. Must multiplayer requirements constrain the campaign schema later; if yes, who is authoritative for state transitions?

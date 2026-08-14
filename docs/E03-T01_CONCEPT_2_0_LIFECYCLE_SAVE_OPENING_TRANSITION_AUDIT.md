@@ -1,23 +1,24 @@
 # Dungeon Master & Castle Lords — E03-T01 Concept 2.0 Lifecycle, Save, and Opening-Flow Transition Audit
 
-Status: **Candidate — owner review required; no decision is Accepted by this document**
+Status: **Complete — accepted by the project owner on 2026-08-14**
 
 Audit date: 2026-08-14
 
 Audited branch/commit: `main` at `a821bb4862018ffd2acf0d7287054716b016c583`
 
-Latest recorded accepted Sites checkpoint: version 20; the exact matching version ID is not recorded in the repository
+Prior accepted Sites checkpoint at audit time: version 20; the exact matching version ID is not recorded in the repository
 
-## Activation notice
+## Activation record
 
-`DMCL-P26` is still **Proposed**. [ROADMAP.md](./ROADMAP.md) and [MVP_IMPLEMENTATION_PLAN.md](./MVP_IMPLEMENTATION_PLAN.md) say the Game Concept 2.0 roadmap rebase, EPIC 03 activation, and this broader E03-T01 scope require explicit owner acceptance first. The owner's request authorized preparation of this audit Candidate, but this document does not silently accept `DMCL-P26`, activate EPIC 03, or begin E03-T02.
+The project owner explicitly accepted `DMCL-P26`, every recommended E03-T01 decision, and campaign version 5 as the next campaign-schema number on 2026-08-14. [DECISIONS.md](./DECISIONS.md) records the thirteen decisions as `DMCL-P27`–`DMCL-P39` and the version-number decision as `DMCL-P40`; [ROADMAP.md](./ROADMAP.md) activates EPIC 03, marks E03-T01 Complete, and makes E03-T02 the sole next task. Version 4 remains the current runtime/save authority until E03-T05 implements the accepted version-5 cutover; registry version 2 remains conditional under `DMCL-P31`.
 
-Owner review therefore has two distinct gates:
+The two activation gates are complete:
 
-1. accept or revise `DMCL-P26` and the roadmap rebase;
-2. accept or revise the thirteen E03-T01 decisions in this Candidate.
+1. `DMCL-P26` and the roadmap rebase were accepted;
+2. all thirteen E03-T01 recommendations were accepted without revision and recorded as `DMCL-P27`–`DMCL-P39`.
+3. campaign version 5 was accepted as the next campaign-schema number under `DMCL-P40`, without changing the current version-4 save.
 
-No runtime behavior, save version, registry version, migration, generated World, or decision status changes in this task.
+No runtime behavior, save version, registry version, migration, or generated World changes in this task. Only the accepted decision and roadmap status records change at checkpoint.
 
 ## Task ID and name
 
@@ -31,10 +32,10 @@ Produce one complete owner-reviewable transition contract for moving the current
 
 - Stable inspected source: clean `main`, synchronized with `origin/main`, at `a821bb4862018ffd2acf0d7287054716b016c583`.
 - Configured Sites project: `appgprj_6a762ab98b2c819181682817b758d7f8`; D1 and R2 are inactive.
-- Current roadmap status: Game Concept 2.0 roadmap rebase Candidate; `DMCL-P26` Proposed; EPIC 03 Proposed Current; E03-T01 Proposed Next.
+- Current roadmap status after owner acceptance: Game Concept 2.0 roadmap active; EPIC 03 Current; E03-T01 Complete; E03-T02 sole Next.
 - Accepted product direction: Game Concept 2.0 and `DMCL-022`–`DMCL-028`.
 - Relevant accepted technical decisions: `DMCL-P01`–`DMCL-P13`, `DMCL-P16`–`DMCL-P21`, `DMCL-P23`–`DMCL-P25`.
-- Relevant open decisions: `DMCL-Q03`, `DMCL-Q09`, `DMCL-Q10`, plus the thirteen items in this Candidate.
+- Relevant accepted transition decisions: `DMCL-P27`–`DMCL-P39`, plus the accepted next campaign-schema number `DMCL-P40`; broader future questions remain under `DMCL-Q03`, `DMCL-Q09`, and `DMCL-Q10` where not narrowed by this packet.
 - Primary evidence: `src/game/campaignState.ts`, `model.ts`, `createGame.ts`, `GameProvider.tsx`, `storage.ts`, `navigation.ts`, `transitions.ts`, `generateDungeon.ts`, `selectors.ts`; Start, Setup, Dungeon, Settlement, shell, inspector, and focused engine tests.
 
 ## Requirements
@@ -122,7 +123,7 @@ localStorage key dmcl.prototype.registry.v1
 
 ### 1.3 Current invariants and gaps
 
-- One campaign per profile is enforced by `games[playerId]`; it is interim, not accepted product policy.
+- One campaign per profile is enforced by `games[playerId]`; it was interim in the audited implementation and is now accepted for the browser-local MVP by E03-D01/DMCL-P27.
 - A profile deletion cascades to its campaign. There is no campaign-only Delete action.
 - `createdAt` is generated once but is not formally validated or protected by lifecycle policy.
 - `updatedAt` currently means “last opened, saved, navigated, transitioned, or returned,” not “campaign truth last changed.”
@@ -222,7 +223,7 @@ These are not v4 campaign fields, but lifecycle decisions cannot be complete wit
 
 ## 3. Migration matrix
 
-No row is authorized until its referenced owner decisions are accepted.
+The classifications were not implementation authority when drafted. Their referenced E03 decisions are now accepted, but the corresponding migration and schema work remains bounded to E03-T02–T07.
 
 | Source class | Source meaning | Safely preserved facts | Facts that cannot be reinterpreted | Deterministic generation required | Expected user-visible behavior | Source-payload preservation | Compatibility risks |
 |---|---|---|---|---|---|---|---|
@@ -249,7 +250,7 @@ No row is authorized until its referenced owner decisions are accepted.
 
 ### 4.2 By current campaign type
 
-| Source | Clean break consequence | Conversion consequence | Legacy-mode consequence | Recommended MVP default (not Accepted) |
+| Source | Clean break consequence | Conversion consequence | Legacy-mode consequence | Accepted MVP default |
 |---|---|---|---|---|
 | Incomplete v4 Setup | Discard old empty campaign after confirmation and create a new target campaign. | Preserve campaign ID/seed and reopen blank Castle Setup; generate target foundation only on completion. | Continue old two-faction Setup and Dungeon-first path. | Conversion of identity/seed with disposable draft; do not continue two-faction Setup. |
 | Completed v4 Castle | Require new campaign; old progress becomes inaccessible except retained raw data. | Preserve Hero/build/Dungeon facts and deterministically add Village/home ring. | Continue old Dungeon-first loop separately. | Conversion. |
@@ -259,7 +260,7 @@ No row is authorized until its referenced owner decisions are accepted.
 
 ### 5.1 Version-number review
 
-Campaign version `5` is the correct sequential candidate **if and only if** EPIC 03 implements an incompatible persisted-shape change after owner acceptance. It must not become authoritative in this audit, in content-only T03/T04 work, or merely because a future shape is described. If implementation discovers that lifecycle/container work can precede campaign cutover, registry versioning and campaign versioning should advance independently. Skipping directly beyond 5 has no current justification.
+The owner accepted campaign version `5` as the next campaign-schema number under `DMCL-P40`. Version 4 remains current until E03-T05 implements and verifies the incompatible persisted-shape cutover; content-only T03/T04 work must not advance it. Registry versioning remains independent and conditional under `DMCL-P31`. Skipping directly beyond 5 has no current justification.
 
 ### 5.2 Minimum conceptual shape
 
@@ -371,7 +372,7 @@ This “seed + generator version + stored authoritative snapshot” policy costs
 
 ## 7. Required owner decisions
 
-Every recommendation below is **Proposed for review**, not Accepted.
+The owner accepted every recommended MVP default below on 2026-08-14. `DECISIONS.md` records E03-D01 through E03-D13 in order as `DMCL-P27` through `DMCL-P39`. Option and trade-off text remains for historical review context.
 
 ### E03-D01 — MVP campaign count, replacement, and deletion
 
@@ -531,7 +532,7 @@ Every recommendation below is **Proposed for review**, not Accepted.
 
 ## 8. Bounded implementation contracts
 
-No task below may start until `DMCL-P26`, this Candidate, and all decisions required by that task are explicitly accepted and the prior task is Complete.
+The owner accepted `DMCL-P26`, this contract, and all thirteen decisions. Each task below may start only when the prior task is Complete under `WORKFLOW.md`; E03-T02 is the sole next task after this checkpoint.
 
 ### E03-T02 — Safe local lifecycle and persistence behavior
 
@@ -591,7 +592,7 @@ No task below may start until `DMCL-P26`, this Candidate, and all decisions requ
 
 **Goal:** implement the accepted minimum target-shaped campaign and pure safe migration chain.
 
-**Dependencies:** T02–T04 Complete; E03-D03, D05, D09–D13 accepted; owner confirms version 5.
+**Dependencies:** T02–T04 Complete; E03-D03, D05, D09–D13 and DMCL-P40 accepted.
 
 **Expected systems/files:** `campaignState.ts`, `model.ts`, `createGame.ts` split if justified, storage decoder/migrations, selectors, identity/content types, campaign/migration/random tests.
 
@@ -603,7 +604,7 @@ No task below may start until `DMCL-P26`, this Candidate, and all decisions requ
 
 **Verification:** focused migration/roundtrip/source-preservation tests and `npm run verify`.
 
-**Owner actions:** explicitly accept version 5 and D09–D13; review migration fixture summaries before checkpoint.
+**Owner actions:** review migration fixture summaries and accept the implementation Candidate before checkpoint; version 5 and D09–D13 are already accepted planning inputs.
 
 ### E03-T06 — Village-first Hero Setup transition
 
@@ -711,7 +712,7 @@ This is impact forecasting, not authorization to edit every file.
 ### Manual review scope
 
 - Compared this contract with Game Concept 2.0 Village-first opening, six-board direction, Dungeon regional-site rule, state ownership categories, deterministic-authority policy, stable-ID/content rules, roadmap task sequence, and current implementation evidence.
-- Confirmed that recommendations remain explicitly unaccepted and that `DMCL-P26` remains Proposed.
+- Confirmed that owner acceptance is recorded consistently as `DMCL-P26`–`DMCL-P40` without falsely reporting the accepted next version as the current implemented save.
 - Confirmed all v4 nested fields and all requested migration/decision classes are covered.
 
 ### Environment limitations
@@ -722,37 +723,37 @@ This is impact forecasting, not authorization to edit every file.
 
 ## 12. Documentation impact and checkpoint
 
-- Changed document: this E03-T01 Candidate only.
-- Decision changes: none. `DMCL-P26` remains Proposed; E03-D01–D13 await explicit owner answers.
-- Roadmap change: none before acceptance. E03-T02 must not begin.
+- Changed documents at accepted checkpoint: this audit, `DECISIONS.md`, `ROADMAP.md`, `MVP_IMPLEMENTATION_PLAN.md`, `GAME_STATE.md`, and `ARCHITECTURE.md`.
+- Decision changes: owner acceptance is recorded as `DMCL-P26`–`DMCL-P40`; no later gameplay number or future decision is accepted.
+- Roadmap change: EPIC 03 is Current, E03-T01 is Complete, and E03-T02 is the sole Next task.
 - `CURRENT_STATE.md`: unchanged because implementation evidence did not change.
-- Commit/push: not authorized by this Candidate request and not performed.
-- Sites version: not saved.
+- Commit/push: performed only after the owner explicitly requested checkpoint reconciliation; exact SHA is reported in the completion handoff.
+- Sites version: matching non-deployed version saved after the accepted source is pushed; exact version is reported in the completion handoff.
 - Deployment: **Not performed**.
 
 ## Completion report
 
-### Candidate outcome
+### Accepted outcome
 
-- Summary: complete Concept 2.0 lifecycle, migration, minimum-state, authority, decision, task-sequence, and exit-gate contract prepared from current repository evidence.
-- Changed files: `docs/E03-T01_CONCEPT_2_0_LIFECYCLE_SAVE_OPENING_TRANSITION_AUDIT.md` only.
+- Summary: complete Concept 2.0 lifecycle, migration, minimum-state, authority, decision, task-sequence, and exit-gate contract accepted from current repository evidence.
+- Changed files: the audit and its responsible roadmap, decision, state, architecture, and planning authority documents; no executable source.
 - Acceptance evidence: sections 1–12 and the checked acceptance criteria.
 - Automated verification: documentation/path/status/diff checks only; result recorded in the handoff.
 - Behavior verification: current source paths reviewed; no behavior changed or exercised.
-- Documentation/decision updates: Candidate audit added; no authoritative status changed.
-- Limitations/risks/open approvals: `DMCL-P26` plus E03-D01–D13 require explicit owner acceptance/revision; version 5 and registry version 2 remain candidates.
+- Documentation/decision updates: `DMCL-P26`–`DMCL-P40` Accepted; EPIC 03 Current; E03-T01 Complete; E03-T02 sole Next.
+- Limitations/risks/open approvals: version 5 is accepted as next but remains unimplemented; registry version 2 remains conditional; later gameplay decisions remain with their responsible tasks.
 - Deployment: **Not performed**.
 
 ### User acceptance
 
-- Status: awaiting owner review.
-- Required response: accept or revise `DMCL-P26`, then answer/accept/revise E03-D01–D13. Acceptance of recommendations may be given as one explicit packet or item by item.
+- Status: accepted by the project owner on 2026-08-14 as one explicit packet, with every recommended default approved.
+- Required response: none for E03-T01; E03-T02 remains a separate bounded task.
 
 ### Accepted checkpoint
 
-- Final commit SHA: pending acceptance.
-- Pushed source branch: pending acceptance.
-- Saved Sites version: pending acceptance.
-- Roadmap status: unchanged Candidate/Proposed status.
-- Next task: none active; proposed next after all required acceptance and checkpoint work is `E03-T02 — Safe local lifecycle and persistence behavior`.
+- Final commit SHA: reported in the completion handoff to avoid a self-referential documentation commit.
+- Pushed source branch: `main`.
+- Saved Sites version: reported in the completion handoff.
+- Roadmap status: EPIC 03 Current; E03-T01 Complete.
+- Next task: `E03-T02 — Safe local lifecycle and persistence behavior` (sole Next; not started by this checkpoint).
 - Deployment: **Not performed**.
