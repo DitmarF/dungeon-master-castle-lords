@@ -131,6 +131,20 @@ The application layer now owns lifecycle time and registry transactions through 
 
 The registry-version-2/new-key option in DMCL-P31 remains conditional and is not activated by E03-T02. This task hardens the current version-1 key in place while guaranteeing that failed decode/migration never writes and that failed destructive changes retain the previous durable/in-memory registry.
 
+### E03-T04 candidate World-generation authority
+
+The pure `generateStartingWorld` boundary now implements the explicitly accepted DMCL-P41 generation policy without adding World data to the current version-4 campaign:
+
+- `campaignSeed` remains the root provenance; the effective World seed is 32-bit FNV-1a of `world/home-ring/v1:<campaignSeed>`;
+- generator version `1`, the effective World seed, and the generated snapshot types are ready for persistence by E03-T05, but they are not yet stored or loaded;
+- the home region is axial `(0,0)` and the six neighbors use the accepted clockwise order beginning east;
+- region IDs derive from coordinates, while the one capital, three sites, and two locations use family-specific deterministic instance IDs independent of array positions;
+- Fisher–Yates placement consumes a fresh random source created only from the derived World seed and assigns exactly one approved content to each neighbor;
+- the result contains the Tier-1 Village capital reference, seven controlled neutral-terrain regions, Food/Wood/Stone sites, the regional Dungeon, and the inert ruin; the one unattached neighbor is derived as terrain-only;
+- validation checks metadata, exact topology/order, coordinate and ID uniqueness, control, catalog references, distinct placements, and the one terrain-only remainder.
+
+The returned snapshot is a pure candidate value, not current campaign truth. E03-T05 owns version-5 persistence/migration and must store the generated result as authoritative rather than regenerating it during ordinary load. `createDungeonLevel`, existing stored Dungeon snapshots, and the current version-4 schema are unchanged.
+
 ## Current non-campaign runtime state
 
 **Observed:** These runtime values do not live inside `CampaignState`/`GameSave`:
@@ -319,7 +333,7 @@ Do not persist the same fact in multiple forms without an explicit consistency a
 
 **Accepted:** Any randomness that changes campaign truth must preserve enough authoritative information to resume and migrate safely. Depending on the approved system, that may be a seed plus generator/rule version, the generated result, or both. The choice must be made per system rather than inferred from the current dungeon implementation.
 
-**Implemented for the current system:** New gameplay randomness originates only from explicit seed/state inputs. Infrastructure entropy creates a new campaign seed; pure deterministic helpers consume it. The existing Dungeon snapshot remains authoritative for resume. Future random mechanics must extend this contract only when their responsible Epic defines their state and replay needs.
+**Implemented for the current system:** New gameplay randomness originates only from explicit seed/state inputs. Infrastructure entropy creates a new campaign seed; pure deterministic helpers consume it. The existing Dungeon snapshot remains authoritative for resume. E03-T04 adds a separately derived, domain-labeled World stream and pure starting-World snapshot generator; it never advances or regenerates the Dungeon stream/snapshot. Future random mechanics must extend this contract only when their responsible Epic defines their state and replay needs.
 
 ## Change and migration discipline
 

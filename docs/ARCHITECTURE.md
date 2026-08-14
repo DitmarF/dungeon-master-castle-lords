@@ -2,7 +2,7 @@
 
 Status: architectural source of truth with explicit approval markers  
 Scope: major structural principles, system boundaries, and dependency direction  
-Last updated: 2026-08-10
+Last updated: 2026-08-14
 
 ## Purpose and authority
 
@@ -93,6 +93,14 @@ E02-T06 establishes `src/game/random.ts` as the small pure randomness contract. 
 `CampaignState`/`GameSave` version 4 adds exactly one `campaignSeed` stored fact. New campaigns obtain it from `systemCampaignSeedSource` at the application edge; the current initial Dungeon uses that same seed because it is the only implemented random game system. `IdSource` and `systemIdSource` remain independent and cannot consume or advance gameplay RNG.
 
 `createDungeonLevel` now requires an explicit seed and reuses the unchanged Mulberry32 algorithm through the pure contract. Supported version-2/version-3 campaigns migrate by adopting their already-stored Dungeon seed as `campaignSeed`; their persisted Dungeon result remains authoritative and is never regenerated. The system seed adapter uses platform entropy only to create a new campaign fact and imports no identity contract. Clock isolation remains separate unscheduled work.
+
+### E03-T04 candidate starting-World generator boundary
+
+`src/game/generateStartingWorld.ts` is a pure domain generator over an explicit `CampaignSeed` and the E03-T03 opening catalogs. It owns the minimum axial-coordinate helpers, the accepted canonical first-ring order, the DMCL-P41 FNV-1a World-seed derivation, a fresh World-only deterministic random source, family-specific generated instance IDs, generator version `1`, snapshot assembly, and snapshot validation.
+
+The generator returns one Tier-1 Village capital reference, one home region plus six controlled adjacent regions, three distinct resource-site placements, two distinct location placements, and one derived terrain-only neighbor. Region output remains in canonical coordinate order; site and location arrays remain in catalog order; only content-to-region placement is shuffled by the World stream. This makes serialized output stable while allowing approved placement variation across seeds.
+
+The module imports no React, board, provider, storage, clock, identity entropy, browser, crypto, or hosting API. It does not accept or mutate a Dungeon snapshot and does not call `createDungeonLevel`; fixed tests protect the legacy Dungeon bytes and structure. The persistable result types are not part of `CampaignState` version 4. E03-T05 alone owns adding the authoritative snapshot to version 5 and migration/load behavior.
 
 ### E02-T07 developer inspector boundary
 
