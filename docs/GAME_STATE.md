@@ -145,7 +145,7 @@ The pure `generateStartingWorld` boundary now implements the explicitly accepted
 
 The returned snapshot is a pure generated value, not current version-4 campaign truth. E03-T05 owns the version-5 target and pure migration result, which stores the generated result as authoritative rather than regenerating it during target normalization. `createDungeonLevel` and existing stored Dungeon snapshots remain unchanged.
 
-### E03-T05 Candidate version-5 state and migration boundary
+### E03-T05 accepted version-5 state and migration boundary
 
 `CampaignStateV5` now defines the accepted minimum target payload independently from the current application-facing version-4 alias:
 

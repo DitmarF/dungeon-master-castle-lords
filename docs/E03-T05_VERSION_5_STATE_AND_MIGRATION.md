@@ -1,6 +1,6 @@
 # Dungeon Master & Castle Lords — E03-T05 Version-5 state and migration
 
-Status: **Candidate**
+Status: **Complete**
 
 ## Task ID and name
 
@@ -127,19 +127,19 @@ CampaignStateV5
 
 - Responsible documents updated: `docs/GAME_STATE.md`, `docs/ARCHITECTURE.md`, and this task record.
 - Decision changes: none; this task implements already Accepted DMCL-P32–DMCL-P41 policies.
-- `ROADMAP.md`: unchanged while Candidate; update only after owner acceptance.
+- `ROADMAP.md`: updated at the accepted checkpoint to mark E03-T05 Complete and make E03-T06 the sole Next task.
 - `CURRENT_STATE.md` audit required: no; no repository-wide implementation audit is in scope.
 
 ## Checkpoint
 
 - Configured source branch: `main`
-- Commit/push authorized: no, awaiting owner acceptance
+- Commit/push: accepted implementation and checkpoint reconciliation pushed to `main` under `WORKFLOW.md`
 - Expected checkpoint contents: accepted E03-T05 target schema, pure migration/validation, fixtures/tests, responsible docs, and acceptance-driven roadmap/task status update
 - Deployment authorized: **No**
 
 ## Completion report
 
-### Candidate outcome
+### Accepted outcome
 
 - Summary: the accepted version-5 target is now explicitly typed and strictly validated, and supported v2/v3/v4 sources can be converted purely and deterministically without mutation or persistence writes.
 - Changed files: `src/game/campaignState.ts`, `src/game/campaignMigration.ts`, `src/game/createGame.ts`, `src/game/model.ts`, `tests/fixtures/campaignMigrationFixtures.ts`, `tests/engine/campaign-migration-v5.test.ts`, `docs/GAME_STATE.md`, `docs/ARCHITECTURE.md`, and this task record.
@@ -152,14 +152,14 @@ CampaignStateV5
 
 ### User acceptance
 
-- Status: awaiting acceptance
-- Accepted by/date: not yet accepted
+- Status: accepted by the project owner; all points and tests approved, with independent GitHub verification reported PASS
+- Accepted by/date: project owner, 2026-08-14
 
 ### Accepted checkpoint
 
-- Final commit SHA: pending acceptance
-- Pushed source branch: pending acceptance
-- Saved Sites version: pending acceptance
-- Roadmap status: E03-T05 remains sole Next while Candidate
-- Next task: E03-T06 only after acceptance/checkpoint
+- Final commit SHA: reported in the completion handoff to avoid a self-referential documentation commit
+- Pushed source branch: `main`
+- Saved Sites version: matching non-deployed version reported in the completion handoff
+- Roadmap status: E03-T05 Complete; E03-T06 is the sole Next task
+- Next task: `E03-T06 — Village-first Hero Setup transition`
 - Deployment: **Not performed**

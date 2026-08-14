@@ -222,7 +222,7 @@ On 2026-08-14, the project owner accepted the Game Concept 2.0 system shape reco
 
 This concept approval changes intended product direction but does not claim implementation, migrate current version-4 campaigns, or authorize deployment. The separately accepted DMCL-P26 roadmap amendment and E03-T01 packet now make EPIC 03 Current and E03-T02 the sole next task.
 
-On 2026-08-14, the project owner accepted DMCL-P26, the complete E03-T01 owner-decision packet recorded as DMCL-P27–DMCL-P39, and version 5 as the next campaign-schema number under DMCL-P40. This activates the Game Concept 2.0 EPIC 03 sequence, completes the documentation-only transition audit, and makes E03-T02 the sole next task. These decisions authorize only their bounded future implementation tasks; version 4 remains current until E03-T05 implements the version-5 cutover, and registry version 2 remains conditional under DMCL-P31.
+On 2026-08-14, the project owner accepted DMCL-P26, the complete E03-T01 owner-decision packet recorded as DMCL-P27–DMCL-P39, and version 5 as the next campaign-schema number under DMCL-P40. E03-T05 has now implemented and the owner has accepted the pure version-5 target/migration boundary; the playable application and persistence cutover remains the bounded responsibility of E03-T06. Registry version 2 remains conditional under DMCL-P31.
 
 EPIC 01 and EPIC 02 are complete, and EPIC 03 is current. DMCL-P01–P13, DMCL-P16–P21, and DMCL-P23–P40 are accepted; DMCL-P14/P15 remain historical superseded proposals, and DMCL-P22's task sequence is superseded by DMCL-P24. The project owner accepted the E02-T08 PASS Candidate and EPIC 02 closure on 2026-08-10 and separately confirmed the latest GitHub Actions `Verify` result as PASS.
 
